@@ -1,0 +1,6 @@
+{"cardId":"TR-PROD-0141","type":"answer-in-stem","note":"Possible cue or intentional reasoning wording"}
+{"cardId":"TR-PROD-0093","otherCardId":"TR-PROD-0094","type":"possible-semantic-duplicate","tokenJaccard":0.333}
+{"cardId":"TR-PROD-0213","otherCardId":"TR-PROD-0229","type":"possible-semantic-duplicate","tokenJaccard":0.333}
+{"cardId":"TR-PROD-0214","otherCardId":"TR-PROD-0228","type":"possible-semantic-duplicate","tokenJaccard":0.6}
+{"cardId":"TR-PROD-0216","otherCardId":"TR-REV-0078","type":"possible-semantic-duplicate","tokenJaccard":0.375}
+{"cardId":"TR-PROD-0217","otherCardId":"TR-PROD-0226","type":"possible-semantic-duplicate","tokenJaccard":0.545}

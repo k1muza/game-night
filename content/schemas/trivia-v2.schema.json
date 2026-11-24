@@ -1,0 +1,306 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:game-night:trivia:v2",
+  "title": "Trivia candidate v2",
+  "type": "object",
+  "required": [
+    "cardId",
+    "gameType",
+    "version",
+    "schemaVersion",
+    "category",
+    "productionCategory",
+    "question",
+    "correctAnswer",
+    "distractors",
+    "explanation",
+    "difficulty",
+    "canonicalFactId",
+    "regionalRelevance",
+    "ageCohortRelevance",
+    "cognitiveMechanism",
+    "gameplayModes",
+    "estimatedResponseSeconds",
+    "factCheckStatus",
+    "sourceReferences",
+    "verification",
+    "editorialStatus",
+    "qualityAssessment"
+  ],
+  "properties": {
+    "productionCategory": {
+      "type": "string",
+      "minLength": 1
+    },
+    "canonicalFactId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cognitiveMechanism": {
+      "type": "string",
+      "minLength": 1
+    },
+    "factIdentityStatus": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cardId": {
+      "type": "string",
+      "pattern": "^TR-(PROD|REV)-[0-9]{4}$"
+    },
+    "gameType": {
+      "const": "trivia"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "schemaVersion": {
+      "const": "2.0.0"
+    },
+    "category": {
+      "enum": [
+        "ZIM-01",
+        "ZIM-02",
+        "ZIM-03",
+        "MUS-01",
+        "ZIM-04",
+        "SPT-01",
+        "AFR-01",
+        "SPT-02",
+        "MUS-02",
+        "SPT-03",
+        "ENT-03",
+        "MUS-03",
+        "SMC-01",
+        "SCI-02",
+        "SCI-01",
+        "ENT-04",
+        "ZIM-05",
+        "WLD-01",
+        "UNI-02",
+        "WLD-04"
+      ]
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "correctAnswer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "distractors": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "explanation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "difficulty": {
+      "enum": [
+        "easy",
+        "medium",
+        "hard",
+        "expert"
+      ]
+    },
+    "regionalRelevance": {
+      "enum": [
+        "zimbabwe-national",
+        "zimbabwe-urban",
+        "zimbabwe-rural",
+        "african",
+        "global"
+      ]
+    },
+    "ageCohortRelevance": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "gameplayModes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "estimatedResponseSeconds": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 35
+    },
+    "editorialStatus": {
+      "enum": [
+        "draft",
+        "approved"
+      ]
+    },
+    "factCheckStatus": {
+      "enum": [
+        "plausible-unverified",
+        "verified",
+        "disputed",
+        "incorrect"
+      ]
+    },
+    "sourceReferences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "title",
+          "url",
+          "retrievedDate",
+          "evidence"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "retrievedDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": [
+        "answerEvidenceStatus",
+        "distractorEvidenceStatus",
+        "fullCardVerificationStatus",
+        "verificationDate"
+      ],
+      "properties": {
+        "answerEvidenceStatus": {
+          "enum": [
+            "pending",
+            "source-supported",
+            "verified"
+          ]
+        },
+        "distractorEvidenceStatus": {
+          "enum": [
+            "pending-independent-review",
+            "verified"
+          ]
+        },
+        "fullCardVerificationStatus": {
+          "enum": [
+            "pending",
+            "verified"
+          ]
+        },
+        "verificationDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        }
+      }
+    },
+    "qualityAssessment": {
+      "type": "object",
+      "required": [
+        "status",
+        "scores"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scores": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "factCheckStatus": {
+            "const": "verified"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sourceReferences": {
+            "minItems": 1
+          },
+          "verification": {
+            "properties": {
+              "fullCardVerificationStatus": {
+                "const": "verified"
+              },
+              "distractorEvidenceStatus": {
+                "const": "verified"
+              },
+              "verificationDate": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "editorialStatus": {
+            "const": "approved"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "factCheckStatus": {
+            "const": "verified"
+          },
+          "qualityAssessment": {
+            "properties": {
+              "scores": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

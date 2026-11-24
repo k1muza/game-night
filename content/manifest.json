@@ -27,7 +27,13 @@
       "cardCount": 800,
       "sourceSchemaVersion": "1.1.0",
       "source": "Trivia production branch / PR #4 (selective integration)",
-      "importedGitBlobSha": "ba527fc0f553c2a5f6ae7b2c1f2aebb5ce77bc22"
+      "importedGitBlobSha": "ba527fc0f553c2a5f6ae7b2c1f2aebb5ce77bc22",
+      "currentSchemaVersion": "2.0.0",
+      "currentGitBlobSha": "1a47c39637c06e24f63542d0177c0d757e7dcbee",
+      "currentSource": "User-uploaded candidate redesign; 503 retained, 28 refined, 269 replaced",
+      "recordedFactCheckStatus": {
+        "plausible-unverified": 800
+      }
     },
     {
       "game": "forbidden-words",
@@ -39,8 +45,7 @@
     }
   ],
   "triviaRecordedFactCheckStatus": {
-    "verified": 258,
-    "plausible-unverified": 542
+    "plausible-unverified": 800
   },
   "releaseReady": false
 }
