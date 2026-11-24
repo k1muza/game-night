@@ -1,15 +1,15 @@
 # Game Night content library
 
 ## Status
-Batch 001: 200 newly authored **draft** records, 50 per game. No research example records were imported. Familiar names and concepts may naturally overlap. This is a candidate content set, not an approved production seed.
+Batches 001–002: 400 newly authored **draft** records, 100 per game. Batch 002 includes 11 source-checked trivia items; the other 89 trivia items still need verification. No research example records were imported. Familiar names and concepts may naturally overlap. This is a candidate content set, not an approved production seed.
 
 | Game | Drafts | Launch target | Remaining |
 |---|---:|---:|---:|
-| 30-Second Sprint | 50 | 400 | 350 |
-| Charades | 50 | 600 | 550 |
-| Trivia Challenge | 50 | 800 | 750 |
-| Forbidden Words | 50 | 500 | 450 |
-| Total | 200 | 2,300 | 2,100 |
+| 30-Second Sprint | 100 | 400 | 300 |
+| Charades | 100 | 600 | 500 |
+| Trivia Challenge | 100 | 800 | 700 |
+| Forbidden Words | 100 | 500 | 400 |
+| Total | 400 | 2,300 | 1,900 |
 
 ## Editorial direction
 Primary audience: Zimbabweans aged 16–30, with African and global references. English-first, allowing familiar Shona and Ndebele terms; verify translations with native speakers. Keep it family-friendly, humorous and inclusive. Use the research report's taxonomy codes (ZIM, AFR, SPT, MUS, ENT, SMC, SCI, UNI, WLD). Include social media creators, internet situations, music, sport, film, Bible, work, education, relationships and everyday life. Offer optional themed packs but default to varied mixed cards.
@@ -21,7 +21,7 @@ One JSON object per line in each file under drafts/. Stable IDs, game type, vers
 
 - Sprint: exactly five distinct terms, mixed subjects, at most two estimated hard terms, one accessible anchor. Draft difficulty labels are provisional, not measured. Hard cards cannot be defined by median difficulty while also limiting to two hard terms; use estimated combined effort and playtest score instead.
 - Charades: one prompt per card, physical mime without speech or props; multiple cards may be played per 60-second turn.
-- Trivia: one correct answer and three distinct distractors; randomise option order in the application. Candidate references are **not verified**. A null retrieval date means the source has not been checked in this workflow. Replace broad landing pages with precise supporting URLs and record actual retrieval dates.
+- Trivia: one correct answer and three distinct distractors; randomise option order in the application. Candidate references are **not verified** unless marked verified with a retrieval date. A null retrieval date means the source has not been checked in this workflow. Replace broad landing pages with precise supporting URLs and record actual retrieval dates.
 - Forbidden Words: exactly five distinct forbidden clues, plus three candidate alternative clue pathways for editorial review only. checkedByEditors=false means solvability is not established. Test for derivatives, embedded forbidden expressions and unintended giveaway clues. Hide editorial hints from players.
 
 ## Release gates
@@ -35,3 +35,11 @@ One JSON object per line in each file under drafts/. Stable IDs, game type, vers
 Author batches of 50–100 per game against the remaining category/difficulty quotas, independently review each batch, run structural and duplicate checks, then approve after playtesting. Do not regenerate previous IDs or silently alter published questions. Prioritise genuine variety over padding. Complete all 2,300 cards before declaring the full library ready.
 
 No dice or board movement is required. MVP scoring is based on correct answers, equal team turns and highest score at the end; any penalties or advanced variants need an explicit gameplay decision.
+
+## Batch 002 checkpoint (2026-11-24)
+
+- 100 cards per game, 40 easy / 40 medium / 20 hard each. Difficulty and accessibility are editorial estimates, not observed performance.
+- Primary social-media category progress: Sprint 6/24; Charades 8/50; Trivia 6/50; Forbidden Words 7/35. Sprint term-slot quota is a separate measure: primary card category alone does not establish that 120 individual terms relate to social media.
+- New Forbidden Words candidate descriptions were screened for literal overlap with forbidden expressions; morphology, cultural familiarity and independent clue pathways still need editorial testing.
+- Exact normalized duplicate checks cover both batches. Near-duplicate meaning, term-level category diversity and the full category quota matrix remain editorial work.
+- Source-checked trivia is still draft until editorial approval. No draft is ready for production import solely because it passes a structural check.
