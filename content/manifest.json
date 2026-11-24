@@ -16,7 +16,10 @@
       "cardCount": 600,
       "sourceSchemaVersion": "2.0.0",
       "source": "Deep Research upload, PR #3",
-      "importedGitBlobSha": "14930146c206baa56bf1532f09d3db358617c5c1"
+      "importedGitBlobSha": "14930146c206baa56bf1532f09d3db358617c5c1",
+      "currentSchemaVersion": "3.1.0",
+      "currentGitBlobSha": "436bb449842d4720d9a1bde340e964ec029de5b3",
+      "currentSource": "User-uploaded revised Charades candidate deck"
     },
     {
       "game": "trivia",
