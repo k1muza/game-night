@@ -24,8 +24,8 @@
       "source": "Deep Research upload, PR #3",
       "importedGitBlobSha": "14930146c206baa56bf1532f09d3db358617c5c1",
       "currentSchemaVersion": "3.1.0",
-      "currentGitBlobSha": "9ef007cd8b40a6f6518556d18be9d91d127fa0fe",
-      "currentSource": "Classical Charades redesign candidate; traceable mapping; structural checks only; editorial and playtest gates outstanding",
+      "currentGitBlobSha": "f72664462962dc807ba1edab0a421af93ac49ee8",
+      "currentSource": "Classical Charades candidate, second editorial pass; structural checks only; release gates outstanding",
       "previousGitBlobSha": "436bb449842d4720d9a1bde340e964ec029de5b3",
       "revisionLogPath": "charades/revision-log.jsonl"
     },

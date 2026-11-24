@@ -11,3 +11,10 @@
 No comprehensive title/person source verification or dedicated current social-media audience research was completed. Individual sourceReferences are deliberately limited; most named references remain pending verification. Scripture locators are editorial references to verify against Bible text. No commercial deck copied. English and vernacular language accuracy requires native review.
 
 House rules: no voice, humming, sounds, mouthing, spelling, writing, real props, external images or pointing to the answer. Category, word count/position, syllable and sounds-like hand signals allowed. Actors may mime at chest height or use hand figures; no physical contact, actual falls or dangerous movements. The category identifies intended answer type. Accept established aliases but not different entities.
+
+## Second-pass evidence
+
+- [National Museums and Monuments of Zimbabwe](https://www.nmmz.co.zw/heritage-and-tourism/) lists Victoria Falls, Great Zimbabwe and Chiremba Balancing Rocks; [Zimbabwe embassy tourism profile](https://zimembassydc.org/experience-zimbabwe/) identifies Lake Kariba. These establish named landmarks, not gestureability or youth familiarity.
+- [Cultural Aspects in the Shona Monolingual Dictionary](https://lexikos.journals.ac.za/pub/article/download/733/329) supplies the one-finger and anthill proverb forms; [Shona Proverbs A–Z](https://blog.zaionline.co.uk/shona-proverbs-a-to-z/) documents the returning-dish proverb. Native-language reviewers should confirm spellings and acceptable variants.
+- [Hand in Hand](https://archive.gci.org/articles/hand-in-hand/) identifies the Ndebele proverb Izandla ziyagezana; [Zimbabwe Heritage](https://zimbabweheritage.org/foundations/shona-and-ndebele-culture/) identifies the hands-washing and personhood sayings. Recognition estimates are still subjective.
+- [Secondary Book Press, PlusOne Social Science Grade 3 teacher guide](https://secondarybookpress.co.zw/wp-content/uploads/2026/05/PlusOne-HBC-Social-Science-Grade-3-TG.pdf) identifies Tsoro/Intsoro. Regional name variants require review.
