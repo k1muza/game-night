@@ -1,0 +1,5 @@
+# Zimbabwe youth playtesting
+
+Recruit 8–12 groups covering ages 16–21, 22–25, 26–30, rural/peri-urban/urban communities, language and interest profiles. Use consent and anonymous identifiers. Randomise card/team order; rotate describers. Log card/term ID, order, attempt start/end, correct/pass/unrecognised/disputed, rule violation and enjoyment (1–5). Ask about familiarity after each round. Stratify high-risk categories and sample representative cards first; aim for at least 10 independent observations per term as an initial target, then expand uncertainty-sensitive terms.
+
+Report 0–5 score distribution, perfect and zero rounds, card mean/variance, recognition, conditional success, skip rate, successful solve-time distribution, disputes and cohort gaps. Compare teams of similar skill under crossed card assignments. Investigate repeated skips, disputed answers, medians above 10 seconds and subgroup gaps above 20 percentage points. Recalibrate terms, regenerate cards and retest holdout cards. No playtesting results claimed.
