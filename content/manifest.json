@@ -1,0 +1,43 @@
+{
+  "status": "candidate-draft",
+  "totalCards": 2300,
+  "datasets": [
+    {
+      "game": "thirty-seconds",
+      "path": "thirty-seconds/cards.jsonl",
+      "cardCount": 400,
+      "sourceSchemaVersion": "1.2.0",
+      "source": "Deep Research upload, PR #3",
+      "importedGitBlobSha": "6ad582dc9a58b31eb7e0acdb604c0289a7ecef23"
+    },
+    {
+      "game": "charades",
+      "path": "charades/cards.jsonl",
+      "cardCount": 600,
+      "sourceSchemaVersion": "2.0.0",
+      "source": "Deep Research upload, PR #3",
+      "importedGitBlobSha": "14930146c206baa56bf1532f09d3db358617c5c1"
+    },
+    {
+      "game": "trivia",
+      "path": "trivia/cards.jsonl",
+      "cardCount": 800,
+      "sourceSchemaVersion": "1.1.0",
+      "source": "Trivia production branch / PR #4 (selective integration)",
+      "importedGitBlobSha": "ba527fc0f553c2a5f6ae7b2c1f2aebb5ce77bc22"
+    },
+    {
+      "game": "forbidden-words",
+      "path": "forbidden-words/cards.jsonl",
+      "cardCount": 500,
+      "sourceSchemaVersion": "1.0.0",
+      "source": "Identical Deep Research uploads, PRs #2 and #3",
+      "importedGitBlobSha": "e018f7e5fba2860a135914d5920bfede3a5299a3"
+    }
+  ],
+  "triviaRecordedFactCheckStatus": {
+    "verified": 258,
+    "plausible-unverified": 542
+  },
+  "releaseReady": false
+}
