@@ -256,6 +256,95 @@
             "disputed",
             "needs-update"
           ]
+        },
+        "productionCategory": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subcategory": {
+          "type": "string",
+          "minLength": 1
+        },
+        "estimatedResponseSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 15
+        },
+        "canonicalFactId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ageCohortRelevance": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "16-21",
+              "22-30"
+            ]
+          }
+        },
+        "sourceEvidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceReferences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "title",
+              "url",
+              "retrievedDate",
+              "evidence"
+            ],
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "retrievedDate": {
+                "type": "string",
+                "format": "date"
+              },
+              "evidence": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "timeSensitivity": {
+          "enum": [
+            "evergreen",
+            "historically-anchored",
+            "time-sensitive"
+          ]
+        },
+        "reviewCadenceMonths": {
+          "enum": [
+            null,
+            6,
+            12,
+            24
+          ]
+        },
+        "reviewDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
