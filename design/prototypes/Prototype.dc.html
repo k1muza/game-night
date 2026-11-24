@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Game Night — interactive prototype</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#110E22}
+a{color:#FFD23F}a:hover{color:#FFE27A}
+button{-webkit-touch-callout:none;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button:focus-visible{outline:3px solid #FFD23F;outline-offset:3px}
+button:active{transform:translateY(3px)}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: {{ bg }}; overflow: hidden; position: relative; box-sizing: border-box; padding: 52px 20px 30px; display: flex; flex-direction: column; font-family: 'Inter', system-ui, sans-serif; color: #F7F4FF; transition: background 240ms">
+
+<sc-if value="{{ paused }}" hint-placeholder-val="{{ false }}">
+<div role="dialog" aria-label="Game paused" style="position: absolute; inset: 0; z-index: 5; background: rgba(10,8,24,0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 32px; text-align: center">
+  <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 32px">Paused while you were away</div>
+  <div style="font-size: 16px; color: #BEB7DE">The clock stopped at {{ left }} s when the app went to the background.</div>
+  <button type="button" onClick="{{ resume }}" style="height: 60px; width: 100%; border: 0; border-radius: 20px; background: #FFF8EC; color: #110E22; box-shadow: 0 5px 0 #B9AE98; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">Resume</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 48px">
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.045em">game night</div>
+    <div style="font-size: 12px; font-weight: 700; color: #948CBD; letter-spacing: 0.08em">PROTOTYPE</div>
+  </div>
+  <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.02em; margin-top: 14px">Who’s playing tonight?</div>
+  <div style="font-size: 15px; color: #BEB7DE; margin-top: 6px">Tap a game. Quick play: one phone, two teams.</div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px">
+    <sc-for list="{{ gameList }}" as="g" hint-placeholder-count="4">
+      <button type="button" onClick="{{ g.pick }}" aria-label="{{ g.name }}" style="height: 168px; border-radius: 24px; border: 0; background: {{ g.color }}; box-shadow: 0 5px 0 {{ g.deep }}; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; text-align: left; transform: rotate({{ g.rot }})">
+        <span style="width: 44px; height: 44px; border-radius: 14px; background: #110E22; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; color: {{ g.color }}">{{ g.mark }}</span>
+        <span style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px; line-height: 1.02; color: #110E22; letter-spacing: -0.02em">{{ g.name }}</span>
+          <span style="font-size: 12.5px; font-weight: 700; color: #110E22; opacity: 0.75">{{ g.meta }}</span>
+        </span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="flex-grow: 1"></div>
+  <div style="font-size: 13px; color: #948CBD; text-align: center; line-height: 1.5">One round per game (each team plays once) with real, verified cards from the decks. In Trivia you answer as Sadza Squad; Night Owls are simulated.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSetup }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div style="display: flex; align-items: center; gap: 12px; height: 48px">
+    <button type="button" onClick="{{ goHome }}" aria-label="Back" style="width: 48px; height: 48px; border-radius: 16px; border: 0; background: #262046; color: #F7F4FF; font-size: 22px; font-weight: 800">‹</button>
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px">Quick play</div>
+  </div>
+  <div style="margin: 16px -20px 0; height: 200px; background: {{ game.color }}; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end">
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 40px; color: #110E22; letter-spacing: -0.03em; line-height: 1">{{ game.name }}</div>
+    <div style="font-size: 15px; font-weight: 700; color: #110E22; margin-top: 8px">{{ game.tag }}</div>
+  </div>
+  <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #948CBD; margin-top: 20px">TEAMS</div>
+  <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px">
+    <sc-for list="{{ teamList }}" as="t" hint-placeholder-count="2">
+      <div style="display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 14px; border-radius: 18px; background: #1B1733">
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24"><path d="{{ t.d }}" fill="{{ t.color }}"></path></svg>
+        <span style="font-weight: 700; font-size: 16px">{{ t.name }}</span>
+        <span style="margin-left: auto; font-size: 13px; color: #948CBD">{{ t.people }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 14px; color: #BEB7DE; font-weight: 600">{{ game.rule }}</div>
+  <div style="flex-grow: 1"></div>
+  <button type="button" onClick="{{ start }}" style="height: 60px; border: 0; border-radius: 20px; background: {{ game.color }}; color: #110E22; box-shadow: 0 5px 0 {{ game.deep }}; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">Start game</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isIntro }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 48px">
+    <span style="height: 32px; padding: 0 12px; border-radius: 999px; background: {{ game.soft }}; color: {{ game.color }}; font-size: 14px; font-weight: 700; display: flex; align-items: center">{{ game.name }}</span>
+    <span style="font-size: 13px; font-weight: 700; color: #948CBD">Turn {{ turnNo }} of 2</span>
+  </div>
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center">
+    <div style="width: 140px; height: 180px; border-radius: 26px; background: #FFF8EC; display: flex; align-items: center; justify-content: center; transform: rotate(-5deg); box-shadow: 0 6px 0 #B9AE98">
+      <svg aria-hidden="true" width="76" height="76" viewBox="0 0 24 24"><path d="{{ teamNow.d }}" fill="{{ teamNow.color }}" stroke="#110E22" stroke-width="1.5"></path></svg>
+    </div>
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: {{ teamNow.color }}">{{ teamNow.upper }}’S TURN</div>
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 38px; line-height: 1.05; letter-spacing: -0.02em">{{ person }}, you’re the {{ game.role }}</div>
+    <div style="font-size: 16px; color: #BEB7DE">{{ teamNow.name }} guess. Everyone else: listen for slips.</div>
+  </div>
+  <div style="display: flex; gap: 6px; margin-bottom: 14px">
+    <sc-for list="{{ scoreList }}" as="s" hint-placeholder-count="2">
+      <div style="flex: 1; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border-radius: 14px; background: #1B1733; border: 2px solid {{ s.border }}">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><path d="{{ s.d }}" fill="{{ s.color }}"></path></svg>
+        <span style="font-size: 14px; font-weight: 700; color: #BEB7DE">{{ s.name }}</span>
+        <span style="margin-left: auto; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">{{ s.score }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <button type="button" onClick="{{ toGate }}" style="height: 60px; border: 0; border-radius: 20px; background: {{ game.color }}; color: #110E22; box-shadow: 0 5px 0 {{ game.deep }}; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">I’m the {{ game.role }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isGate }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center">
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 34px; line-height: 1.05">Pass the phone to {{ person }}</div>
+    <div style="font-size: 16px; color: #BEB7DE">Hold the circle until it fills. Let go early and nothing is shown.</div>
+    <button type="button" onClick="{{ reveal }}" style="height: 44px; padding: 0 16px; border-radius: 14px; background: {{ tapBg }}; border: 0; color: {{ tapFg }}; font-weight: 700; font-size: 14px">{{ tapLabel }}</button>
+    <button type="button" aria-label="Hold to reveal the card" onPointerDown="{{ holdStart }}" onPointerUp="{{ holdEnd }}" onPointerLeave="{{ holdEnd }}" onPointerCancel="{{ holdEnd }}" style="position: relative; width: 220px; height: 220px; border-radius: 110px; border: 0; background: #1B1733; margin-top: 16px; padding: 0; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="220" height="220" viewBox="0 0 220 220" style="position: absolute; inset: 0; transform: rotate(-90deg)">
+        <circle cx="110" cy="110" r="103" fill="none" stroke="#262046" stroke-width="14"></circle>
+        <circle cx="110" cy="110" r="103" fill="none" stroke="{{ game.color }}" stroke-width="14" stroke-linecap="round" stroke-dasharray="{{ holdDash }}"></circle>
+      </svg>
+      <span style="position: relative; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px; color: #F7F4FF">{{ holdLabel }}</span>
+    </button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCount }}" hint-placeholder-val="{{ false }}">
+<div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px">
+  <div style="width: 230px; height: 300px; border-radius: 36px; background: {{ countBg }}; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 0 #B9AE98; transform: rotate({{ countRot }}); font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 170px; color: #110E22">{{ countLabel }}</div>
+  <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; color: {{ game.color }}">Get ready…</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPlay }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div role="timer" aria-label="{{ left }} seconds left" style="display: flex; align-items: center; gap: 12px">
+    <div style="flex: 1; height: 14px; border-radius: 999px; background: #262046; overflow: hidden"><div style="height: 100%; width: {{ timePct }}; background: {{ timeColor }}; border-radius: 999px; transition: width 1s linear"></div></div>
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; width: 56px; text-align: right; color: {{ timeColor }}; font-variant-numeric: tabular-nums">{{ left }}</div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px">
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><path d="{{ teamNow.d }}" fill="{{ teamNow.color }}"></path></svg>
+    <span style="font-size: 14px; font-weight: 700">{{ teamNow.name }}</span>
+    <span style="margin-left: auto; height: 28px; padding: 0 10px; border-radius: 999px; background: #262046; font-size: 13px; font-weight: 700; display: flex; align-items: center; color: #3EE0A8">✓ {{ gotCount }}</span>
+    <sc-if value="{{ showBuzz }}" hint-placeholder-val="{{ false }}"><span style="height: 28px; padding: 0 10px; border-radius: 999px; background: #262046; font-size: 13px; font-weight: 700; display: flex; align-items: center; color: #FF5A6E">! {{ buzzCount }}</span></sc-if>
+  </div>
+
+  <sc-if value="{{ isSprint }}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 18px">
+    <sc-for list="{{ sprintRows }}" as="r" hint-placeholder-count="5">
+      <button type="button" aria-pressed="{{ r.pressed }}" onClick="{{ r.toggle }}" style="height: 76px; border: 0; border-radius: 18px; background: {{ r.bg }}; box-shadow: 0 4px 0 {{ r.shadow }}; display: flex; align-items: center; gap: 14px; padding: 0 16px; text-align: left">
+        <span style="width: 36px; height: 36px; border-radius: 11px; border: 3px solid #110E22; box-sizing: border-box; background: {{ r.boxBg }}; color: #FFD23F; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px">{{ r.tick }}</span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; color: #110E22; letter-spacing: -0.02em; text-decoration: {{ r.deco }}">{{ r.term }}</span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="flex-grow: 1"></div>
+  <div style="font-size: 13px; color: #948CBD; text-align: center; font-weight: 600">Tap a term when your team says it · tap again to undo</div>
+  </sc-if>
+
+  <sc-if value="{{ isCharades }}" hint-placeholder-val="{{ false }}">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center">
+    <div style="background: #FFF8EC; border-radius: 32px; padding: 26px 24px; min-height: 300px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; transform: rotate({{ cardRot }}); box-shadow: 0 8px 0 #B9AE98">
+      <div style="font-size: 13px; font-weight: 700; color: #5B5478">Prompt {{ cardNo }} · act it out</div>
+      <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 44px; line-height: 1.02; letter-spacing: -0.03em; color: #110E22">{{ prompt }}</div>
+    </div>
+  </div>
+  <div style="display: flex; gap: 12px">
+    <button type="button" onClick="{{ skip }}" style="flex: 1; height: 128px; border-radius: 28px; border: 0; background: #262046; color: #F7F4FF; box-shadow: 0 6px 0 #0D0B1C; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px">» Skip</button>
+    <button type="button" onClick="{{ gotIt }}" style="flex: 1.5; height: 128px; border-radius: 28px; border: 0; background: #3EE0A8; color: #110E22; box-shadow: 0 6px 0 #17A777; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px">✓ Got it</button>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isForbidden }}" hint-placeholder-val="{{ false }}">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 10px 0">
+    <div style="background: #FFF8EC; border-radius: 32px; overflow: hidden; box-shadow: 0 8px 0 #B9AE98; transform: rotate({{ cardRot }})">
+      <div style="background: #FF7A52; padding: 18px 22px">
+        <div style="font-size: 13px; font-weight: 700; color: #110E22">Get them to say</div>
+        <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 50px; line-height: 1; letter-spacing: -0.03em; color: #110E22">{{ fw.target }}</div>
+      </div>
+      <div style="padding: 14px 18px 16px; display: flex; flex-direction: column; gap: 7px">
+        <div style="font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: #D9482A">DON’T SAY</div>
+        <sc-for list="{{ fw.words }}" as="w" hint-placeholder-count="5">
+          <div style="height: 40px; padding: 0 14px; border-radius: 12px; background: #F3E9D6; display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: #110E22"><span style="color: #D9482A">✕</span>{{ w }}</div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  <button type="button" onClick="{{ buzz }}" style="height: 48px; border-radius: 16px; border: 2px solid #FF5A6E; background: transparent; color: #FF5A6E; font-weight: 800; font-size: 15px; margin-bottom: 10px">Simulate the referee’s BUZZ (−1)</button>
+  <div style="display: flex; gap: 12px">
+    <button type="button" onClick="{{ skip }}" style="flex: 1; height: 96px; border-radius: 26px; border: 0; background: #262046; color: #F7F4FF; box-shadow: 0 6px 0 #0D0B1C; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">» Skip</button>
+    <button type="button" onClick="{{ gotIt }}" style="flex: 1.5; height: 96px; border-radius: 26px; border: 0; background: #3EE0A8; color: #110E22; box-shadow: 0 6px 0 #17A777; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px">✓ Got it</button>
+  </div>
+  </sc-if>
+
+  <button type="button" onClick="{{ endTurn }}" style="height: 36px; margin-top: 10px; background: transparent; border: 0; color: #948CBD; font-weight: 700; font-size: 13px; text-decoration: underline">Demo: end the turn now</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isTq }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div style="display: flex; align-items: center; gap: 10px">
+    <span style="height: 30px; padding: 0 12px; border-radius: 999px; background: #262046; font-size: 13px; font-weight: 700; display: flex; align-items: center">Q {{ qNo }} / 4</span>
+    <span style="height: 30px; padding: 0 12px; border-radius: 999px; background: #17254A; color: #5B94FF; font-size: 13px; font-weight: 700; display: flex; align-items: center">You are Sadza Squad</span>
+    <div style="flex-grow: 1"></div>
+    <div role="timer" aria-label="{{ left }} seconds left" style="width: 60px; height: 60px; border-radius: 30px; border: 6px solid {{ timeColor }}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px">{{ left }}</div>
+  </div>
+  <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; line-height: 1.08; letter-spacing: -0.02em; margin-top: 18px">{{ q.question }}</div>
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px">
+    <sc-for list="{{ opts }}" as="o" hint-placeholder-count="4">
+      <button type="button" onClick="{{ o.pick }}" aria-pressed="{{ o.pressed }}" aria-label="{{ o.letter }}: {{ o.text }}" style="height: 80px; border-radius: 22px; background: {{ o.bg }}; border: 3px solid {{ o.border }}; display: flex; align-items: center; gap: 14px; padding: 0 14px; text-align: left">
+        <span style="width: 48px; height: 48px; border-radius: 15px; background: {{ o.chipBg }}; color: {{ o.chipFg }}; display: flex; align-items: center; justify-content: center; font-size: 22px">{{ o.glyph }}</span>
+        <span style="display: flex; flex-direction: column">
+          <span style="font-size: 12px; font-weight: 800; color: {{ o.fg }}; opacity: 0.75">{{ o.letter }}</span>
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 23px; color: {{ o.fg }}">{{ o.text }}</span>
+        </span>
+        <span style="margin-left: auto; font-size: 13px; font-weight: 800; color: {{ o.fg }}">{{ o.tag }}</span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="flex-grow: 1"></div>
+  <sc-if value="{{ canLock }}" hint-placeholder-val="{{ false }}">
+    <button type="button" onClick="{{ lock }}" style="height: 60px; border: 0; border-radius: 20px; background: #5B94FF; color: #110E22; box-shadow: 0 5px 0 #2E63D1; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">Lock in {{ selText }}</button>
+  </sc-if>
+  <sc-if value="{{ waitingMsg }}" hint-placeholder-val="{{ false }}">
+    <div style="height: 60px; border-radius: 20px; background: #1B1733; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: #BEB7DE">{{ waitingMsg }}</div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isReveal }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 34px; color: {{ revealColor }}">{{ revealTitle }}</div>
+  <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; color: #BEB7DE; margin-top: 10px">{{ q.question }}</div>
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px">
+    <sc-for list="{{ opts }}" as="o" hint-placeholder-count="4">
+      <div style="height: 72px; border-radius: 22px; background: {{ o.bg }}; border: 3px solid {{ o.border }}; display: flex; align-items: center; gap: 14px; padding: 0 14px; box-sizing: border-box">
+        <span style="width: 44px; height: 44px; border-radius: 14px; background: {{ o.chipBg }}; color: {{ o.chipFg }}; display: flex; align-items: center; justify-content: center; font-size: 20px">{{ o.glyph }}</span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px; color: {{ o.fg }}; text-decoration: {{ o.deco }}">{{ o.text }}</span>
+        <span style="margin-left: auto; font-size: 12px; font-weight: 800; color: {{ o.fg }}">{{ o.tag }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="background: #1B1733; border-radius: 20px; padding: 16px; margin-top: 14px; font-size: 15px; font-weight: 600; line-height: 1.4">{{ q.expl }}</div>
+  <div style="flex-grow: 1"></div>
+  <button type="button" onClick="{{ nextQ }}" style="height: 60px; border: 0; border-radius: 20px; background: #FFF8EC; color: #110E22; box-shadow: 0 5px 0 #B9AE98; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">{{ nextQLabel }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isTimeup }}" hint-placeholder-val="{{ false }}">
+<div style="margin: -52px -20px -30px; padding: 52px 20px 30px; flex-grow: 1; display: flex; flex-direction: column; background: #FF5A6E">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center">
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 90px; color: #110E22">Time!</div>
+    <div style="font-size: 19px; font-weight: 700; color: #110E22">Phone down, hands up.</div>
+    <div style="background: #110E22; border-radius: 22px; padding: 14px 22px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 40px; color: #F7F4FF">{{ gotCount }} <span style="font-family: 'Inter', sans-serif; font-size: 16px; color: #BEB7DE">got</span></div>
+  </div>
+  <sc-if value="{{ canReview }}" hint-placeholder-val="{{ true }}">
+  <button type="button" onClick="{{ toReview }}" style="height: 60px; width: 100%; border: 0; border-radius: 20px; background: #110E22; color: #F7F4FF; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">Review the turn ›</button>
+  </sc-if>
+  <sc-if value="{{ reviewLocked }}" hint-placeholder-val="{{ false }}"><div style="height: 60px"></div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAllFive }}" hint-placeholder-val="{{ false }}">
+<div style="margin: -52px -20px -30px; padding: 52px 20px 30px; flex-grow: 1; display: flex; flex-direction: column; background: #FFD23F">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center">
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 80px; color: #110E22">All five!</div>
+    <div style="font-size: 18px; font-weight: 700; color: #110E22">Cleared with {{ left }} s left. The turn ends now — equal chances for every team.</div>
+  </div>
+  <sc-if value="{{ canReview }}" hint-placeholder-val="{{ true }}">
+  <button type="button" onClick="{{ toReview }}" style="height: 60px; width: 100%; border: 0; border-radius: 20px; background: #110E22; color: #F7F4FF; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">Review the turn ›</button>
+  </sc-if>
+  <sc-if value="{{ reviewLocked }}" hint-placeholder-val="{{ false }}"><div style="height: 60px"></div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px">Check the turn</div>
+  <div style="font-size: 15px; color: #BEB7DE; margin-top: 6px">Tap a row to fix a mis-tap. In a multi-phone room, changes need a ✓ from the other team.</div>
+  <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px; overflow: auto">
+    <sc-for list="{{ logRows }}" as="l" hint-placeholder-count="5">
+      <button type="button" onClick="{{ l.toggle }}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 14px; border-radius: 16px; border: 0; background: #1B1733; text-align: left; color: #F7F4FF">
+        <span style="width: 32px; height: 32px; border-radius: 10px; background: {{ l.chip }}; color: #110E22; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0">{{ l.icon }}</span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px">{{ l.name }}</span>
+        <span style="margin-left: auto; font-size: 13px; font-weight: 700; color: #948CBD">{{ l.label }}</span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="flex-grow: 1"></div>
+  <button type="button" onClick="{{ confirm }}" style="height: 60px; border: 0; border-radius: 20px; background: {{ game.color }}; color: #110E22; box-shadow: 0 5px 0 {{ game.deep }}; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; margin-top: 14px">Confirm {{ turnPts }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRound }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 30px; text-align: center">
+    <div style="font-weight: 700; font-size: 18px">{{ teamNow.name }}</div>
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 120px; line-height: 1; color: {{ game.color }}">{{ turnPts }}</div>
+  </div>
+  <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #948CBD; margin-top: 30px">STANDINGS</div>
+  <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px">
+    <sc-for list="{{ standings }}" as="s" hint-placeholder-count="2">
+      <div style="display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 16px; border-radius: 18px; background: {{ s.bg }}; color: {{ s.fg }}">
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px; width: 24px">{{ s.rank }}</span>
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24"><path d="{{ s.d }}" fill="{{ s.color }}"></path></svg>
+        <span style="font-weight: 700; font-size: 16px">{{ s.name }}</span>
+        <span style="margin-left: auto; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px">{{ s.score }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex-grow: 1"></div>
+  <button type="button" onClick="{{ next }}" style="height: 60px; border: 0; border-radius: 20px; background: #FFF8EC; color: #110E22; box-shadow: 0 5px 0 #B9AE98; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">{{ nextLabel }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isFinal }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #FFD23F">GAME NIGHT CHAMPIONS</div>
+    <div style="width: 190px; height: 240px; border-radius: 32px; background: #FFF8EC; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; transform: rotate(-4deg); box-shadow: 0 10px 0 #B9AE98">
+      <svg aria-hidden="true" width="90" height="90" viewBox="0 0 24 24"><path d="{{ winner.d }}" fill="{{ winner.color }}" stroke="#110E22" stroke-width="1.2"></path></svg>
+      <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 48px; color: #110E22">{{ winner.score }}</div>
+    </div>
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 40px; line-height: 1.05">{{ winnerLine }}</div>
+    <div style="font-size: 16px; color: #BEB7DE">{{ finalLine }}</div>
+  </div>
+  <button type="button" onClick="{{ start }}" style="height: 60px; border: 0; border-radius: 20px; background: #FFF8EC; color: #110E22; box-shadow: 0 5px 0 #B9AE98; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">Rematch</button>
+  <button type="button" onClick="{{ goHome }}" style="height: 56px; margin-top: 10px; border-radius: 18px; border: 2px solid #3B3466; background: transparent; color: #F7F4FF; font-weight: 700; font-size: 16px">Play another game</button>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var SHAPES = {
+  circle: "M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20z",
+  triangle: "M12 2.5l10.5 18.5h-21z"
+};
+var TEAMS = [
+  { name: "Sadza Squad", color: "#2BB3A8", d: SHAPES.circle, people: ["Rudo", "Thandeka"] },
+  { name: "Night Owls", color: "#5CC8FF", d: SHAPES.triangle, people: ["Tino", "Sipho"] }
+];
+var GAMES = {
+  sprint: { name: "30-Second Sprint", color: "#FFD23F", deep: "#C99A00", soft: "#3A3215", mark: "≡", role: "clue-giver", time: 30, meta: "30s turns · 4–20", tag: "Five terms. Thirty seconds. Talk fast.", rule: "Describe five terms in 30 s. Tap each one your team says." },
+  charades: { name: "Charades", color: "#3EE0A8", deep: "#17A777", soft: "#143A31", mark: "✶", role: "actor", time: 60, meta: "60s turns · 4–20", tag: "No words. Just very big gestures.", rule: "Act as many prompts as you can in 60 s. Skips are free." },
+  trivia: { name: "Trivia Challenge", color: "#5B94FF", deep: "#2E63D1", soft: "#17254A", mark: "◆", role: "tapper", time: 15, meta: "15s questions · 2–20", tag: "Four options. One answer. Argue fast.", rule: "Four questions. Select, then lock in. No penalty for wrong." },
+  forbidden: { name: "Forbidden Words", color: "#FF7A52", deep: "#D9482A", soft: "#3D1E18", mark: "✕", role: "clue-giver", time: 60, meta: "60s turns · 4–20", tag: "Say everything except the obvious.", rule: "Describe the target without the five forbidden words." }
+};
+var SPRINT = [
+  ["Victoria Falls", "Queue for bread", "Comment section", "WWE", "Lagos"],
+  ["EcoCash", "Mount Nyangani", "Rent", "Soul Jah Love", "Darts"]
+];
+var CHARADES = ["Hailing a kombi", "Recording a voice note and deleting it", "Eating a mango", "Squeezing into a crowded kombi", "A ninja sneaking past a guard",
+  "Buying airtime from a street vendor", "Sweeping the yard", "Milking a cow", "Blowing on a spoonful of porridge", "Using a calculator", "Getting a bicycle chain back on", "Trying to shut an overstuffed suitcase"];
+var FORBIDDEN = [
+  { target: "Mbira", words: ["instrument", "keys", "thumb", "metal", "traditional"] },
+  { target: "Voice note", words: ["audio", "record", "message", "sound", "press"] },
+  { target: "Sadza", words: ["maize", "porridge", "staple", "white", "cook"] },
+  { target: "EcoCash", words: ["money", "phone", "transfer", "Econet", "wallet"] },
+  { target: "Kombi", words: ["minibus", "taxi", "rank", "transport", "driver"] },
+  { target: "Matemba", words: ["fish", "kapenta", "dried", "small", "Lake Kariba"] }
+];
+var TRIVIA = [
+  { question: "Which river flows over Victoria Falls?", opts: ["Limpopo", "Zambezi", "Save", "Mazowe"], a: 1, expl: "Victoria Falls is on the Zambezi River." },
+  { question: "Which bird appears on Zimbabwe’s national flag?", opts: ["Fish eagle", "Secretary bird", "Zimbabwe Bird", "Crested crane"], a: 2, expl: "The emblem is based on a carved bird associated with Great Zimbabwe." },
+  { question: "Which country shares Victoria Falls with Zimbabwe?", opts: ["Botswana", "Zambia", "Mozambique", "South Africa"], a: 1, expl: "Victoria Falls straddles the Zimbabwe–Zambia boundary." },
+  { question: "Which southern African team lifted the AFCON trophy in 2012?", opts: ["Zimbabwe", "Angola", "Zambia", "Mozambique"], a: 2, expl: "Zambia’s memorable title came in Libreville." }
+];
+var LETTERS = ["A", "B", "C", "D"], GLYPHS = ["▲", "◆", "●", "■"];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { screen: "home", game: "sprint", turn: 0, scores: [0, 0], prog: 0, count: 3, left: 30, done: [false, false, false, false, false],
+      cIdx: 0, fIdx: 0, log: [], qIdx: 0, sel: -1, locked: false, other: -1, revealed: false, deal: 0 };
+  }
+  componentDidMount() {
+    this.onVis = () => {
+      var sc = this.state.screen;
+      if (document.hidden && (sc === "play" || sc === "tq" || sc === "count")) {
+        this.clearAll(); this.setState({ paused: true });
+      }
+    };
+    document.addEventListener("visibilitychange", this.onVis);
+  }
+  componentWillUnmount() { this.clearAll(); document.removeEventListener("visibilitychange", this.onVis); }
+  resume() {
+    this.setState({ paused: false });
+    var sc = this.state.screen;
+    if (sc === "count") { this.beginCount(); return; }
+    if (sc === "tq" && this.state.locked) { this.revealQ(); return; }
+    this.playT = setInterval(() => {
+      var l = this.state.left - 1;
+      if (l <= 0) { this.setState({ left: 0 }); if (this.state.screen === "tq") this.revealQ(); else this.endTurn(); }
+      else this.setState({ left: l });
+    }, 1000);
+  }
+  clearAll() {
+    if (this.holdT) { clearInterval(this.holdT); this.holdT = null; }
+    if (this.countT) { clearInterval(this.countT); this.countT = null; }
+    if (this.playT) { clearInterval(this.playT); this.playT = null; }
+    if (this.otherT) { clearTimeout(this.otherT); this.otherT = null; }
+    if (this.lockT) { clearTimeout(this.lockT); this.lockT = null; }
+  }
+  start() {
+    this.clearAll();
+    var g = this.state.game;
+    this.setState({ scores: [0, 0], turn: 0, qIdx: 0, cIdx: 0, fIdx: 0, screen: g === "trivia" ? "tq" : "intro" }, () => { if (g === "trivia") this.startQ(); });
+  }
+  holdStart() {
+    if (this.holdT) return;
+    this.holdT = setInterval(() => {
+      var p = this.state.prog + 0.09;
+      if (p >= 1) { clearInterval(this.holdT); this.holdT = null; this.setState({ prog: 0 }); this.beginCount(); }
+      else this.setState({ prog: p });
+    }, 50);
+  }
+  holdEnd() {
+    if (this.holdT) { clearInterval(this.holdT); this.holdT = null; }
+    if (this.state.screen === "gate") this.setState({ prog: 0 });
+  }
+  beginCount() {
+    this.setState({ screen: "count", count: 3 });
+    this.countT = setInterval(() => {
+      var c = this.state.count - 1;
+      if (c < 0) { clearInterval(this.countT); this.countT = null; this.startPlay(); }
+      else this.setState({ count: c });
+    }, 1000);
+  }
+  startPlay() {
+    var g = GAMES[this.state.game];
+    this.setState({ screen: "play", left: g.time, done: [false, false, false, false, false], log: [] });
+    this.playT = setInterval(() => {
+      var l = this.state.left - 1;
+      if (l <= 0) { this.setState({ left: 0 }); this.endTurn(); }
+      else this.setState({ left: l });
+    }, 1000);
+  }
+  endTurn() {
+    if (this.playT) { clearInterval(this.playT); this.playT = null; }
+    var log = this.state.log.slice();
+    if (this.state.game === "sprint") {
+      var card = SPRINT[this.state.turn % 2];
+      log = card.map((t, i) => ({ name: t, st: this.state.done[i] ? "got" : "miss" }));
+    }
+    var five = this.state.game === "sprint" && this.state.done.every(Boolean);
+    this.setState({ screen: five ? "allfive" : "timeup", log: log, canReview: false }); this.lockT = setTimeout(() => this.setState({ canReview: true }), 1000);
+  }
+  record(st) {
+    var log = this.state.log.slice();
+    if (this.state.game === "charades") {
+      log.push({ name: CHARADES[this.state.cIdx % CHARADES.length], st: st });
+      this.setState({ log: log, cIdx: this.state.cIdx + 1, deal: this.state.deal + 1 });
+    } else {
+      log.push({ name: FORBIDDEN[this.state.fIdx % FORBIDDEN.length].target, st: st });
+      this.setState({ log: log, fIdx: this.state.fIdx + 1, deal: this.state.deal + 1 });
+    }
+  }
+  pts() {
+    return this.state.log.reduce((a, l) => a + (l.st === "got" ? 1 : l.st === "buzz" ? -1 : 0), 0);
+  }
+  confirm() {
+    var s = this.state.scores.slice(); s[this.state.turn % 2] += this.pts();
+    this.setState({ scores: s, screen: "round" });
+  }
+  next() {
+    var t = this.state.turn + 1;
+    if (t >= 2) this.setState({ screen: "final" });
+    else this.setState({ turn: t, screen: "intro" });
+  }
+  startQ() {
+    this.clearAll();
+    this.setState({ screen: "tq", left: 15, sel: -1, locked: false, other: -1 });
+    this.playT = setInterval(() => {
+      var l = this.state.left - 1;
+      if (l <= 0) { this.setState({ left: 0 }); this.revealQ(); }
+      else this.setState({ left: l });
+    }, 1000);
+  }
+  lockQ() {
+    if (this.state.sel < 0 || this.state.locked) return;
+    this.setState({ locked: true, lockedAt: this.state.left });
+    this.otherT = setTimeout(() => this.revealQ(), 1400);
+  }
+  revealQ() {
+    if (this.state.screen !== "tq") return;
+    this.clearAll();
+    var q = TRIVIA[this.state.qIdx];
+    var other = Math.random() < 0.55 ? q.a : (q.a + 1 + Math.floor(Math.random() * 3)) % 4;
+    var s = this.state.scores.slice();
+    if (this.state.locked && this.state.sel === q.a) s[0] += (this.state.lockedAt >= 11 ? 2 : 1);
+    if (other === q.a) s[1] += (Math.random() < 0.3 ? 2 : 1);
+    this.setState({ screen: "treveal", other: other, scores: s });
+  }
+  nextQ() {
+    var i = this.state.qIdx + 1;
+    if (i >= TRIVIA.length) this.setState({ screen: "final" });
+    else this.setState({ qIdx: i }, () => this.startQ());
+  }
+  renderVals() {
+    var st = this.state, g = GAMES[st.game], tt = TEAMS[st.turn % 2];
+    var sc = st.screen;
+    var gameList = Object.keys(GAMES).map((k, i) => Object.assign({}, GAMES[k], { rot: ["-1.5deg", "1.2deg", "1deg", "-1deg"][i], pick: () => this.setState({ game: k, screen: "setup" }) }));
+    var teamList = TEAMS.map((t) => ({ name: t.name, color: t.color, d: t.d, people: t.people.join(", ") }));
+    var scoreList = TEAMS.map((t, i) => ({ name: t.name, color: t.color, d: t.d, score: st.scores[i], border: i === st.turn % 2 ? t.color : "#262046" }));
+    var warn = st.left <= 5;
+    var card = SPRINT[st.turn % 2];
+    var sprintRows = card.map((t, i) => {
+      var on = st.done[i];
+      return { term: t, pressed: on ? "true" : "false", bg: on ? "#FFD23F" : "#FFF8EC", shadow: on ? "#C99A00" : "#B9AE98", boxBg: on ? "#110E22" : "transparent", tick: on ? "✓" : "", deco: on ? "line-through" : "none",
+        toggle: () => { if (this.state.screen !== "play" || this.state.paused) return; var d = this.state.done.slice(); d[i] = !d[i]; this.setState({ done: d }, () => { if (d.every(Boolean)) this.endTurn(); }); } };
+    });
+    var gotCount = st.game === "sprint" && sc === "play" ? st.done.filter(Boolean).length : st.log.filter((l) => l.st === "got").length;
+    var q = TRIVIA[st.qIdx];
+    var opts = q.opts.map((t, i) => {
+      var o = { letter: LETTERS[i], glyph: GLYPHS[i], text: t, bg: "#1B1733", border: "#3B3466", fg: "#F7F4FF", chipBg: "#262046", chipFg: "#F7F4FF", tag: "", deco: "none" };
+      if (sc === "tq") {
+        if (st.sel === i && !st.locked) Object.assign(o, { bg: "#FFF8EC", border: "#FFF8EC", fg: "#110E22", chipBg: "#110E22", chipFg: "#FFF8EC", tag: "Selected" });
+        if (st.sel === i && st.locked) Object.assign(o, { bg: "#5B94FF", border: "#5B94FF", fg: "#110E22", chipBg: "#110E22", chipFg: "#5B94FF", tag: "Locked" });
+        if (st.locked && st.sel !== i) Object.assign(o, { fg: "#948CBD", border: "#262046" });
+      } else {
+        if (i === q.a) Object.assign(o, { bg: "#3EE0A8", border: "#3EE0A8", fg: "#110E22", chipBg: "#110E22", chipFg: "#3EE0A8", tag: "✓ Answer" });
+        else if (st.locked && st.sel === i) Object.assign(o, { border: "#FF5A6E", fg: "#BEB7DE", tag: "✕ Your pick", deco: "line-through" });
+        else Object.assign(o, { fg: "#948CBD", border: "#262046" });
+        var picks = [];
+        if (st.locked && st.sel === i) picks.push("●");
+        if (st.other === i) picks.push("▲");
+        if (picks.length && i === q.a) o.tag = "✓ " + picks.join(" ");
+      }
+      o.pressed = st.sel === i ? "true" : "false";
+      o.pick = () => { if (!this.state.locked && this.state.screen === "tq") this.setState({ sel: i }); };
+      return o;
+    });
+    var right = st.locked && st.sel === q.a;
+    var logRows = st.log.map((l, i) => ({ name: l.name, chip: l.st === "got" ? "#3EE0A8" : l.st === "buzz" ? "#FF5A6E" : "#3B3466", icon: l.st === "got" ? "✓" : l.st === "buzz" ? "!" : l.st === "skip" ? "»" : "✕",
+      label: l.st === "got" ? "+1" : l.st === "buzz" ? "−1 · referee only" : l.st === "skip" ? "skipped" : "missed",
+      toggle: () => { var lg = this.state.log.slice(); var cur = lg[i].st; if (cur === "buzz") return; lg[i] = { name: lg[i].name, st: cur === "got" ? (st.game === "sprint" ? "miss" : "skip") : "got" }; this.setState({ log: lg }); } }));
+    var p = this.pts();
+    var order = [0, 1].sort((a, b) => st.scores[b] - st.scores[a]);
+    var standings = order.map((i, r) => ({ rank: r + 1, name: TEAMS[i].name, color: TEAMS[i].color, d: TEAMS[i].d, score: st.scores[i], bg: r === 0 ? "#FFF8EC" : "#1B1733", fg: r === 0 ? "#110E22" : "#F7F4FF" }));
+    var tie = st.scores[0] === st.scores[1];
+    var w = TEAMS[order[0]];
+    var circ = 2 * Math.PI * 103;
+    var bgs = { play: warn && sc === "play" ? "#2A1A10" : "#110E22", count: g.soft };
+    return {
+      bg: sc === "count" ? g.soft : (sc === "play" && warn ? "#2A1A10" : "#110E22"),
+      isHome: sc === "home", isSetup: sc === "setup", isIntro: sc === "intro", isGate: sc === "gate", isCount: sc === "count", isPlay: sc === "play",
+      isTq: sc === "tq", isReveal: sc === "treveal", isTimeup: sc === "timeup", isAllFive: sc === "allfive", isReview: sc === "review", isRound: sc === "round", isFinal: sc === "final",
+      isSprint: st.game === "sprint", isCharades: st.game === "charades", isForbidden: st.game === "forbidden", showBuzz: st.game === "forbidden",
+      gameList: gameList, teamList: teamList, scoreList: scoreList, game: g,
+      teamNow: { name: tt.name, color: tt.color, d: tt.d, upper: tt.name.toUpperCase() }, person: tt.people[st.turn % 2 === 0 ? 0 : 1], turnNo: st.turn + 1,
+      tapLabel: st.tapArm ? "Tap again to reveal" : "Can’t hold? Tap twice", tapBg: st.tapArm ? "#FFF8EC" : "#262046", tapFg: st.tapArm ? "#110E22" : "#BEB7DE",
+      holdDash: (circ * st.prog).toFixed(1) + " " + circ.toFixed(1), holdLabel: st.prog > 0 ? "Keep holding…" : "Hold to reveal",
+      countLabel: st.count > 0 ? String(st.count) : "Go", countBg: st.count > 0 ? "#FFF8EC" : g.color, countRot: (st.count % 2 ? "-4deg" : "3deg"),
+      left: st.left, timePct: Math.round(100 * st.left / g.time) + "%", timeColor: warn ? "#FFB020" : g.color,
+      sprintRows: sprintRows, gotCount: gotCount, buzzCount: st.log.filter((l) => l.st === "buzz").length,
+      prompt: CHARADES[st.cIdx % CHARADES.length], cardNo: st.cIdx + 1, cardRot: (st.deal % 2 ? "1.5deg" : "-1.5deg"),
+      fw: FORBIDDEN[st.fIdx % FORBIDDEN.length],
+      q: q, qNo: st.qIdx + 1, opts: opts, canReview: !!st.canReview, reviewLocked: !st.canReview,
+      canLock: st.sel >= 0 && !st.locked, selText: st.sel >= 0 ? GLYPHS[st.sel] + " " + q.opts[st.sel] : "",
+      waitingMsg: st.locked ? "Locked in · waiting for Night Owls…" : (st.sel < 0 ? "Pick an answer, then lock in" : ""),
+      revealTitle: right ? (st.lockedAt >= 11 ? "Fast and right! +2" : "You got it! +1") : (st.locked ? "So close!" : "Time’s up!"), revealColor: right ? "#3EE0A8" : "#F7F4FF",
+      nextQLabel: st.qIdx + 1 >= TRIVIA.length ? "See final results" : "Next question",
+      logRows: logRows, turnPts: (p >= 0 ? "+" : "-") + Math.abs(p), standings: standings, nextLabel: st.turn + 1 >= 2 ? "Final results" : "Next team",
+      winner: { d: tie ? "M12 0C13 8 16 11 24 12C16 13 13 16 12 24C11 16 8 13 0 12C8 11 11 8 12 0Z" : w.d, color: tie ? "#FFD23F" : w.color, score: tie ? st.scores[0] + "–" + st.scores[1] : st.scores[order[0]] }, winnerLine: tie ? "It’s a draw!" : w.name + " win!",
+      finalLine: TEAMS[0].name + " " + st.scores[0] + " · " + TEAMS[1].name + " " + st.scores[1],
+      goHome: () => { this.clearAll(); this.setState({ screen: "home" }); }, start: () => this.start(), toGate: () => this.setState({ screen: "gate", prog: 0, tapArm: false }),
+      holdStart: () => this.holdStart(), holdEnd: () => this.holdEnd(), reveal: () => { if (!this.state.tapArm) { this.setState({ tapArm: true }); if (this.armT) clearTimeout(this.armT); this.armT = setTimeout(() => this.setState({ tapArm: false }), 3000); return; } if (this.armT) clearTimeout(this.armT); this.holdEnd(); this.setState({ tapArm: false }); this.beginCount(); },
+      gotIt: () => this.record("got"), skip: () => this.record("skip"), buzz: () => this.record("buzz"), endTurn: () => this.endTurn(),
+      toReview: () => this.setState({ screen: "review" }), confirm: () => this.confirm(), next: () => this.next(),
+      lock: () => this.lockQ(), nextQ: () => this.nextQ(), paused: !!st.paused, resume: () => this.resume()
+    };
+  }
+}
+</script>
+</body>
+</html>
