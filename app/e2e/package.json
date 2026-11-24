@@ -1,0 +1,12 @@
+{
+  "name": "game-night-e2e",
+  "private": true,
+  "scripts": {
+    "serve": "node serve.mjs",
+    "test": "playwright test",
+    "screens": "playwright test screenshots.spec.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.49.1"
+  }
+}

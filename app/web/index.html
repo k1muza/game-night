@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Four party games on one phone: 30-Second Sprint, Charades, Trivia Challenge and Forbidden Words. No sign-up. Works offline.">
+  <meta name="theme-color" content="#110E22">
+  <meta name="color-scheme" content="dark">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Game Night">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <title>Game Night</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    html, body { margin: 0; height: 100%; background: #110E22; overscroll-behavior: none; }
+    /* Splash (design S01): the four cards deal in; skipped once Flutter paints. */
+    #splash { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #948CBD; font-size: 13px; transition: opacity 160ms; }
+    #splash .hand { position: relative; width: 96px; height: 80px; }
+    #splash .c { position: absolute; left: 30px; top: 8px; width: 40px; height: 54px; border-radius: 8px; transform-origin: 50% 100%;
+      animation: deal 520ms cubic-bezier(.34,1.56,.64,1) both; box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+    #splash .c1 { background: #5B94FF; --r: -24deg; --x: -10px; animation-delay: 0ms; }
+    #splash .c2 { background: #3EE0A8; --r: -12deg; --x: -3px; animation-delay: 70ms; }
+    #splash .c3 { background: #FF7A52; --r: 0deg; --x: 4px; animation-delay: 140ms; }
+    #splash .c4 { background: #FFF8EC; --r: 12deg; --x: 11px; animation-delay: 210ms; display: flex; align-items: center; justify-content: center; }
+    @keyframes deal { from { transform: translateY(30px) rotate(0); opacity: 0; } to { transform: translateX(var(--x)) rotate(var(--r)); opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { #splash .c { animation: none; transform: translateX(var(--x)) rotate(var(--r)); } }
+    #splash .word { font-weight: 800; font-size: 34px; letter-spacing: -1.5px; color: #F7F4FF; }
+  </style>
+</head>
+<body>
+  <div id="splash" aria-label="Game Night is loading">
+    <div class="hand" aria-hidden="true">
+      <div class="c c1"></div><div class="c c2"></div><div class="c c3"></div>
+      <div class="c c4"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 0Q13.9 10.1 24 12Q13.9 13.9 12 24Q10.1 13.9 0 12Q10.1 10.1 12 0Z" fill="#110E22"/></svg></div>
+    </div>
+    <div class="word">game night</div>
+    <div>Loading 2,300 cards · works offline</div>
+  </div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
