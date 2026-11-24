@@ -8,7 +8,13 @@
       "cardCount": 400,
       "sourceSchemaVersion": "1.2.0",
       "source": "Deep Research upload, PR #3",
-      "importedGitBlobSha": "6ad582dc9a58b31eb7e0acdb604c0289a7ecef23"
+      "importedGitBlobSha": "6ad582dc9a58b31eb7e0acdb604c0289a7ecef23",
+      "currentSchemaVersion": "2.0.0",
+      "currentGitBlobSha": "1c7a48d740aa1b922d0ca1d26338a976854abd5a",
+      "currentSource": "User-uploaded Sprint v2 candidate redesign; 1393 retained, 533 refined, 74 replaced",
+      "termCount": 2000,
+      "termLibraryPath": "thirty-seconds/terms.jsonl",
+      "currentTermLibraryGitBlobSha": "00869312e10d45bf87d2420764c5720d270b6227"
     },
     {
       "game": "charades",
