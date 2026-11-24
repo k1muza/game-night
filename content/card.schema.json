@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Game Night Card Draft v1.1",
+  "type": "object",
+  "required": [
+    "cardId",
+    "gameType",
+    "version",
+    "schemaVersion",
+    "category",
+    "difficulty",
+    "minAge",
+    "language",
+    "regionalRelevance",
+    "tags",
+    "editorialStatus"
+  ],
+  "properties": {
+    "cardId": {
+      "type": "string",
+      "pattern": "^(GS|CH|TR|FW)-[A-Z]{2,6}-[0-9]{4,6}$"
+    },
+    "gameType": {
+      "enum": [
+        "thirty-seconds",
+        "charades",
+        "trivia",
+        "forbidden-words"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "schemaVersion": {
+      "const": "1.1.0"
+    },
+    "category": {
+      "type": "string",
+      "pattern": "^(ZIM|AFR|SPT|MUS|ENT|SMC|SCI|UNI|WLD)-0[1-6]$"
+    },
+    "difficulty": {
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ]
+    },
+    "minAge": {
+      "const": 16
+    },
+    "language": {
+      "enum": [
+        "en",
+        "sn",
+        "nd",
+        "en-sn",
+        "en-nd"
+      ]
+    },
+    "regionalRelevance": {
+      "enum": [
+        "zimbabwe-national",
+        "zimbabwe-urban",
+        "zimbabwe-rural",
+        "african",
+        "global"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "editorialStatus": {
+      "enum": [
+        "draft",
+        "peer-reviewed",
+        "approved",
+        "published",
+        "flagged",
+        "retired"
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "terms"
+      ],
+      "properties": {
+        "gameType": {
+          "const": "thirty-seconds"
+        },
+        "cardId": {
+          "pattern": "^GS-"
+        },
+        "terms": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "required": [
+              "term",
+              "termDifficulty",
+              "termLanguage",
+              "ruralAccessible"
+            ],
+            "properties": {
+              "term": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
+              },
+              "termDifficulty": {
+                "enum": [
+                  "easy",
+                  "medium",
+                  "hard"
+                ]
+              },
+              "termLanguage": {
+                "enum": [
+                  "en",
+                  "sn",
+                  "nd",
+                  "en-sn",
+                  "en-nd"
+                ]
+              },
+              "ruralAccessible": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "prompt",
+        "gestureability",
+        "categoryType",
+        "stereotypeBiasFlag"
+      ],
+      "properties": {
+        "gameType": {
+          "const": "charades"
+        },
+        "cardId": {
+          "pattern": "^CH-"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "gestureability": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "categoryType": {
+          "enum": [
+            "action",
+            "situation",
+            "place",
+            "person",
+            "object",
+            "concept",
+            "compound"
+          ]
+        },
+        "stereotypeBiasFlag": {
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "question",
+        "correctAnswer",
+        "distractors",
+        "explanation",
+        "sourceTitle",
+        "sourceUrl",
+        "sourceRetrievedDate",
+        "factCheckStatus"
+      ],
+      "properties": {
+        "gameType": {
+          "const": "trivia"
+        },
+        "cardId": {
+          "pattern": "^TR-"
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "correctAnswer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "distractors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "sourceTitle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "sourceRetrievedDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "factCheckStatus": {
+          "enum": [
+            "verified",
+            "plausible-unverified",
+            "disputed",
+            "needs-update"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "targetWord",
+        "forbiddenClues",
+        "solvabilityCheck"
+      ],
+      "properties": {
+        "gameType": {
+          "const": "forbidden-words"
+        },
+        "cardId": {
+          "pattern": "^FW-"
+        },
+        "targetWord": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "forbiddenClues": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true
+        },
+        "solvabilityCheck": {
+          "type": "object",
+          "required": [
+            "validRoutesCount",
+            "checkedByEditors",
+            "sampleValidClues"
+          ],
+          "properties": {
+            "validRoutesCount": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "checkedByEditors": {
+              "type": "boolean"
+            },
+            "sampleValidClues": {
+              "type": "array",
+              "minItems": 3,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "unevaluatedProperties": false
+}
