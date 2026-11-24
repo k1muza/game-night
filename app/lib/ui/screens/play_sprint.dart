@@ -54,10 +54,28 @@ class SprintPlayScreen extends StatelessWidget {
             const SizedBox(height: 14),
             _Progress(got: t.marked.length, warn: warn),
             const SizedBox(height: 8),
-            Text(
-              warn ? 'Last 5 seconds!' : 'Tap a term when your team says it · tap again to undo',
-              textAlign: TextAlign.center,
-              style: Gn.uiStyle(13, color: warn ? Gn.warning : Gn.text3, weight: FontWeight.w700),
+            // Skip sits below the progress strip, away from the term rows, and
+            // disappears once used or once a term is ticked.
+            SizedBox(
+              height: 44,
+              child: c.canSkipSprintCard
+                  ? GnButton(
+                      label: 'Skip this card (once per turn)',
+                      semanticLabel: 'Skip this card for a new one. Once per turn.',
+                      icon: Icons.keyboard_double_arrow_right_rounded,
+                      outline: true,
+                      foreground: Gn.text2,
+                      height: 39,
+                      fontSize: 17,
+                      onPressed: c.skipSprintCard,
+                    )
+                  : Center(
+                      child: Text(
+                        warn ? 'Last 5 seconds!' : 'Tap a term when your team says it · tap again to undo',
+                        textAlign: TextAlign.center,
+                        style: Gn.uiStyle(13, color: warn ? Gn.warning : Gn.text3, weight: FontWeight.w700),
+                      ),
+                    ),
             ),
           ]),
         ),

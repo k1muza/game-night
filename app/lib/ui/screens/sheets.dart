@@ -37,7 +37,7 @@ const Map<GameKind, List<(String, String)>> rules = {
 };
 
 const Map<GameKind, String> tips = {
-  GameKind.sprint: 'Stuck? Skip it in your head and move to the next term.',
+  GameKind.sprint: 'Whole card too hard? Skip it once per turn — before you tick any term.',
   GameKind.charades: 'Acting with both hands? Give the phone to a teammate to tap Got it.',
   GameKind.trivia: 'Read the explanation — it might come up again tonight.',
   GameKind.forbidden: 'Keep it verbal — no gestures. That’s what Charades is for.',
@@ -175,6 +175,15 @@ Future<void> showGameMenu(BuildContext context) {
                 setSheet(() {});
               },
             ),
+            if (scope.fx.fullscreenSupported)
+              _MenuRow(
+                icon: scope.fx.fullscreen.value ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+                label: scope.fx.fullscreen.value ? 'Exit full screen' : 'Full screen',
+                onTap: () {
+                  setFullscreenPreference(scope, !scope.fx.fullscreen.value);
+                  Navigator.pop(ctx);
+                },
+              ),
             _MenuRow(icon: Icons.home_rounded, label: 'Home (your game is saved)', onTap: () {
               Navigator.pop(ctx);
               scope.nav.home();
@@ -307,3 +316,34 @@ class PauseButton extends StatelessWidget {
 }
 
 String teamTurnLabel(Team t) => '${t.name.toUpperCase()}’S TURN';
+
+/// Turns fullscreen on or off and remembers the choice.
+void setFullscreenPreference(AppScope scope, bool on) {
+  scope.store.setFlag('fullscreen', on);
+  scope.fx.setFullscreen(on);
+}
+
+/// Browsers drop fullscreen on reload or the Android back gesture, and only
+/// allow it again from a tap. Called from the main Start/Resume taps so a
+/// player who chose fullscreen gets it back without hunting for the toggle.
+void restoreFullscreen(AppScope scope) {
+  if (scope.store.flag('fullscreen') && !scope.fx.fullscreen.value) scope.fx.setFullscreen(true);
+}
+
+/// Icon button reflecting the live fullscreen state; hidden where unsupported.
+class FullscreenButton extends StatelessWidget {
+  const FullscreenButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final scope = AppScope.of(context);
+    if (!scope.fx.fullscreenSupported) return const SizedBox.shrink();
+    return ValueListenableBuilder<bool>(
+      valueListenable: scope.fx.fullscreen,
+      builder: (context, on, _) => IconSquare(
+        icon: on ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+        label: on ? 'Exit full screen' : 'Full screen',
+        onTap: () => setFullscreenPreference(scope, !on),
+      ),
+    );
+  }
+}

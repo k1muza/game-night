@@ -241,6 +241,34 @@ class SessionController extends ChangeNotifier {
     }
   }
 
+  /// Sprint skips allowed per turn.
+  static const sprintSkipsPerTurn = 1;
+
+  /// A Sprint card can be skipped once per turn, and only before any of its
+  /// terms is ticked — so skipping can't be used to bank easy terms from
+  /// several cards and beat the five-point cap.
+  bool get canSkipSprintCard {
+    final s = _session;
+    final t = s?.turn;
+    return s?.game == GameKind.sprint &&
+        s!.phase == Phase.playing &&
+        t != null &&
+        t.deadlineMs != null &&
+        t.marked.isEmpty &&
+        t.skips < sprintSkipsPerTurn &&
+        s.queues['main']!.isNotEmpty;
+  }
+
+  /// Replaces the Sprint card with a fresh one. The clock keeps running; the
+  /// skipped card is used up and won't be dealt again this game.
+  void skipSprintCard() {
+    if (!_live || !canSkipSprintCard) return;
+    final t = _session!.turn!;
+    t.cardId = _draw();
+    t.skips++;
+    _commit();
+  }
+
   // ------------------------------------------------------ Charades / Forbidden
 
   /// Records the on-screen card and immediately deals the next one.

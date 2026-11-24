@@ -69,6 +69,7 @@ class _SetupScreenState extends State<SetupScreen> {
       if (!ok || !mounted) return;
     }
     scope.fx.unlock();
+    restoreFullscreen(scope);
     // Duplicate names would make the standings ambiguous: number repeats.
     final seen = <String, int>{};
     final teams = [

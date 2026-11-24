@@ -34,6 +34,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
   void _begin() {
     final scope = AppScope.of(context);
     scope.fx.unlock();
+    restoreFullscreen(scope);
     scope.fx.play(Cue.tick);
     setState(() => _count = 3);
     _timer = Timer.periodic(const Duration(milliseconds: 650), (t) {

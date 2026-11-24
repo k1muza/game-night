@@ -81,6 +81,8 @@ e2e/            Playwright tests + tiny static server
 | Trivia | Two-step select → Lock in (from the design) to prevent accidental answers by a crowd around one phone. Only a locked answer counts; at timeout the question is unanswered. No timer on the explanation; the next question's clock starts when it appears. |
 | Players | No names or registration: "Pass the phone to your clue-giver". Team names are optional. |
 | End game | Available from the menu with confirmation; standings are flagged "ended early" if teams had unequal turns. |
+| Sprint skip | One "Skip this card" per turn, only before any term is ticked (so easy terms can't be banked across cards); clock keeps running; the skipped card is used up. Change `sprintSkipsPerTurn` for house rules. |
+| Full screen | Toggle on Home and in the game menu (Fullscreen API; hidden where unsupported, e.g. iPhone Safari, where Add to Home Screen gives the same effect). The choice is remembered and re-applied on the next Start/Resume tap, since browsers drop full screen on reload. |
 
 ## Removed or deferred
 

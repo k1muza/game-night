@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'fx_stub.dart' if (dart.library.js_interop) 'fx_web.dart' as impl;
 
 enum Cue { tick, correct, pass, buzz, timeUp, allFive, reveal, wrong, start }
@@ -15,6 +17,15 @@ abstract class Fx {
   void play(Cue cue);
   void vibrate(List<int> pattern);
   void keepAwake(bool on);
+
+  /// Fullscreen (web Fullscreen API). Not available on iPhone Safari.
+  bool get fullscreenSupported;
+
+  /// Live fullscreen state, including exits made by the browser or system.
+  ValueListenable<bool> get fullscreen;
+
+  /// Must be called from a user gesture.
+  void setFullscreen(bool on);
 }
 
 /// Silent implementation for tests.
@@ -31,4 +42,10 @@ class SilentFx implements Fx {
   void vibrate(List<int> pattern) {}
   @override
   void keepAwake(bool on) => awake = on;
+  @override
+  bool fullscreenSupported = true;
+  @override
+  final ValueNotifier<bool> fullscreen = ValueNotifier(false);
+  @override
+  void setFullscreen(bool on) => fullscreen.value = on;
 }

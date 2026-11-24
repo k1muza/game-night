@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'fx.dart';
 
 class PlatformFx implements Fx {
@@ -11,4 +13,10 @@ class PlatformFx implements Fx {
   void vibrate(List<int> pattern) {}
   @override
   void keepAwake(bool on) {}
+  @override
+  bool get fullscreenSupported => false;
+  @override
+  final ValueNotifier<bool> fullscreen = ValueNotifier(false);
+  @override
+  void setFullscreen(bool on) {}
 }

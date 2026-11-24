@@ -176,6 +176,43 @@ void main() {
       expect(h.s.scores[0], 5);
     });
 
+    test('skip card: once per turn, only before ticking, clock keeps running, card not reused', () {
+      final h = Harness()..start(GameKind.sprint);
+      final c = h.controller..startTurn();
+      final first = h.s.turn!.cardId;
+      h.clock.advance(const Duration(seconds: 5));
+      expect(c.canSkipSprintCard, isTrue);
+      c.skipSprintCard();
+      expect(h.s.turn!.cardId, isNot(first));
+      expect(c.remainingMs(), 25000, reason: 'no time refunded');
+      expect(c.canSkipSprintCard, isFalse, reason: 'one skip per turn');
+      final second = h.s.turn!.cardId;
+      c.skipSprintCard();
+      expect(h.s.turn!.cardId, second);
+      expect(h.s.queues['main'], isNot(contains(first)));
+      expect(h.s.used, contains(first));
+    });
+
+    test('skip card is not allowed after a term is ticked (no banking easy terms)', () {
+      final h = Harness()..start(GameKind.sprint);
+      final c = h.controller..startTurn();
+      c.toggleTerm(0);
+      expect(c.canSkipSprintCard, isFalse);
+      final card = h.s.turn!.cardId;
+      c.skipSprintCard();
+      expect(h.s.turn!.cardId, card);
+      c.finishTurn();
+      expect(h.s.scores[0], 1);
+    });
+
+    test('skip count survives a refresh', () {
+      final h = Harness()..start(GameKind.sprint);
+      h.controller
+        ..startTurn()
+        ..skipSprintCard();
+      expect(h.reload().canSkipSprintCard, isFalse);
+    });
+
     test('preassembled cards are used as-is (2 easy, 2 medium, 1 hard)', () {
       final h = Harness()..start(GameKind.sprint);
       h.controller.startTurn();

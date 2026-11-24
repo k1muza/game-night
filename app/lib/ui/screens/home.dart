@@ -51,6 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Expanded(
                   child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Wordmark(size: 32)),
                 ),
+                const FullscreenButton(),
+                const SizedBox(width: 8),
                 IconSquare(
                   icon: scope.fx.muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
                   label: scope.fx.muted ? 'Sound off. Turn sound on' : 'Sound on. Turn sound off',
@@ -201,7 +203,10 @@ class _ResumeCard extends StatelessWidget {
               icon: Icons.play_arrow_rounded,
               height: 54,
               fontSize: 19,
-              onPressed: scope.nav.session,
+              onPressed: () {
+                restoreFullscreen(scope);
+                scope.nav.session();
+              },
             ),
           ),
           const SizedBox(width: 10),

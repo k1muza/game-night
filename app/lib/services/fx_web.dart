@@ -1,5 +1,7 @@
 import 'dart:js_interop';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:web/web.dart' as web;
 
 import 'fx.dart';
@@ -110,6 +112,41 @@ class PlatformFx implements Fx {
         return;
       }
       _lock = lock;
+    } catch (_) {}
+  }
+
+  ValueNotifier<bool>? _fullscreen;
+
+  @override
+  bool get fullscreenSupported {
+    try {
+      return web.document.fullscreenEnabled;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  ValueListenable<bool> get fullscreen {
+    if (_fullscreen == null) {
+      _fullscreen = ValueNotifier(web.document.fullscreenElement != null);
+      // Track exits made by the browser (Esc, Android back) as well as ours.
+      web.document.addEventListener(
+          'fullscreenchange',
+          ((web.Event _) => _fullscreen!.value = web.document.fullscreenElement != null).toJS);
+    }
+    return _fullscreen!;
+  }
+
+  @override
+  void setFullscreen(bool on) {
+    try {
+      final isOn = web.document.fullscreenElement != null;
+      if (on && !isOn) {
+        web.document.documentElement?.requestFullscreen().toDart.catchError((_) => null);
+      } else if (!on && isOn) {
+        web.document.exitFullscreen().toDart.catchError((_) => null);
+      }
     } catch (_) {}
   }
 

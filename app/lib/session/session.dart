@@ -108,6 +108,7 @@ class Turn {
     this.selected,
     this.revealed = false,
     this.ended,
+    this.skips = 0,
   })  : events = events ?? [],
         marked = marked ?? {},
         slots = slots ?? [],
@@ -123,6 +124,9 @@ class Turn {
 
   // Sprint
   final Set<int> marked;
+
+  /// Sprint: cards skipped this turn (one allowed, before any term is ticked).
+  int skips;
 
   // Trivia
   final List<Difficulty> slots;
@@ -148,6 +152,7 @@ class Turn {
         'ev': events.map((e) => e.toJson()).toList(),
         'c': cardId,
         'm': marked.toList(),
+        'sk': skips,
         'sl': slots.map((d) => d.name).toList(),
         'qi': qIndex,
         'oo': optionOrder,
@@ -162,6 +167,7 @@ class Turn {
         events: [for (final e in j['ev'] as List) TurnEvent.fromJson(e)],
         cardId: j['c'],
         marked: {...(j['m'] as List).cast<int>()},
+        skips: j['sk'] ?? 0,
         slots: [for (final s in j['sl'] as List) Difficulty.parse(s)],
         qIndex: j['qi'],
         optionOrder: (j['oo'] as List).cast<int>(),
