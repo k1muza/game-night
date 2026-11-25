@@ -57,9 +57,9 @@
       "source": "Identical Deep Research uploads, PRs #2 and #3",
       "importedGitBlobSha": "e018f7e5fba2860a135914d5920bfede3a5299a3",
       "currentSchemaVersion": "1.0.0",
-      "currentGitBlobSha": "5c0965fa84bfb421d1f4ff546c52fc9db8bf94af",
+      "currentGitBlobSha": "e9c5a69de80f01e15ae7ed461453ac87dfa1624a",
       "previousGitBlobSha": "e018f7e5fba2860a135914d5920bfede3a5299a3",
-      "currentSource": "First contemporary editorial candidate: 71 replacements, 28 refinements; independent and human review pending",
+      "currentSource": "Two contemporary editorial passes: 71 replacements, 40 refinements; draft; independent and human review pending",
       "revisionLogPath": "forbidden-words/revision-log.jsonl",
       "contemporaryResearchEvidencePath": "forbidden-words/contemporary-research-evidence.md"
     }
