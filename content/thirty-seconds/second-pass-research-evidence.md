@@ -34,3 +34,7 @@ First-pass links carried forward; no new fact verification for these named cases
 - Kworb Rema streaming listing: Dumebi track association, not Zimbabwe-specific familiarity.
 
 Exact URLs in the relevant audit records. Other cues are provisional editorial knowledge, not a completed factual audit. No replacements or restorations applied.
+
+## Checkpoints 005–007
+
+No new external source verification was performed for these batches. Named-entity facts, track titles, local-language expressions and media identities are provisional. Wenyasha, Estate Blues, Tanyaradzwa, Munyama and the Zimbabwean music entry Peter Pan need identity/source confirmation before pathways or retention. User endorsed serious consideration of restoring Namib Desert, Qongqothwane, Virtual reality headset and Babamukuru. Preserve both original and replacement if justified by placing one in a weaker slot; exact slot allocation and identity traceability remain pending until full audit. No restorations or production replacements applied.
