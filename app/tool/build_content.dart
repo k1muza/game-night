@@ -11,6 +11,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
+
 const _difficulties = {'easy', 'medium', 'hard', 'expert'};
 
 final List<String> errors = [];
@@ -31,14 +33,21 @@ String str(Map<String, dynamic> r, String key, String id) {
 
 List<String> strList(Map<String, dynamic> r, String key, String id, int n) {
   final v = r[key];
-  if (v is! List || v.length != n || v.any((e) => e is! String || e.trim().isEmpty)) {
+  if (v is! List ||
+      v.length != n ||
+      v.any((e) => e is! String || e.trim().isEmpty)) {
     fail(id, '"$key" must be $n non-empty strings');
     return const [];
   }
   return v.cast<String>().map((e) => e.trim()).toList();
 }
 
-String diff(Map<String, dynamic> r, String key, String id, Set<String> allowed) {
+String diff(
+  Map<String, dynamic> r,
+  String key,
+  String id,
+  Set<String> allowed,
+) {
   final d = str(r, key, id);
   if (!allowed.contains(d)) fail(id, 'difficulty "$d" not in $allowed');
   return d;
@@ -61,19 +70,29 @@ List<Map<String, dynamic>> readJsonl(File f) {
 void main(List<String> args) {
   final contentDir = Directory(args.isNotEmpty ? args.first : '../content');
   final outDir = Directory('assets/decks')..createSync(recursive: true);
-  final manifest = jsonDecode(File('${contentDir.path}/manifest.json').readAsStringSync())
-      as Map<String, dynamic>;
+  final manifest =
+      jsonDecode(File('${contentDir.path}/manifest.json').readAsStringSync())
+          as Map<String, dynamic>;
   final datasets = {
-    for (final d in (manifest['datasets'] as List).cast<Map<String, dynamic>>()) d['game'] as String: d
+    for (final d in (manifest['datasets'] as List).cast<Map<String, dynamic>>())
+      d['game'] as String: d,
   };
 
   final meta = <String, dynamic>{
     'status': manifest['status'],
     'releaseReady': manifest['releaseReady'],
+    'contentLibraryVersion': (manifest['datasets'] as List)
+        .cast<Map<String, dynamic>>()
+        .map((d) => d['currentGitBlobSha'] ?? d['importedGitBlobSha'] ?? '')
+        .join(':'),
     'games': <String, dynamic>{},
   };
 
-  void emit(String game, String outName, List<Map<String, dynamic>> Function(List<Map<String, dynamic>>) adapt) {
+  void emit(
+    String game,
+    String outName,
+    List<Map<String, dynamic>> Function(List<Map<String, dynamic>>) adapt,
+  ) {
     final ds = datasets[game];
     if (ds == null) {
       fail(game, 'not listed in manifest');
@@ -81,96 +100,146 @@ void main(List<String> args) {
     }
     final rows = readJsonl(File('${contentDir.path}/${ds['path']}'));
     final expected = ds['cardCount'] as int;
-    if (rows.length != expected) fail(game, 'expected $expected cards, found ${rows.length}');
-    final schema = (ds['currentSchemaVersion'] ?? ds['sourceSchemaVersion']) as String;
+    if (rows.length != expected)
+      fail(game, 'expected $expected cards, found ${rows.length}');
+    final schema =
+        (ds['currentSchemaVersion'] ?? ds['sourceSchemaVersion']) as String;
     final ids = <String>{};
     for (final r in rows) {
       final id = r['cardId'] as String? ?? '?';
       if (!ids.add(id)) fail(id, 'duplicate cardId');
       if (r['gameType'] != game) fail(id, 'gameType ${r['gameType']} != $game');
-      if (r['schemaVersion'] != schema) fail(id, 'schemaVersion ${r['schemaVersion']} != manifest $schema');
+      if (r['schemaVersion'] != schema)
+        fail(id, 'schemaVersion ${r['schemaVersion']} != manifest $schema');
     }
     final cards = adapt(rows);
-    pending['${outDir.path}/$outName.json'] = jsonEncode(cards);
-    (meta['games'] as Map)[outName] = {'cards': cards.length, 'schemaVersion': schema};
+    final canonicalBytes = File(
+      '${contentDir.path}/${ds['path']}',
+    ).readAsBytesSync();
+    final runtimeBody = jsonEncode(cards);
+    final runtimeHash = sha256.convert(utf8.encode(runtimeBody)).toString();
+    final canonicalHash = sha256.convert(canonicalBytes).toString();
+    pending['${outDir.path}/$outName.json'] = runtimeBody;
+    (meta['games'] as Map)[outName] = {
+      'cards': cards.length,
+      'schemaVersion': schema,
+      'canonicalFingerprint': canonicalHash,
+      'runtimeFingerprint': runtimeHash,
+      'canonicalGitBlobSha':
+          ds['currentGitBlobSha'] ?? ds['importedGitBlobSha'],
+    };
     stdout.writeln('$outName: ${cards.length} cards (schema $schema)');
   }
 
-  emit('thirty-seconds', 'sprint', (rows) => [
-        for (final r in rows)
-          () {
-            final id = r['cardId'] as String;
-            final terms = (r['terms'] as List?)?.cast<Map<String, dynamic>>() ?? const [];
-            if (terms.length != 5) fail(id, 'expected 5 terms, found ${terms.length}');
-            final pattern = terms.map((t) => t['termDifficulty']).toList()..sort();
-            if (pattern.join(',') != 'easy,easy,hard,medium,medium') {
-              fail(id, 'term difficulty pattern $pattern is not 2 easy / 2 medium / 1 hard');
-            }
-            final seen = <String>{};
-            return {
-              'id': id,
-              'terms': [
-                for (final t in terms)
-                  {
-                    't': () {
-                      final s = str(t, 'term', id);
-                      if (!seen.add(s.toLowerCase())) fail(id, 'duplicate term "$s"');
-                      return s;
-                    }(),
-                    'd': diff(t, 'termDifficulty', id, {'easy', 'medium', 'hard'}),
-                    if (t['contextLabel'] is String && (t['contextLabel'] as String).trim().isNotEmpty)
-                      'c': (t['contextLabel'] as String).trim(),
-                  }
-              ],
-            };
-          }()
-      ]);
-
-  emit('charades', 'charades', (rows) => [
-        for (final r in rows)
-          {
-            'id': r['cardId'],
-            'p': str(r, 'prompt', r['cardId'] as String),
-            'c': str(r, 'playableCategory', r['cardId'] as String),
-            'd': diff(r, 'difficulty', r['cardId'] as String, {'easy', 'medium', 'hard'}),
+  emit(
+    'thirty-seconds',
+    'sprint',
+    (rows) => [
+      for (final r in rows)
+        () {
+          final id = r['cardId'] as String;
+          final terms =
+              (r['terms'] as List?)?.cast<Map<String, dynamic>>() ?? const [];
+          if (terms.length != 5)
+            fail(id, 'expected 5 terms, found ${terms.length}');
+          final pattern = terms.map((t) => t['termDifficulty']).toList()
+            ..sort();
+          if (pattern.join(',') != 'easy,easy,hard,medium,medium') {
+            fail(
+              id,
+              'term difficulty pattern $pattern is not 2 easy / 2 medium / 1 hard',
+            );
           }
-      ]);
+          final seen = <String>{};
+          return {
+            'id': id,
+            'terms': [
+              for (final t in terms)
+                {
+                  't': () {
+                    final s = str(t, 'term', id);
+                    if (!seen.add(s.toLowerCase()))
+                      fail(id, 'duplicate term "$s"');
+                    return s;
+                  }(),
+                  'd': diff(t, 'termDifficulty', id, {
+                    'easy',
+                    'medium',
+                    'hard',
+                  }),
+                  if (t['contextLabel'] is String &&
+                      (t['contextLabel'] as String).trim().isNotEmpty)
+                    'c': (t['contextLabel'] as String).trim(),
+                },
+            ],
+          };
+        }(),
+    ],
+  );
 
-  emit('trivia', 'trivia', (rows) => [
-        for (final r in rows)
-          () {
-            final id = r['cardId'] as String;
-            final a = str(r, 'correctAnswer', id);
-            final x = strList(r, 'distractors', id, 3);
-            final all = {a.toLowerCase(), ...x.map((e) => e.toLowerCase())};
-            if (all.length != 4) fail(id, 'answer options are not four distinct values');
-            return {
-              'id': id,
-              'q': str(r, 'question', id),
-              'a': a,
-              'x': x,
-              'e': str(r, 'explanation', id),
-              'd': diff(r, 'difficulty', id, _difficulties),
-              'c': str(r, 'productionCategory', id),
-            };
-          }()
-      ]);
+  emit(
+    'charades',
+    'charades',
+    (rows) => [
+      for (final r in rows)
+        {
+          'id': r['cardId'],
+          'p': str(r, 'prompt', r['cardId'] as String),
+          'c': str(r, 'playableCategory', r['cardId'] as String),
+          'd': diff(r, 'difficulty', r['cardId'] as String, {
+            'easy',
+            'medium',
+            'hard',
+          }),
+        },
+    ],
+  );
 
-  emit('forbidden-words', 'forbidden', (rows) => [
-        for (final r in rows)
-          () {
-            final id = r['cardId'] as String;
-            final clues = strList(r, 'forbiddenClues', id, 5);
-            if (clues.map((e) => e.toLowerCase()).toSet().length != clues.length) fail(id, 'duplicate forbidden clue');
-            return {
-              'id': id,
-              't': str(r, 'targetWord', id),
-              'f': clues,
-              'd': diff(r, 'difficulty', id, {'easy', 'medium', 'hard'}),
-              'c': str(r, 'productionCategory', id),
-            };
-          }()
-      ]);
+  emit(
+    'trivia',
+    'trivia',
+    (rows) => [
+      for (final r in rows)
+        () {
+          final id = r['cardId'] as String;
+          final a = str(r, 'correctAnswer', id);
+          final x = strList(r, 'distractors', id, 3);
+          final all = {a.toLowerCase(), ...x.map((e) => e.toLowerCase())};
+          if (all.length != 4)
+            fail(id, 'answer options are not four distinct values');
+          return {
+            'id': id,
+            'q': str(r, 'question', id),
+            'a': a,
+            'x': x,
+            'e': str(r, 'explanation', id),
+            'd': diff(r, 'difficulty', id, _difficulties),
+            'c': str(r, 'productionCategory', id),
+          };
+        }(),
+    ],
+  );
+
+  emit(
+    'forbidden-words',
+    'forbidden',
+    (rows) => [
+      for (final r in rows)
+        () {
+          final id = r['cardId'] as String;
+          final clues = strList(r, 'forbiddenClues', id, 5);
+          if (clues.map((e) => e.toLowerCase()).toSet().length != clues.length)
+            fail(id, 'duplicate forbidden clue');
+          return {
+            'id': id,
+            't': str(r, 'targetWord', id),
+            'f': clues,
+            'd': diff(r, 'difficulty', id, {'easy', 'medium', 'hard'}),
+            'c': str(r, 'productionCategory', id),
+          };
+        }(),
+    ],
+  );
 
   pending['${outDir.path}/meta.json'] = jsonEncode(meta);
 

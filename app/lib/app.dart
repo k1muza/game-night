@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 
 import 'model/game_kind.dart';
 import 'services/fx.dart';
@@ -20,13 +21,21 @@ import 'ui/widgets/common.dart';
 
 /// Gives every screen access to the controller, effects and settings store.
 class AppScope extends InheritedWidget {
-  const AppScope({super.key, required this.controller, required this.fx, required this.store, required this.nav, required super.child});
+  const AppScope({
+    super.key,
+    required this.controller,
+    required this.fx,
+    required this.store,
+    required this.nav,
+    required super.child,
+  });
   final SessionController controller;
   final Fx fx;
   final SessionStore store;
   final AppNav nav;
 
-  static AppScope of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<AppScope>()!;
+  static AppScope of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AppScope>()!;
 
   @override
   bool updateShouldNotify(AppScope old) => false;
@@ -54,7 +63,12 @@ class AppNav extends ChangeNotifier {
 }
 
 class GameNightApp extends StatefulWidget {
-  const GameNightApp({super.key, required this.controller, required this.fx, required this.store});
+  const GameNightApp({
+    super.key,
+    required this.controller,
+    required this.fx,
+    required this.store,
+  });
   final SessionController controller;
   final Fx fx;
   final SessionStore store;
@@ -63,17 +77,53 @@ class GameNightApp extends StatefulWidget {
   State<GameNightApp> createState() => _GameNightAppState();
 }
 
-class _GameNightAppState extends State<GameNightApp> {
+class _GameNightAppState extends State<GameNightApp>
+    with WidgetsBindingObserver {
   final nav = AppNav();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
     widget.fx.muted = widget.store.flag('muted');
+    widget.fx.hapticsEnabled = !widget.store.flag('hapticsDisabled');
     final phase = widget.controller.session?.phase;
     // A refresh mid-turn (or on the final screen) drops you straight back in;
     // otherwise Home shows a prominent Resume card.
-    if (phase == Phase.playing || phase == Phase.gameResults) nav.route = AppRoute.session;
+    if (phase == Phase.playing || phase == Phase.gameResults)
+      nav.route = AppRoute.session;
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      widget.controller.tick();
+      widget.fx.keepAwake(widget.controller.session?.phase == Phase.playing);
+    } else if (state == AppLifecycleState.detached ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      widget.controller.store.saveSession(widget.controller.session);
+      if (state == AppLifecycleState.paused ||
+          state == AppLifecycleState.hidden ||
+          state == AppLifecycleState.detached) {
+        widget.fx.keepAwake(false);
+      }
+    }
   }
 
   @override
@@ -91,7 +141,9 @@ class _GameNightAppState extends State<GameNightApp> {
           // Keep layouts intact while still honouring larger text settings.
           final mq = MediaQuery.of(context);
           return MediaQuery(
-            data: mq.copyWith(textScaler: mq.textScaler.clamp(maxScaleFactor: 1.3)),
+            data: mq.copyWith(
+              textScaler: mq.textScaler.clamp(maxScaleFactor: 1.3),
+            ),
             child: child!,
           );
         },
@@ -137,15 +189,20 @@ class _ShellState extends State<_Shell> {
 
   void _rebuild() => setState(() {});
 
-  void _syncWakeLock() =>
-      widget.fx.keepAwake(widget.controller.session?.phase == Phase.playing && widget.nav.route == AppRoute.session);
+  void _syncWakeLock() => widget.fx.keepAwake(
+    widget.controller.session?.phase == Phase.playing &&
+        widget.nav.route == AppRoute.session,
+  );
 
   void _onChange() {
     final s = widget.controller.session;
     final now = _Snapshot.of(s);
     final prev = _prev;
     _prev = now;
-    if (s != null && prev != null && prev.sessionCreatedAt == now.sessionCreatedAt) _cues(prev, now, s);
+    if (s != null &&
+        prev != null &&
+        prev.sessionCreatedAt == now.sessionCreatedAt)
+      _cues(prev, now, s);
     _syncWakeLock();
     setState(() {});
   }
@@ -191,26 +248,32 @@ class _ShellState extends State<_Shell> {
   Widget build(BuildContext context) {
     final c = widget.controller;
     final s = c.session;
-    final route = (widget.nav.route == AppRoute.session && s == null) ? AppRoute.home : widget.nav.route;
+    final route = (widget.nav.route == AppRoute.session && s == null)
+        ? AppRoute.home
+        : widget.nav.route;
     final Widget screen = switch (route) {
       AppRoute.home => const HomeScreen(),
       AppRoute.setup => SetupScreen(game: widget.nav.setupGame),
       AppRoute.session => switch (s!.phase) {
-          Phase.ready => HandoverScreen(key: ValueKey('ready-${s.history.length}')),
-          Phase.playing => switch (s.game) {
-              GameKind.sprint => const SprintPlayScreen(),
-              GameKind.charades => const CharadesPlayScreen(),
-              GameKind.trivia => const TriviaPlayScreen(),
-              GameKind.forbidden => const ForbiddenPlayScreen(),
-            },
-          Phase.turnResults => TurnEndFlow(
-              key: ValueKey('end-${s.history.length}'),
-              showSplash: liveEndedAt == s.history.length,
-            ),
-          Phase.gameResults => const FinalResultsScreen(),
+        Phase.ready => HandoverScreen(
+          key: ValueKey('ready-${s.history.length}'),
+        ),
+        Phase.playing => switch (s.game) {
+          GameKind.sprint => const SprintPlayScreen(),
+          GameKind.charades => const CharadesPlayScreen(),
+          GameKind.trivia => const TriviaPlayScreen(),
+          GameKind.forbidden => const ForbiddenPlayScreen(),
         },
+        Phase.turnResults => TurnEndFlow(
+          key: ValueKey('end-${s.history.length}'),
+          showSplash: liveEndedAt == s.history.length,
+        ),
+        Phase.gameResults => const FinalResultsScreen(),
+      },
     };
-    final key = route == AppRoute.session ? 'session-${s!.phase.name}-${s.history.length}' : route.name;
+    final key = route == AppRoute.session
+        ? 'session-${s!.phase.name}-${s.history.length}'
+        : route.name;
     return PopScope(
       canPop: route == AppRoute.home,
       onPopInvokedWithResult: (didPop, _) {
@@ -221,7 +284,9 @@ class _ShellState extends State<_Shell> {
       },
       child: Scaffold(
         body: AnimatedSwitcher(
-          duration: MediaQuery.of(context).disableAnimations ? Duration.zero : Gn.quick,
+          duration: MediaQuery.of(context).disableAnimations
+              ? Duration.zero
+              : Gn.quick,
           // Guard screens whose main button sits where the previous screen's
           // did. Play screens aren't guarded: the 3-2-1 countdown already
           // separates them, and the first guess can come instantly.
@@ -241,23 +306,30 @@ class _Snapshot {
   final int marked;
   final int? sessionCreatedAt;
 
-  static _Snapshot of(Session? s) =>
-      _Snapshot(s?.phase, s?.turn?.events.length ?? 0, s?.turn?.marked.length ?? 0, s?.createdAt);
+  static _Snapshot of(Session? s) => _Snapshot(
+    s?.phase,
+    s?.turn?.events.length ?? 0,
+    s?.turn?.marked.length ?? 0,
+    s?.createdAt,
+  );
 }
 
 /// Rebuilds every frame while a turn's clock runs, settles expiry via
 /// [SessionController.tick], and plays the 1 Hz warning tick in the last 5 s.
 class TurnClock extends StatefulWidget {
   const TurnClock({super.key, required this.builder});
-  final Widget Function(BuildContext context, int remainingMs, int totalMs) builder;
+  final Widget Function(BuildContext context, int remainingMs, int totalMs)
+  builder;
 
   @override
   State<TurnClock> createState() => _TurnClockState();
 }
 
-class _TurnClockState extends State<TurnClock> with SingleTickerProviderStateMixin {
+class _TurnClockState extends State<TurnClock>
+    with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
-  late final AppScope _scope = context.getInheritedWidgetOfExactType<AppScope>()!;
+  late final AppScope _scope = context
+      .getInheritedWidgetOfExactType<AppScope>()!;
   int _lastSecond = -1;
   int _lastRem = -1;
 

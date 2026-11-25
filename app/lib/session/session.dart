@@ -22,7 +22,11 @@ enum Outcome {
   /// Trivia: time ran out with no answer — 0.
   timeout;
 
-  int get points => switch (this) { correct => 1, violation => -1, _ => 0 };
+  int get points => switch (this) {
+    correct => 1,
+    violation => -1,
+    _ => 0,
+  };
 }
 
 enum EndReason { time, allFound, finished, questionsDone }
@@ -60,20 +64,20 @@ class GameConfig {
   int get effectiveSeconds => seconds > 0 ? seconds : game.defaultSeconds;
 
   Map<String, dynamic> toJson() => {
-        'g': game.name,
-        'r': rounds,
-        's': effectiveSeconds,
-        'q': questionsPerTurn,
-        'd': difficulty?.name,
-      };
+    'g': game.name,
+    'r': rounds,
+    's': effectiveSeconds,
+    'q': questionsPerTurn,
+    'd': difficulty?.name,
+  };
 
   factory GameConfig.fromJson(Map<String, dynamic> j) => GameConfig(
-        game: GameKind.values.byName(j['g']),
-        rounds: j['r'],
-        seconds: j['s'],
-        questionsPerTurn: j['q'],
-        difficulty: j['d'] == null ? null : Difficulty.parse(j['d']),
-      );
+    game: GameKind.values.byName(j['g']),
+    rounds: j['r'],
+    seconds: j['s'],
+    questionsPerTurn: j['q'],
+    difficulty: j['d'] == null ? null : Difficulty.parse(j['d']),
+  );
 }
 
 class TurnEvent {
@@ -87,10 +91,18 @@ class TurnEvent {
   /// Trivia: option index chosen (0 = correct), null when unanswered.
   final int? choice;
 
-  Map<String, dynamic> toJson() =>
-      {'c': cardId, 'o': outcome.name, if (term != null) 't': term, if (choice != null) 'x': choice};
-  factory TurnEvent.fromJson(Map<String, dynamic> j) =>
-      TurnEvent(j['c'], Outcome.values.byName(j['o']), term: j['t'], choice: j['x']);
+  Map<String, dynamic> toJson() => {
+    'c': cardId,
+    'o': outcome.name,
+    if (term != null) 't': term,
+    if (choice != null) 'x': choice,
+  };
+  factory TurnEvent.fromJson(Map<String, dynamic> j) => TurnEvent(
+    j['c'],
+    Outcome.values.byName(j['o']),
+    term: j['t'],
+    choice: j['x'],
+  );
 }
 
 /// The live turn. Exactly one of [deadlineMs] / [pausedRemainingMs] is set while the
@@ -109,10 +121,10 @@ class Turn {
     this.revealed = false,
     this.ended,
     this.skips = 0,
-  })  : events = events ?? [],
-        marked = marked ?? {},
-        slots = slots ?? [],
-        optionOrder = optionOrder ?? [];
+  }) : events = events ?? [],
+       marked = marked ?? {},
+       slots = slots ?? [],
+       optionOrder = optionOrder ?? [];
 
   int? deadlineMs;
   int? pausedRemainingMs;
@@ -147,38 +159,43 @@ class Turn {
   int count(Outcome o) => events.where((e) => e.outcome == o).length;
 
   Map<String, dynamic> toJson() => {
-        'dl': deadlineMs,
-        'pr': pausedRemainingMs,
-        'ev': events.map((e) => e.toJson()).toList(),
-        'c': cardId,
-        'm': marked.toList(),
-        'sk': skips,
-        'sl': slots.map((d) => d.name).toList(),
-        'qi': qIndex,
-        'oo': optionOrder,
-        'se': selected,
-        'rv': revealed,
-        'en': ended?.name,
-      };
+    'dl': deadlineMs,
+    'pr': pausedRemainingMs,
+    'ev': events.map((e) => e.toJson()).toList(),
+    'c': cardId,
+    'm': marked.toList(),
+    'sk': skips,
+    'sl': slots.map((d) => d.name).toList(),
+    'qi': qIndex,
+    'oo': optionOrder,
+    'se': selected,
+    'rv': revealed,
+    'en': ended?.name,
+  };
 
   factory Turn.fromJson(Map<String, dynamic> j) => Turn(
-        deadlineMs: j['dl'],
-        pausedRemainingMs: j['pr'],
-        events: [for (final e in j['ev'] as List) TurnEvent.fromJson(e)],
-        cardId: j['c'],
-        marked: {...(j['m'] as List).cast<int>()},
-        skips: j['sk'] ?? 0,
-        slots: [for (final s in j['sl'] as List) Difficulty.parse(s)],
-        qIndex: j['qi'],
-        optionOrder: (j['oo'] as List).cast<int>(),
-        selected: j['se'],
-        revealed: j['rv'],
-        ended: j['en'] == null ? null : EndReason.values.byName(j['en']),
-      );
+    deadlineMs: j['dl'],
+    pausedRemainingMs: j['pr'],
+    events: [for (final e in j['ev'] as List) TurnEvent.fromJson(e)],
+    cardId: j['c'],
+    marked: {...(j['m'] as List).cast<int>()},
+    skips: j['sk'] ?? 0,
+    slots: [for (final s in j['sl'] as List) Difficulty.parse(s)],
+    qIndex: j['qi'],
+    optionOrder: (j['oo'] as List).cast<int>(),
+    selected: j['se'],
+    revealed: j['rv'],
+    ended: j['en'] == null ? null : EndReason.values.byName(j['en']),
+  );
 }
 
 class TurnRecord {
-  TurnRecord({required this.team, required this.round, required this.points, required this.events});
+  TurnRecord({
+    required this.team,
+    required this.round,
+    required this.points,
+    required this.events,
+  });
   final int team;
   final int round;
   final int points;
@@ -186,10 +203,18 @@ class TurnRecord {
 
   int count(Outcome o) => events.where((e) => e.outcome == o).length;
 
-  Map<String, dynamic> toJson() =>
-      {'t': team, 'r': round, 'p': points, 'ev': events.map((e) => e.toJson()).toList()};
+  Map<String, dynamic> toJson() => {
+    't': team,
+    'r': round,
+    'p': points,
+    'ev': events.map((e) => e.toJson()).toList(),
+  };
   factory TurnRecord.fromJson(Map<String, dynamic> j) => TurnRecord(
-      team: j['t'], round: j['r'], points: j['p'], events: [for (final e in j['ev'] as List) TurnEvent.fromJson(e)]);
+    team: j['t'],
+    round: j['r'],
+    points: j['p'],
+    events: [for (final e in j['ev'] as List) TurnEvent.fromJson(e)],
+  );
 }
 
 class Session {
@@ -208,10 +233,11 @@ class Session {
     List<TurnRecord>? history,
     this.endedEarly = false,
     int? updatedAt,
-  })  : scores = scores ?? List.filled(teams.length, 0),
-        used = used ?? {},
-        history = history ?? [],
-        updatedAt = updatedAt ?? createdAt;
+    this.contentFingerprints,
+  }) : scores = scores ?? List.filled(teams.length, 0),
+       used = used ?? {},
+       history = history ?? [],
+       updatedAt = updatedAt ?? createdAt;
 
   final GameConfig config;
   final List<Team> teams;
@@ -233,6 +259,7 @@ class Session {
   final int createdAt;
   int updatedAt;
   bool endedEarly;
+  final Map<String, String>? contentFingerprints;
 
   GameKind get game => config.game;
   Team get activeTeam => teams[teamIndex];
@@ -240,22 +267,23 @@ class Session {
   int get totalTurns => config.rounds * teams.length;
 
   Map<String, dynamic> toJson() => {
-        'v': 1,
-        'cfg': config.toJson(),
-        'teams': teams.map((t) => t.toJson()).toList(),
-        'scores': scores,
-        'round': round,
-        'ti': teamIndex,
-        'phase': phase.name,
-        'q': queues,
-        'used': used.toList(),
-        'turn': turn?.toJson(),
-        'hist': history.map((h) => h.toJson()).toList(),
-        'seed': seed,
-        'ca': createdAt,
-        'ua': updatedAt,
-        'ee': endedEarly,
-      };
+    'v': 1,
+    'cf': contentFingerprints,
+    'cfg': config.toJson(),
+    'teams': teams.map((t) => t.toJson()).toList(),
+    'scores': scores,
+    'round': round,
+    'ti': teamIndex,
+    'phase': phase.name,
+    'q': queues,
+    'used': used.toList(),
+    'turn': turn?.toJson(),
+    'hist': history.map((h) => h.toJson()).toList(),
+    'seed': seed,
+    'ca': createdAt,
+    'ua': updatedAt,
+    'ee': endedEarly,
+  };
 
   factory Session.fromJson(Map<String, dynamic> j) {
     if (j['v'] != 1) throw const FormatException('Unsupported session version');
@@ -267,7 +295,8 @@ class Session {
       teamIndex: j['ti'],
       phase: Phase.values.byName(j['phase']),
       queues: {
-        for (final e in (j['q'] as Map<String, dynamic>).entries) e.key: (e.value as List).cast<String>().toList()
+        for (final e in (j['q'] as Map<String, dynamic>).entries)
+          e.key: (e.value as List).cast<String>().toList(),
       },
       used: {...(j['used'] as List).cast<String>()},
       turn: j['turn'] == null ? null : Turn.fromJson(j['turn']),
@@ -276,6 +305,11 @@ class Session {
       createdAt: j['ca'],
       updatedAt: j['ua'],
       endedEarly: j['ee'] ?? false,
+      contentFingerprints: j['cf'] == null
+          ? null
+          : (j['cf'] as Map).map(
+              (key, value) => MapEntry(key.toString(), value.toString()),
+            ),
     );
   }
 }
@@ -299,6 +333,6 @@ List<Standing> standingsFor(List<int> scores) {
         scores[i],
         1 + scores.where((s) => s > scores[i]).length,
         scores.where((s) => s == scores[i]).length > 1,
-      )
+      ),
   ];
 }

@@ -16,6 +16,8 @@ class PlatformFx implements Fx {
 
   @override
   bool muted = false;
+  @override
+  bool hapticsEnabled = true;
 
   @override
   void unlock() {
@@ -25,7 +27,13 @@ class PlatformFx implements Fx {
     } catch (_) {}
   }
 
-  void _tone(double freq, double start, double dur, {String type = 'sine', double gain = 0.18}) {
+  void _tone(
+    double freq,
+    double start,
+    double dur, {
+    String type = 'sine',
+    double gain = 0.18,
+  }) {
     final ctx = _ctx;
     if (ctx == null) return;
     final t0 = ctx.currentTime + start;
@@ -94,10 +102,12 @@ class PlatformFx implements Fx {
       _listening = true;
       // The browser drops the lock when the tab is hidden; re-acquire on return.
       web.document.addEventListener(
-          'visibilitychange',
-          ((web.Event _) {
-            if (web.document.visibilityState == 'visible' && _wantAwake) _acquire();
-          }).toJS);
+        'visibilitychange',
+        ((web.Event _) {
+          if (web.document.visibilityState == 'visible' && _wantAwake)
+            _acquire();
+        }).toJS,
+      );
     }
     on ? _acquire() : _release();
   }
@@ -132,8 +142,11 @@ class PlatformFx implements Fx {
       _fullscreen = ValueNotifier(web.document.fullscreenElement != null);
       // Track exits made by the browser (Esc, Android back) as well as ours.
       web.document.addEventListener(
-          'fullscreenchange',
-          ((web.Event _) => _fullscreen!.value = web.document.fullscreenElement != null).toJS);
+        'fullscreenchange',
+        ((web.Event _) =>
+                _fullscreen!.value = web.document.fullscreenElement != null)
+            .toJS,
+      );
     }
     return _fullscreen!;
   }
@@ -143,7 +156,9 @@ class PlatformFx implements Fx {
     try {
       final isOn = web.document.fullscreenElement != null;
       if (on && !isOn) {
-        web.document.documentElement?.requestFullscreen().toDart.catchError((_) => null);
+        web.document.documentElement?.requestFullscreen().toDart.catchError(
+          (_) => null,
+        );
       } else if (!on && isOn) {
         web.document.exitFullscreen().toDart.catchError((_) => null);
       }

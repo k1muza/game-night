@@ -5,8 +5,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+import java.util.Properties
+
 android {
-    namespace = "com.gamenight.game_night"
+    namespace = "com.gamenight.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -41,4 +43,24 @@ android {
 
 flutter {
     source = "../.."
+}
+
+tasks.register<Exec>("generateValidatedContent") {
+    workingDir = rootProject.projectDir.parentFile
+    val localProps = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { localProps.load(it) }
+    }
+    val flutterSdk = localProps.getProperty("flutter.sdk")
+    val dartExecutable = if (flutterSdk != null) {
+        "${flutterSdk}/bin/cache/dart-sdk/bin/dart.exe"
+    } else {
+        "dart"
+    }
+    commandLine(dartExecutable, "run", "tool/build_content.dart")
+}
+
+tasks.named("preBuild") {
+    dependsOn("generateValidatedContent")
 }

@@ -1,4 +1,4 @@
-package com.gamenight.game_night
+package com.gamenight.app
 
 import io.flutter.embedding.android.FlutterActivity
 
