@@ -95,3 +95,7 @@ Local radio and year-end charts support recent songs; comedy reporting supports 
 - Unseen (series): https://www.bellanaija.com/2023/12/the-most-watched-nollywood-titles-on-netflix-africa/ — contextual evidence only.
 - Everton Mlalazi: https://southernafricantimes.com/zimbabwean-music-next-big-thing-everton-mlalazi/ — contextual evidence only.
 - Akani Simbine: https://www.bbc.co.uk/sport/olympics/articles/c3rqn5prp8go — contextual evidence only.
+
+## Final-pass clarification
+
+Earlier candidates may have been withdrawn. The current refinement log is authoritative for final retained replacements, and the withdrawn-candidates log explains reversions. 54 final replacement records have source links; sources support contextual visibility and associations rather than population-level familiarity.

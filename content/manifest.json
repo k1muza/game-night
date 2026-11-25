@@ -10,11 +10,16 @@
       "source": "Deep Research upload, PR #3",
       "importedGitBlobSha": "6ad582dc9a58b31eb7e0acdb604c0289a7ecef23",
       "currentSchemaVersion": "2.0.0",
-      "currentGitBlobSha": "1c7a48d740aa1b922d0ca1d26338a976854abd5a",
-      "currentSource": "User-uploaded Sprint v2 candidate redesign; 1393 retained, 533 refined, 74 replaced",
+      "currentGitBlobSha": "c69661d76f37988d31fee255f867e6ed8b3bc1c6",
+      "currentSource": "Partial contemporary candidate: 147 replacements, 19 provisional swaps withdrawn, 34 proper-noun flag corrections; not release-ready",
       "termCount": 2000,
       "termLibraryPath": "thirty-seconds/terms.jsonl",
-      "currentTermLibraryGitBlobSha": "00869312e10d45bf87d2420764c5720d270b6227"
+      "currentTermLibraryGitBlobSha": "a3fe036037c828e96a32bb36b67b9e673960a6e2",
+      "previousGitBlobSha": "1c7a48d740aa1b922d0ca1d26338a976854abd5a",
+      "previousTermLibraryGitBlobSha": "00869312e10d45bf87d2420764c5720d270b6227",
+      "contemporaryRefinementLogPath": "thirty-seconds/contemporary-term-refinement-log.jsonl",
+      "contemporaryResearchEvidencePath": "thirty-seconds/contemporary-research-evidence.md",
+      "contemporaryValidationReportPath": "thirty-seconds/contemporary-validation-report.md"
     },
     {
       "game": "charades",
