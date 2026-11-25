@@ -7,8 +7,11 @@ environment:
   sdk: ^3.11.3
 
 dependencies:
+  audioplayers: ^6.7.1
+  crypto: ^3.0.8
   flutter:
     sdk: flutter
+  package_info_plus: ^10.2.2
   shared_preferences: ^2.5.6
   wakelock_plus: ^1.7.0
   web: ^1.1.1
@@ -21,6 +24,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/audio/
+    - assets/decks/meta.json
     - assets/decks/sprint.json
     - assets/decks/charades.json
     - assets/decks/trivia.json

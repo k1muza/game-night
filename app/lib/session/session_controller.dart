@@ -20,9 +20,13 @@ int systemNow() => DateTime.now().millisecondsSinceEpoch;
 /// refreshing or backgrounding the browser can't add time, and every scoring
 /// action first checks whether the deadline has already passed.
 class SessionController extends ChangeNotifier {
-  SessionController({required this.library, required this.store, NowMs? now, Random? random})
-      : now = now ?? systemNow,
-        _random = random ?? Random();
+  SessionController({
+    required this.library,
+    required this.store,
+    NowMs? now,
+    Random? random,
+  }) : now = now ?? systemNow,
+       _random = random ?? Random();
 
   final ContentLibrary library;
   final SessionStore store;
@@ -42,7 +46,8 @@ class SessionController extends ChangeNotifier {
   /// settled immediately; no extra time is granted.
   void restore() {
     _session = store.loadSession();
-    if (_session != null && !_cardsExist(_session!)) {
+    if (_session != null &&
+        (!_cardsExist(_session!) || !_contentMatches(_session!))) {
       // Saved by an older app version whose deck has since changed: the game
       // can't continue safely, so drop it rather than crash on every launch.
       _session = null;
@@ -50,6 +55,31 @@ class SessionController extends ChangeNotifier {
     }
     tick();
     notifyListeners();
+  }
+
+  bool _contentMatches(Session s) {
+    final fingerprints = s.contentFingerprints;
+    if (fingerprints == null) return true;
+    final games = library.manifest?['games'] as Map<String, dynamic>?;
+    if (games == null) return fingerprints.isEmpty;
+    final runtimeName = switch (s.game) {
+      GameKind.sprint => 'sprint',
+      GameKind.charades => 'charades',
+      GameKind.trivia => 'trivia',
+      GameKind.forbidden => 'forbidden',
+    };
+    final current = games[runtimeName] as Map<String, dynamic>?;
+    return current != null &&
+        fingerprints[runtimeName] == current['runtimeFingerprint'];
+  }
+
+  Map<String, String> _currentFingerprints() {
+    final games = library.manifest?['games'] as Map<String, dynamic>? ?? {};
+    return {
+      for (final e in games.entries)
+        if (e.value is Map && e.value['runtimeFingerprint'] is String)
+          e.key: e.value['runtimeFingerprint'] as String,
+    };
   }
 
   bool _cardsExist(Session s) {
@@ -65,7 +95,8 @@ class SessionController extends ChangeNotifier {
     return ids.every(known.contains);
   }
 
-  bool get hasUnfinished => _session != null && _session!.phase != Phase.gameResults;
+  bool get hasUnfinished =>
+      _session != null && _session!.phase != Phase.gameResults;
 
   void newSession(GameConfig config, List<Team> teams) {
     assert(teams.length >= 2 && teams.length <= 6);
@@ -74,9 +105,16 @@ class SessionController extends ChangeNotifier {
     _session = Session(
       config: config,
       teams: teams,
-      queues: DeckPlanner.buildQueues(library, config.game, config.difficulty, r, store.seen(config.game)),
+      queues: DeckPlanner.buildQueues(
+        library,
+        config.game,
+        config.difficulty,
+        r,
+        store.seen(config.game),
+      ),
       seed: seed,
       createdAt: now(),
+      contentFingerprints: _currentFingerprints(),
     );
     _commit();
   }
@@ -85,7 +123,9 @@ class SessionController extends ChangeNotifier {
   void rematch() {
     final s = _session;
     if (s == null) return;
-    newSession(s.config, [for (final t in s.teams) Team(t.name, t.paletteIndex)]);
+    newSession(s.config, [
+      for (final t in s.teams) Team(t.name, t.paletteIndex),
+    ]);
   }
 
   void discard() {
@@ -124,14 +164,16 @@ class SessionController extends ChangeNotifier {
   // -------------------------------------------------------------------- turns
 
   /// Cards still available to deal without repeating.
-  int get remainingCards => _session?.queues.values.fold<int>(0, (a, q) => a + q.length) ?? 0;
+  int get remainingCards =>
+      _session?.queues.values.fold<int>(0, (a, q) => a + q.length) ?? 0;
 
   bool get canStartTurn {
     final s = _session;
     if (s == null || s.phase != Phase.ready) return false;
     // Trivia needs a full turn's questions so every team gets the same number;
     // other games need at least one card.
-    return remainingCards >= (s.game == GameKind.trivia ? s.config.questionsPerTurn : 1);
+    return remainingCards >=
+        (s.game == GameKind.trivia ? s.config.questionsPerTurn : 1);
   }
 
   /// Starts the clock. Only valid from [Phase.ready] — the timer never runs
@@ -143,7 +185,13 @@ class SessionController extends ChangeNotifier {
     s.turn = t;
     s.phase = Phase.playing;
     if (s.game == GameKind.trivia) {
-      t.slots.addAll(DeckPlanner.triviaSlots(s.config.questionsPerTurn, s.round, s.config.difficulty));
+      t.slots.addAll(
+        DeckPlanner.triviaSlots(
+          s.config.questionsPerTurn,
+          s.round,
+          s.config.difficulty,
+        ),
+      );
       _presentQuestion();
     } else {
       t.cardId = _draw();
@@ -183,7 +231,11 @@ class SessionController extends ChangeNotifier {
     tick();
     final s = _session;
     final t = s?.turn;
-    return s != null && s.phase == Phase.playing && t != null && !t.paused && t.deadlineMs != null;
+    return s != null &&
+        s.phase == Phase.playing &&
+        t != null &&
+        !t.paused &&
+        t.deadlineMs != null;
   }
 
   void pause() {
@@ -197,7 +249,11 @@ class SessionController extends ChangeNotifier {
   void resume() {
     final s = _session;
     final t = s?.turn;
-    if (s == null || t == null || s.phase != Phase.playing || t.pausedRemainingMs == null) return;
+    if (s == null ||
+        t == null ||
+        s.phase != Phase.playing ||
+        t.pausedRemainingMs == null)
+      return;
     t.deadlineMs = now() + t.pausedRemainingMs!;
     t.pausedRemainingMs = null;
     _commit();
@@ -276,8 +332,12 @@ class SessionController extends ChangeNotifier {
     final s = _session;
     if (s == null || !_live) return;
     final allowed = switch (s.game) {
-      GameKind.charades => outcome == Outcome.correct || outcome == Outcome.pass,
-      GameKind.forbidden => outcome == Outcome.correct || outcome == Outcome.pass || outcome == Outcome.violation,
+      GameKind.charades =>
+        outcome == Outcome.correct || outcome == Outcome.pass,
+      GameKind.forbidden =>
+        outcome == Outcome.correct ||
+            outcome == Outcome.pass ||
+            outcome == Outcome.violation,
       _ => false,
     };
     final t = s.turn!;
@@ -291,7 +351,10 @@ class SessionController extends ChangeNotifier {
   /// screen. Only while the clock is still running.
   bool undoLast() {
     final s = _session;
-    if (s == null || (s.game != GameKind.charades && s.game != GameKind.forbidden) || !_live) return false;
+    if (s == null ||
+        (s.game != GameKind.charades && s.game != GameKind.forbidden) ||
+        !_live)
+      return false;
     final t = s.turn!;
     if (t.events.isEmpty) return false;
     final last = t.events.removeLast();
@@ -315,12 +378,24 @@ class SessionController extends ChangeNotifier {
     final r = Random(s.seed ^ now());
     s.queues
       ..clear()
-      ..addAll(DeckPlanner.buildQueues(library, s.game, s.config.difficulty, r, const {}, exclude: keep));
+      ..addAll(
+        DeckPlanner.buildQueues(
+          library,
+          s.game,
+          s.config.difficulty,
+          r,
+          const {},
+          exclude: keep,
+        ),
+      );
     s.used
       ..clear()
       ..addAll(keep);
     final t = s.turn;
-    if (s.phase == Phase.playing && t != null && t.cardId == null && s.game != GameKind.trivia) {
+    if (s.phase == Phase.playing &&
+        t != null &&
+        t.cardId == null &&
+        s.game != GameKind.trivia) {
       t.cardId = _draw();
     }
     _commit();
@@ -355,7 +430,11 @@ class SessionController extends ChangeNotifier {
   void nextQuestion() {
     final s = _session;
     final t = s?.turn;
-    if (s?.game != GameKind.trivia || s!.phase != Phase.playing || t == null || !t.revealed) return;
+    if (s?.game != GameKind.trivia ||
+        s!.phase != Phase.playing ||
+        t == null ||
+        !t.revealed)
+      return;
     if (t.qIndex + 1 >= t.slots.length) {
       _endTurn(EndReason.questionsDone);
       return;
@@ -390,8 +469,12 @@ class SessionController extends ChangeNotifier {
   /// wasn't locked in when time ran out is recorded as unanswered.
   void _reveal({required bool timeout}) {
     final t = _session!.turn!;
-    final choice = timeout || t.selected == null ? null : t.optionOrder[t.selected!];
-    final outcome = choice == null ? Outcome.timeout : (choice == 0 ? Outcome.correct : Outcome.wrong);
+    final choice = timeout || t.selected == null
+        ? null
+        : t.optionOrder[t.selected!];
+    final outcome = choice == null
+        ? Outcome.timeout
+        : (choice == 0 ? Outcome.correct : Outcome.wrong);
     t.events.add(TurnEvent(t.cardId!, outcome, choice: choice));
     t.revealed = true;
     t.deadlineMs = null;
@@ -446,10 +529,18 @@ class SessionController extends ChangeNotifier {
       t.events
         ..clear()
         ..addAll([
-          for (var i = 0; i < 5; i++) TurnEvent(t.cardId!, t.marked.contains(i) ? Outcome.correct : Outcome.pass, term: i)
+          for (var i = 0; i < 5; i++)
+            TurnEvent(
+              t.cardId!,
+              t.marked.contains(i) ? Outcome.correct : Outcome.pass,
+              term: i,
+            ),
         ]);
     }
-    if (s.game == GameKind.trivia && t.cardId != null && !t.revealed && reason != EndReason.questionsDone) {
+    if (s.game == GameKind.trivia &&
+        t.cardId != null &&
+        !t.revealed &&
+        reason != EndReason.questionsDone) {
       // Turn ended mid-question: the unanswered question is returned to the deck.
       s.queues[library.trivia[t.cardId]!.difficulty.name]!.insert(0, t.cardId!);
       s.used.remove(t.cardId);
@@ -459,7 +550,14 @@ class SessionController extends ChangeNotifier {
     t.pausedRemainingMs = null;
     final points = t.points;
     s.scores[s.teamIndex] += points;
-    s.history.add(TurnRecord(team: s.teamIndex, round: s.round, points: points, events: List.of(t.events)));
+    s.history.add(
+      TurnRecord(
+        team: s.teamIndex,
+        round: s.round,
+        points: points,
+        events: List.of(t.events),
+      ),
+    );
     s.phase = Phase.turnResults;
     _commit();
   }
@@ -488,12 +586,17 @@ class SessionController extends ChangeNotifier {
     final s = _session;
     if (s == null || s.scores.isEmpty) return const [];
     final top = s.scores.reduce(max);
-    return [for (var i = 0; i < s.scores.length; i++) if (s.scores[i] == top) i];
+    return [
+      for (var i = 0; i < s.scores.length; i++)
+        if (s.scores[i] == top) i,
+    ];
   }
 
   bool get isFinalTurn {
     final s = _session;
-    return s != null && s.round == s.config.rounds && s.teamIndex == s.teams.length - 1;
+    return s != null &&
+        s.round == s.config.rounds &&
+        s.teamIndex == s.teams.length - 1;
   }
 
   /// Team index that plays after the current one, or null if the game ends.

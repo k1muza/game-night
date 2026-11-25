@@ -8,6 +8,8 @@ class PlatformFx implements Fx {
   @override
   bool muted = false;
   @override
+  bool hapticsEnabled = true;
+  @override
   void unlock() {}
   @override
   void play(Cue cue) {

@@ -1,4 +1,4 @@
-# Game Night — single-device MVP (Flutter web PWA)
+# Game Night — single-device Flutter mobile and web app
 
 Four party games on **one phone**, passed around the room: 30-Second Sprint, Charades, Trivia Challenge and Forbidden Words. No accounts, rooms, pairing or backend. Installable, and playable offline once loaded.
 
@@ -16,6 +16,27 @@ dart run tool/build_web.dart         # release build + offline service worker �
 ```
 
 `assets/decks/` is generated and git-ignored: `content/*/cards.jsonl` stays the single source of truth.
+
+## Native builds
+
+```sh
+flutter run -d <android-device>
+flutter build apk --release
+flutter build appbundle --release
+flutter build web --release --no-web-resources-cdn
+```
+
+Android and web builds regenerate and validate `assets/decks/` before compilation.
+The Android application ID is `com.gamenight.app`; the iOS bundle identifier is
+`com.gamenight.app`. No signing keys or passwords are committed.
+
+- Debug APK: `build/app/outputs/flutter-apk/app-debug.apk`
+- Release APK: `build/app/outputs/flutter-apk/app-release.apk`
+- App Bundle: `build/app/outputs/bundle/release/app-release.aab`
+- Web: `build/web`
+
+For Android distribution, configure a production keystore in `android/key.properties`
+and Gradle. iOS builds require macOS and Xcode with Apple signing configured.
 
 ## Tests
 

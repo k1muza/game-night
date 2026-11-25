@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 
-import 'fx_stub.dart' if (dart.library.js_interop) 'fx_web.dart' as impl;
+import 'fx_stub.dart'
+    if (dart.library.io) 'fx_native.dart'
+    if (dart.library.js_interop) 'fx_web.dart'
+    as impl;
 
 enum Cue { tick, correct, pass, buzz, timeUp, allFive, reveal, wrong, start }
 
@@ -11,6 +14,8 @@ abstract class Fx {
 
   bool get muted;
   set muted(bool v);
+  bool get hapticsEnabled;
+  set hapticsEnabled(bool v);
 
   /// Must be called from a user gesture before sounds can play on mobile browsers.
   void unlock();
@@ -32,6 +37,8 @@ abstract class Fx {
 class SilentFx implements Fx {
   @override
   bool muted = false;
+  @override
+  bool hapticsEnabled = true;
   final List<Cue> played = [];
   bool awake = false;
   @override
