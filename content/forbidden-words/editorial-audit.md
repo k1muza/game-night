@@ -1,8 +1,8 @@
-# Taboo contemporary refinement — first candidate pass
+# Taboo contemporary refinement — two candidate passes
 
-Baseline blob: e018f7e5fba2860a135914d5920bfede3a5299a3; candidate: 5c0965fa84bfb421d1f4ff546c52fc9db8bf94af.
+Baseline blob: e018f7e5fba2860a135914d5920bfede3a5299a3; candidate: e9c5a69de80f01e15ae7ed461453ac87dfa1624a.
 
-71 replacements; 28 refinements; 401 provisional retentions. All 500 original targets and all 2,500 clue strings inspected in the inventory. All 1,500 examples passed the automated whole-word and simple stem checks. Only changed examples received authored semantic review; independent/full retained-pathway review is pending. The deck is NOT release ready. No score of 9.3/10 is claimed. Weighted card-level ratings are outstanding; old metadata values are not independently established scores. Proposed scoring scale: 1 critical failure, 2 weak, 3 adequate, 4 strong, 5 excellent; apply requested weights (25/20/20/15/10/5/5) and veto critical failures. Do not conflate target difficulty with unfamiliarity.
+71 replacements; 40 refinements; 389 provisional retentions. All 500 original targets and all 2,500 clue strings inspected in the inventory. All 1,500 examples passed the automated whole-word and simple stem checks. Only changed examples received authored semantic review; independent/full retained-pathway review is pending. The deck is NOT release ready. No score of 9.3/10 is claimed. Weighted card-level ratings are outstanding; old metadata values are not independently established scores. Proposed scoring scale: 1 critical failure, 2 weak, 3 adequate, 4 strong, 5 excellent; apply requested weights (25/20/20/15/10/5/5) and veto critical failures. Do not conflate target difficulty with unfamiliarity.
 
 ## Distributions
 | regionalRelevance | Original | Candidate |
@@ -110,3 +110,6 @@ Baseline blob: e018f7e5fba2860a135914d5920bfede3a5299a3; candidate: 5c0965fa84bf
 
 ## Limitations
 African representation is still below the directional target of 100 and global slightly above 175. Hard cards declined materially: do not relabel merely to restore quotas. Category taxonomy lacks appropriate regional everyday-life and food classifications; current categories approximate rather than change schema. All replacements have successor IDs; retained targets preserve IDs. Some older sports teams, names and niche terms remain, notably Kudzai Chimbaira, Abedi Pele and the remaining specialist biblical terms; review further. Native Shona and Ndebele translation and semantic duplication review remain outstanding. Contemporary named references need separate factual verification of each pathway, not just evidence of cultural prominence. A single agent performed the work. No Dart build or independent human playtest conducted.
+
+## Second pass
+12 additional clue sets edited; 87 proposed changes rejected by lexical, duplication or no-change checks. No change to regional/difficulty totals. The full seven-criterion scoring exercise, additional clue refinements and human verification remain outstanding.
