@@ -50,3 +50,63 @@ Weighted score = sum(weight × score / 5), 0–100 scale (minimum 20). Estimates
 ```
 
 Remaining source rows 101–2000 not individually reviewed in this pass. Flagged rows require further review even when three proposed pathways exist. Proposed category labels and regional changes require global taxonomy review. Proposed difficulty is independent of quotas. Some clues remain closely related; do not treat raw count as final quality acceptance. No replacements committed to playable data; no card regeneration. No final quality rating.
+
+## Checkpoint 002 — source rows 101–200
+
+{
+  "records": 100,
+  "dispositions": {
+    "REFINE": 36,
+    "RETAIN": 48,
+    "FLAG FOR HUMAN REVIEW": 16
+  },
+  "previousDifficulty": {
+    "easy": 46,
+    "medium": 40,
+    "hard": 14
+  },
+  "proposedDifficulty": {
+    "easy": 43,
+    "hard": 18,
+    "medium": 39
+  },
+  "difficultyCorrections": 28,
+  "threePathways": 100,
+  "unflaggedThreePathways": 84,
+  "mean": 89.68,
+  "properBefore": 62,
+  "properProposed": 66
+}
+
+### Cumulative checkpoints 001–002
+
+```json
+{
+  "records": 200,
+  "dispositions": {
+    "RETAIN": 89,
+    "REFINE": 74,
+    "FLAG FOR HUMAN REVIEW": 37
+  },
+  "previousDifficulty": {
+    "easy": 85,
+    "medium": 82,
+    "hard": 33
+  },
+  "proposedDifficulty": {
+    "easy": 79,
+    "medium": 73,
+    "hard": 48
+  },
+  "difficultyCorrections": 66,
+  "threePathways": 198,
+  "unflaggedThreePathways": 163,
+  "mean": 87.355,
+  "properBefore": 122,
+  "properProposed": 130
+}
+```
+
+Supersedes checkpoint 001 progress counts. Rows 201–2000 outstanding. All proposals staged; no final quota balancing. Universal concepts previously coded Zimbabwean due to local relevance need consistent global review: retain local-association information separately before changing region. Named brands and entertainment titles should be counted as proper names consistently, even if this temporarily increases the count. Do not force geographic or proper-name targets by incorrect classification.
+
+Potential overlap: Elijah/Elisha (distinct stories but avoid same card), Funke Akindele/Jenifa's Diary, Chicken Inn FC/restaurant chain, Hwange town/park/club, named musician and associated hit. These are candidate constraints, not full-bank collision results.
