@@ -237,3 +237,17 @@ Cumulative: 712/2,000 individual records (35.6%), including 700 contiguous sourc
 | Total new | 595 | 248 | 165 | 182 | 195 | 586 | 86.51 |
 
 Cumulative: 1,307/2,000 (65.35%); 1,300 contiguous source rows and seven later priority rows. 570 retain, 380 refine, 357 flag; 422 difficulty changes; 1,289 records have three pathways, 950 unflagged; combined deduplicated coverage 1,348 (67.4%). 693 remaining. Proposed reviewed difficulty counts 554 easy, 531 medium, 222 hard versus 518/533/256 original. Proper-noun flags 806 previous, 844 proposed. Mean 86.70/100, not comparable to earlier provisional deck rating. No perfect scores in batches 008–013. Earlier 137 perfect records require focused calibration. Resume row 1301, skipping priorities. Production content unchanged.
+
+## Checkpoints 014–020 and full-audit reconciliation
+
+The individual editorial audit is complete: 2,000 distinct source rows and IDs reviewed (1,584 additional reviews since checkpoint 004). The first-pass playable files are deliberately unchanged pending the final editorial release gate. Initial dispositions: 892 retain, 559 refine, 549 flagged; 631 difficulty corrections. Full audit score mean after focused calibration: 86.3405/100. This is a reviewer estimate, not a measured audience rating.
+
+The focused calibration reconsidered 137 previously perfect scores; only Tom and Jerry and Jesus Christ remain at 100. Alarm clock is now 90, Traffic jam and Mother-in-law 95. Keep the individual score histories in the JSONL log.
+
+After checking seven previously incomplete identities, the audit log contains 1,980 source terms with at least three description pathways. A separate 79-row shortlist provides the other 20 pathways and proposes replacements for 78 flagged rows and one additional weaker row. All 79 show positive score deltas under the recorded rubric (+1,662 total). The combined projected mean is 87.1715, not a release score. The shortlist is provisional, not approved production content.
+
+Restoration proposals: Laho → Qongqothwane; Tapiwanashe Makarawu → Namib Desert (relocate the athlete into Taffy Theman’s weaker slot); Mudiwa Jani → Babamukuru (retain Mother-in-law); Dota 2 → Virtual reality headset (retain Digital detox).
+
+Remaining editorial gate: 471 flagged source terms outside the shortlist, candidate fact and cultural-language verification, semantic overlap review, category and alias integrity, and final difficulty balancing. The 79 candidates do not meet the broader African and proper-noun targets; do not fabricate classification changes to close those gaps. Review the remaining candidates against the actual quality floor rather than forcing a replacement quota.
+
+Source data: second-pass-refinement-log.jsonl; second-pass-replacement-candidates.jsonl; second-pass-selected-candidates.jsonl. No changes merged into main.
