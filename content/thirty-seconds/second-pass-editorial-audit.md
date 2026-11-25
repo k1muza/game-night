@@ -204,3 +204,9 @@ Rows 301–2000 outstanding. Mother-in-law proposed easy rather than hard; retai
 ```
 
 1683 current term identities not yet individually reviewed in this pass. No changes to playable bank, deck or manifest. Prioritise outstanding contiguous rows 301 onward, skipping priority rows already staged. No overall rating or final distribution claimed.
+
+## Checkpoint 004 — source rows 301–400
+
+99 newly assessed terms; source row 345 (Car wash) already covered by the priority batch and not duplicated. 49 retain, 22 refine, 28 flag for human review; 28 proposed difficulty corrections. All 99 have three proposed pathways. Batch mean 86.74/100, estimated, not measured. Named-entity references and narrowly local places remain important flag categories.
+
+Cumulative: 416/2,000 individual reviews (20.8%); 179 retain, 147 refine, 90 flag; 142 difficulty corrections; 412 have three pathways, 326 unflagged; 522/2,000 distinct terms have three recorded pathways across both passes (26.1%). Proper-noun flags in reviewed subset: 264 previous, 276 proposed. Mean 87.56/100, not an overall rating. 1,584 source identities remain unassessed. Resume at row 401, skipping already audited priority rows. Playable bank and deck unchanged.
