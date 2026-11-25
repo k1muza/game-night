@@ -39,14 +39,15 @@
       "source": "Trivia production branch / PR #4 (selective integration)",
       "importedGitBlobSha": "ba527fc0f553c2a5f6ae7b2c1f2aebb5ce77bc22",
       "currentSchemaVersion": "2.0.0",
-      "currentGitBlobSha": "f9f06f70379bd7ceb7d2ffada0cab7d3f119ad85",
-      "currentSource": "Partial contemporary refinement; 53 replacements, 747 retained, draft; new answer claims source-supported",
+      "currentGitBlobSha": "228150854dc2860657dc2e4c4e179bd46ded5184",
+      "currentSource": "Second-pass contemporary candidate; 102 final replacements; 698 originals retained; draft, answer-source-supported",
       "recordedFactCheckStatus": {
         "plausible-unverified": 800
       },
-      "previousGitBlobSha": "1a47c39637c06e24f63542d0177c0d757e7dcbee",
+      "previousGitBlobSha": "f9f06f70379bd7ceb7d2ffada0cab7d3f119ad85",
       "contemporaryRefinementLogPath": "trivia/contemporary-refinement-log.jsonl",
-      "contemporaryResearchEvidencePath": "trivia/contemporary-research-evidence.md"
+      "contemporaryResearchEvidencePath": "trivia/contemporary-research-evidence.md",
+      "contemporarySecondPassLogPath": "trivia/contemporary-second-pass-log.jsonl"
     },
     {
       "game": "forbidden-words",
