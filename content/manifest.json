@@ -55,7 +55,18 @@
       "cardCount": 500,
       "sourceSchemaVersion": "1.0.0",
       "source": "Identical Deep Research uploads, PRs #2 and #3",
-      "importedGitBlobSha": "e018f7e5fba2860a135914d5920bfede3a5299a3"
+      "importedGitBlobSha": "e018f7e5fba2860a135914d5920bfede3a5299a3",
+      "currentSchemaVersion": "1.0.0",
+      "currentGitBlobSha": "b5e3993475516d400034fe2b8ff4763575ea2f87",
+      "previousGitBlobSha": "47ad46ae3869e00a834442e98b327ffc0a376465",
+      "currentSource": "Targeted final QA: 34 weak pathways rewritten, 10 redundant alias slots removed, 12 visible translation reminders, two restored classics; review and application gates documented",
+      "revisionLogPath": "forbidden-words/revision-log.jsonl",
+      "contemporaryResearchEvidencePath": "forbidden-words/contemporary-research-evidence.md",
+      "finalRefinementLogPath": "forbidden-words/final-refinement-log.jsonl",
+      "finalDescriptionPathwayAuditPath": "forbidden-words/final-description-pathway-audit.jsonl",
+      "finalQaRefinementLogPath": "forbidden-words/final-qa-refinement-log.jsonl",
+      "finalQaCriticalReviewPath": "forbidden-words/final-qa-critical-review.jsonl",
+      "finalQaReportPath": "forbidden-words/final-qa-report.md"
     }
   ],
   "triviaRecordedFactCheckStatus": {

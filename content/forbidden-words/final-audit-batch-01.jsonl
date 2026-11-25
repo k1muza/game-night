@@ -1,0 +1,100 @@
+{"index":1,"cardId":"FW-LIFE-0001","target":"Kombi","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":2,"cardId":"FW-LIFE-0002","target":"Borehole","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,2,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":3,"cardId":"FW-LIFE-0003","target":"Load shedding","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":4,"cardId":"FW-LIFE-0004","target":"Tuck shop","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,2,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":5,"cardId":"FW-LIFE-0005","target":"Braai","scores":[4,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":6,"cardId":"FW-LIFE-0006","target":"EcoCash","scores":[5,5,4,5,5,5,4],"pathwayGrades":[3,2,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":7,"cardId":"FW-LIFE-0007","target":"Jojo tank","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":8,"cardId":"FW-LIFE-0008","target":"Market stall","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,2,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":9,"cardId":"FW-LIFE-0009","target":"Chitubu","scores":[4,3,3,3,4,4,2],"pathwayGrades":[3,2,2],"note":"Shona recognition and alternate terms"}
+{"index":10,"cardId":"FW-LIFE-0010","target":"Wheelbarrow","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":11,"cardId":"FW-LIFE-0011","target":"Sofa","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":12,"cardId":"FW-LIFE-0012","target":"School uniform","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":13,"cardId":"FW-LIFE-0013","target":"Broom","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,2,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":14,"cardId":"FW-LIFE-0014","target":"Mop","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":15,"cardId":"FW-LIFE-0015","target":"Blanket","scores":[5,5,5,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":16,"cardId":"FW-LIFE-0016","target":"Chickens","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":17,"cardId":"FW-LIFE-0017","target":"Goat","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":18,"cardId":"FW-LIFE-0018","target":"Donkey cart","scores":[4,4,4,4,5,5,4],"pathwayGrades":[2,3,2],"note":"two routes could mean ox cart"}
+{"index":19,"cardId":"FW-LIFE-0019","target":"Laundry","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":20,"cardId":"FW-LIFE-0020","target":"Tobacco auction","scores":[4,4,3,3,4,5,4],"pathwayGrades":[3,2,2],"note":"geographic and trade exposure"}
+{"index":21,"cardId":"FW-LIFE-0021","target":"Bus stop","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":22,"cardId":"FW-LIFE-0022","target":"Firewood","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":23,"cardId":"FW-LIFE-0023","target":"Mukando","scores":[4,4,4,4,5,5,2],"pathwayGrades":[3,3,3],"note":"native translation and recognition"}
+{"index":24,"cardId":"FW-LIFE-0024","target":"Rusero","scores":[4,3,4,3,4,4,2],"pathwayGrades":[3,3,3],"note":"limited recognition among urban players"}
+{"index":25,"cardId":"FW-LIFE-0025","target":"Tsoro","scores":[4,3,3,4,4,5,2],"pathwayGrades":[3,1,2],"note":"second route generic"}
+{"index":26,"cardId":"FW-LIFE-0026","target":"Lobola","scores":[4,4,4,4,5,5,3],"pathwayGrades":[3,2,3],"note":"wording is formal"}
+{"index":27,"cardId":"FW-LIFE-0027","target":"Mbare Musika","scores":[4,4,4,4,5,5,3],"pathwayGrades":[3,2,3],"note":"local familiarity varies"}
+{"index":28,"cardId":"FW-LIFE-0028","target":"Boka","scores":[4,3,2,3,3,4,3],"pathwayGrades":[2,1,1],"note":"vague routes depend on Harare"}
+{"index":29,"cardId":"FW-REF-0029","target":"Traffic jam","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":30,"cardId":"FW-LIFE-0030","target":"High-density suburb","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":31,"cardId":"FW-LIFE-0031","target":"Council bill","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":32,"cardId":"FW-LIFE-0032","target":"Prepaid meter","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":33,"cardId":"FW-LIFE-0033","target":"Solar geyser","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":34,"cardId":"FW-LIFE-0034","target":"Bucket shower","scores":[4,5,3,4,4,5,4],"pathwayGrades":[3,2,2],"note":"second and third broad"}
+{"index":35,"cardId":"FW-LIFE-0035","target":"Rural homestead","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":36,"cardId":"FW-LIFE-0036","target":"Granary","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":37,"cardId":"FW-LIFE-0037","target":"Cattle kraal","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":38,"cardId":"FW-REF-0038","target":"Alarm clock","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":39,"cardId":"FW-REF-0039","target":"Lost luggage","scores":[5,5,5,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":40,"cardId":"FW-LIFE-0040","target":"Lay-by","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":41,"cardId":"FW-LIFE-0041","target":"Change","scores":[4,5,4,4,5,5,3],"pathwayGrades":[3,3,3],"note":"ambiguous target money change vs general change"}
+{"index":42,"cardId":"FW-LIFE-0042","target":"Hwindi","scores":[4,4,4,4,5,5,2],"pathwayGrades":[3,3,3],"note":"language and local role"}
+{"index":43,"cardId":"FW-LIFE-0043","target":"Roadblock","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":44,"cardId":"FW-LIFE-0044","target":"ZUPCO","scores":[4,4,3,4,4,5,4],"pathwayGrades":[2,2,1],"note":"needs more distinctive route"}
+{"index":45,"cardId":"FW-REF-0045","target":"Queue","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":46,"cardId":"FW-FIN-0046","target":"Bunny chow","scores":[4,3,2,3,3,4,4],"pathwayGrades":[3,2,3],"note":"unfamiliar dish for many Zimbabweans"}
+{"index":47,"cardId":"FW-FIN-0047","target":"Dashiki","scores":[4,3,3,3,3,4,4],"pathwayGrades":[3,1,3],"note":"routes distinguish poorly from other tunics"}
+{"index":48,"cardId":"FW-LIFE-0048","target":"Dare","scores":[4,3,2,3,3,4,2],"pathwayGrades":[2,2,2],"note":"dialect and ambiguous English dare"}
+{"index":49,"cardId":"FW-LIFE-0049","target":"Choto","scores":[4,4,4,4,4,5,2],"pathwayGrades":[3,3,3],"note":"native adjudication"}
+{"index":50,"cardId":"FW-LIFE-0050","target":"Chitofu","scores":[4,4,4,4,4,5,2],"pathwayGrades":[3,3,3],"note":"native adjudication"}
+{"index":51,"cardId":"FW-REF-0051","target":"Baby shower","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"hard label may overestimate"}
+{"index":52,"cardId":"FW-LIFE-0052","target":"Mupinyi","scores":[4,3,4,3,4,4,2],"pathwayGrades":[3,3,3],"note":"Shona recognition"}
+{"index":53,"cardId":"FW-LIFE-0053","target":"Matombo","scores":[4,4,4,3,4,5,2],"pathwayGrades":[3,2,3],"note":"native translation and generic second route"}
+{"index":54,"cardId":"FW-LIFE-0054","target":"Chivanhu","scores":[4,3,3,3,3,4,2],"pathwayGrades":[2,2,2],"note":"abstract local term"}
+{"index":55,"cardId":"FW-FIN-0055","target":"Ankara fabric","scores":[4,3,2,3,3,4,3],"pathwayGrades":[2,2,2],"note":"overlaps other patterned textile cards"}
+{"index":56,"cardId":"FW-REF-0056","target":"First impression","scores":[5,5,4,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":57,"cardId":"FW-REF-0057","target":"Secret admirer","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":58,"cardId":"FW-LIFE-0058","target":"Dengu","scores":[4,3,3,3,4,4,2],"pathwayGrades":[3,2,2],"note":"native recognition and generic third route"}
+{"index":59,"cardId":"FW-LIFE-0059","target":"Mutsago","scores":[4,4,4,4,4,5,2],"pathwayGrades":[3,3,3],"note":"native translation"}
+{"index":60,"cardId":"FW-LIFE-0060","target":"Chirongo","scores":[4,3,3,3,4,4,2],"pathwayGrades":[3,2,3],"note":"native recognition"}
+{"index":61,"cardId":"FW-FOOD-0001","target":"Sadza","scores":[5,5,5,5,5,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":62,"cardId":"FW-FOOD-0002","target":"Maputi","scores":[4,5,4,4,5,5,3],"pathwayGrades":[3,2,3],"note":"local language adjudication"}
+{"index":63,"cardId":"FW-FOOD-0003","target":"Maheu","scores":[4,5,4,4,5,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":64,"cardId":"FW-FOOD-0004","target":"Matemba","scores":[4,4,4,4,4,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":65,"cardId":"FW-FOOD-0005","target":"Muriwo","scores":[4,4,4,4,4,5,2],"pathwayGrades":[3,2,3],"note":"native translation and broad first route"}
+{"index":66,"cardId":"FW-FOOD-0006","target":"Dovi","scores":[4,5,4,4,5,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":67,"cardId":"FW-FOOD-0007","target":"Madora","scores":[4,5,4,4,5,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":68,"cardId":"FW-FOOD-0008","target":"Mazondo","scores":[4,4,4,4,4,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":69,"cardId":"FW-FOOD-0009","target":"Magwinya","scores":[4,5,4,4,5,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":70,"cardId":"FW-FOOD-0010","target":"Sugarcane","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":71,"cardId":"FW-FOOD-0011","target":"Peanut brittle","scores":[4,4,3,4,4,5,4],"pathwayGrades":[3,2,2],"note":"syrup route less familiar; candy category"}
+{"index":72,"cardId":"FW-FOOD-0012","target":"Pumpkin","scores":[4,5,5,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":73,"cardId":"FW-FOOD-0013","target":"Sweet potato","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":74,"cardId":"FW-FOOD-0014","target":"Mango","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":75,"cardId":"FW-FOOD-0015","target":"Mupunga","scores":[4,4,4,4,4,5,2],"pathwayGrades":[3,3,3],"note":"language-specific target"}
+{"index":76,"cardId":"FW-FOOD-0016","target":"Mutakura","scores":[4,4,3,4,4,5,2],"pathwayGrades":[3,2,3],"note":"local dish and generic gathering"}
+{"index":77,"cardId":"FW-FOOD-0017","target":"Nyimo","scores":[4,3,3,3,4,4,2],"pathwayGrades":[3,2,1],"note":"specific crop; third vague"}
+{"index":78,"cardId":"FW-FOOD-0018","target":"Mufushwa","scores":[4,3,3,3,4,4,2],"pathwayGrades":[3,2,3],"note":"native recognition"}
+{"index":79,"cardId":"FW-FOOD-0019","target":"Derere","scores":[4,4,4,4,5,5,2],"pathwayGrades":[3,3,3],"note":"native adjudication"}
+{"index":80,"cardId":"FW-FOOD-0020","target":"Chimodho","scores":[4,4,4,4,4,5,2],"pathwayGrades":[3,3,3],"note":"native adjudication"}
+{"index":81,"cardId":"FW-FOOD-0021","target":"Muboora","scores":[4,3,3,3,4,4,2],"pathwayGrades":[3,2,2],"note":"plant-specific recognition"}
+{"index":82,"cardId":"FW-FOOD-0022","target":"Mabhanzi","scores":[4,4,4,4,4,5,2],"pathwayGrades":[3,3,3],"note":"native adjudication"}
+{"index":83,"cardId":"FW-REF-0083","target":"Jollof rice","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"familiarity with regional dish uncertain"}
+{"index":84,"cardId":"FW-FOOD-0024","target":"Mazhanje","scores":[4,3,3,3,4,4,2],"pathwayGrades":[3,2,2],"note":"recognition of woodland fruit"}
+{"index":85,"cardId":"FW-REF-0085","target":"Injera","scores":[4,3,3,3,4,4,4],"pathwayGrades":[3,3,3],"note":"regional familiarity unknown"}
+{"index":86,"cardId":"FW-FOOD-0026","target":"Chibage","scores":[4,4,4,4,4,5,2],"pathwayGrades":[3,3,3],"note":"native adjudication"}
+{"index":87,"cardId":"FW-FOOD-0027","target":"Zviyo","scores":[4,3,3,3,3,4,2],"pathwayGrades":[3,2,2],"note":"specialist crop and hard due to recognition"}
+{"index":88,"cardId":"FW-REF-0088","target":"Biltong","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":89,"cardId":"FW-FOOD-0029","target":"Munyemba","scores":[4,3,3,3,3,4,2],"pathwayGrades":[2,2,2],"note":"specialist crop; generic descriptions"}
+{"index":90,"cardId":"FW-FIN-0090","target":"Rooibos","scores":[4,3,3,3,4,4,4],"pathwayGrades":[3,2,2],"note":"recognition of regional herbal beverage"}
+{"index":91,"cardId":"FW-PERS-0001","target":"Strive Masiyiwa","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":92,"cardId":"FW-PERS-0002","target":"Oliver Mtukudzi","scores":[4,5,3,4,4,5,4],"pathwayGrades":[3,2,1],"note":"third generic; artist recognition"}
+{"index":93,"cardId":"FW-PERS-0003","target":"Jah Prayzah","scores":[4,5,4,4,5,5,4],"pathwayGrades":[2,3,3],"note":"birth-name route less useful"}
+{"index":94,"cardId":"FW-PERS-0004","target":"Winky D","scores":[4,5,4,4,5,5,4],"pathwayGrades":[2,3,3],"note":"birth-name route less useful"}
+{"index":95,"cardId":"FW-PERS-0005","target":"Kirsty Coventry","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":96,"cardId":"FW-PERS-0006","target":"Madam Boss","scores":[4,5,3,4,4,5,4],"pathwayGrades":[3,2,2],"note":"generic personality descriptions"}
+{"index":97,"cardId":"FW-PERS-0007","target":"Alick Macheso","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":98,"cardId":"FW-PERS-0008","target":"Thomas Mapfumo","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":99,"cardId":"FW-PERS-0009","target":"Peter Ndlovu","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":100,"cardId":"FW-PERS-0010","target":"Joshua Nkomo","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,2,3],"note":"nickname route may be unfamiliar"}

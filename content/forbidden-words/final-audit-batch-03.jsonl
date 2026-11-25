@@ -1,0 +1,100 @@
+{"index":201,"cardId":"FW-AFRFB-0011","target":"Mamelodi Sundowns","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":202,"cardId":"FW-AFRFB-0012","target":"Black Stars","scores":[4,3,3,3,4,4,4],"pathwayGrades":[3,2,3],"note":"flag national nickname and generic first"}
+{"index":203,"cardId":"FW-AFRFB-0013","target":"Super Eagles","scores":[4,3,3,3,4,4,4],"pathwayGrades":[3,2,3],"note":"distinguish senior side from 1996 Olympic squad"}
+{"index":204,"cardId":"FW-FIN-0204","target":"Cape Town","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":205,"cardId":"FW-FIN-0205","target":"Nelson Mandela","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":206,"cardId":"FW-AFRFB-0016","target":"Yaya Touré","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":207,"cardId":"FW-AFRFB-0017","target":"Jay-Jay Okocha","scores":[4,3,3,3,3,4,4],"pathwayGrades":[1,2,2],"note":"given name obscure"}
+{"index":208,"cardId":"FW-AFRFB-0018","target":"Riyad Mahrez","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,2],"note":"third generic"}
+{"index":209,"cardId":"FW-REF-0209","target":"Jerusalema","scores":[4,4,4,4,4,5,3],"pathwayGrades":[3,3,1],"note":"last route effectively translation/name hint"}
+{"index":210,"cardId":"FW-REF-0210","target":"Sha Sha","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,1],"note":"recording titles and birth name"}
+{"index":211,"cardId":"FW-ZIMMU-0001","target":"Mbira","scores":[4,5,5,4,5,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":212,"cardId":"FW-ZIMMU-0002","target":"Sungura","scores":[4,5,4,4,5,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":213,"cardId":"FW-ZIMMU-0003","target":"Zimdancehall","scores":[4,5,4,4,5,5,3],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":214,"cardId":"FW-ZIMMU-0004","target":"Hosho","scores":[4,4,4,4,4,5,2],"pathwayGrades":[3,3,3],"note":"native terms"}
+{"index":215,"cardId":"FW-ZIMMU-0005","target":"Marimba","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":216,"cardId":"FW-ZIMMU-0006","target":"Gospel choir","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"overlaps choir practice but distinct"}
+{"index":217,"cardId":"FW-ZIMMU-0007","target":"Chimurenga music","scores":[4,4,4,4,4,5,3],"pathwayGrades":[3,3,3],"note":"genre recognition varies"}
+{"index":218,"cardId":"FW-ZIMMU-0008","target":"Jerusarema","scores":[4,3,3,3,4,4,2],"pathwayGrades":[2,2,2],"note":"formal heritage routes; overlap Jerusalema spelling not same identity"}
+{"index":219,"cardId":"FW-ZIMMU-0009","target":"Urban grooves","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":220,"cardId":"FW-FIN-0220","target":"Chakalaka","scores":[4,3,3,3,4,4,4],"pathwayGrades":[3,2,2],"note":"local recognition uncertain"}
+{"index":221,"cardId":"FW-ZIMMU-0011","target":"Jiti","scores":[4,3,3,3,4,4,3],"pathwayGrades":[3,2,2],"note":"generic last routes"}
+{"index":222,"cardId":"FW-ZIMMU-0012","target":"ExQ","scores":[4,3,3,3,4,4,4],"pathwayGrades":[1,2,2],"note":"birth name and industry knowledge"}
+{"index":223,"cardId":"FW-ZIMMU-0013","target":"Freeman HKD","scores":[4,4,3,4,4,5,4],"pathwayGrades":[3,2,1],"note":"third circular vague"}
+{"index":224,"cardId":"FW-ZIMMU-0014","target":"Killer T","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"birth name less accessible"}
+{"index":225,"cardId":"FW-ZIMMU-0015","target":"Soul Jah Love","scores":[4,5,3,4,4,5,4],"pathwayGrades":[2,3,2],"note":"repetitive voice clues"}
+{"index":226,"cardId":"FW-ZIMMU-0016","target":"Seh Calaz","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,2],"note":"Bhanditi and Mabhanditi closely related"}
+{"index":227,"cardId":"FW-ZIMMU-0017","target":"Tocky Vibes","scores":[4,3,3,3,4,4,4],"pathwayGrades":[1,2,2],"note":"birth name plus song dependence"}
+{"index":228,"cardId":"FW-ZIMMU-0018","target":"Nutty O","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,1],"note":"birth name less useful"}
+{"index":229,"cardId":"FW-ZIMMU-0019","target":"Gemma Griffiths","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,2],"note":"two titles and generic style"}
+{"index":230,"cardId":"FW-ZIMMU-0020","target":"Ammara Brown","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":231,"cardId":"FW-ZIMMU-0021","target":"Tytan","scores":[4,3,2,3,3,4,4],"pathwayGrades":[2,1,1],"note":"ambiguous collaboration and brand"}
+{"index":232,"cardId":"FW-ZIMMU-0022","target":"Enzo Ishall","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"given name weak"}
+{"index":233,"cardId":"FW-ZIMMU-0023","target":"Holy Ten","scores":[4,4,3,4,4,5,4],"pathwayGrades":[2,2,1],"note":"third generic"}
+{"index":234,"cardId":"FW-ZIMMU-0024","target":"Voltz JT","scores":[4,3,3,3,4,4,4],"pathwayGrades":[1,2,2],"note":"title and birth-name dependence"}
+{"index":235,"cardId":"FW-ZIMMU-0025","target":"Saintfloew","scores":[4,3,3,3,4,4,4],"pathwayGrades":[1,2,2],"note":"birth name and tracks"}
+{"index":236,"cardId":"FW-ZIMMU-0026","target":"Mambo Dhuterere","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,1],"note":"third generic"}
+{"index":237,"cardId":"FW-ZIMMU-0027","target":"Minister Mahendere","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":238,"cardId":"FW-ZIMMU-0028","target":"Janet Manyowa","scores":[4,4,3,4,4,5,4],"pathwayGrades":[3,3,2],"note":"singer and vocalist near-synonyms"}
+{"index":239,"cardId":"FW-ZIMMU-0029","target":"Shingisai Suluma","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,2],"note":"song knowledge required"}
+{"index":240,"cardId":"FW-ZIMMU-0030","target":"Mokoomba","scores":[4,3,2,3,3,4,4],"pathwayGrades":[2,1,1],"note":"group recognition uncertain; generic second and third"}
+{"index":241,"cardId":"FW-FIN-0241","target":"Joyous Celebration","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":242,"cardId":"FW-ZIMMU-0032","target":"Orchestra Mberikwazvo","scores":[4,3,3,3,4,4,4],"pathwayGrades":[3,2,2],"note":"local music specialist knowledge"}
+{"index":243,"cardId":"FW-ZIMMU-0033","target":"Khiama Boys","scores":[4,3,3,3,3,4,4],"pathwayGrades":[3,2,2],"note":"hard reflects recognition"}
+{"index":244,"cardId":"FW-ZIMMU-0034","target":"System Tazvida","scores":[4,3,3,3,3,4,4],"pathwayGrades":[2,2,1],"note":"older artist recognition"}
+{"index":245,"cardId":"FW-ZIMMU-0035","target":"Leonard Dembo","scores":[4,4,4,3,4,5,4],"pathwayGrades":[3,2,2],"note":"difficulty driven partly by generational exposure"}
+{"index":246,"cardId":"FW-ZIMMU-0036","target":"Simon Chimbetu","scores":[4,3,3,3,3,4,4],"pathwayGrades":[2,2,2],"note":"historic artist specialist"}
+{"index":247,"cardId":"FW-FIN-0247","target":"Rebecca Malope","scores":[4,4,3,4,4,5,4],"pathwayGrades":[3,2,2],"note":"regional gospel familiarity varies"}
+{"index":248,"cardId":"FW-ZIMMU-0038","target":"Paul Matavire","scores":[4,3,3,3,3,4,4],"pathwayGrades":[2,2,2],"note":"older entertainer recognition"}
+{"index":249,"cardId":"FW-REF-0249","target":"Nkosazana Daughter","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,3,2],"note":"generic style and collaborators"}
+{"index":250,"cardId":"FW-REF-0250","target":"Zee Nxumalo","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,2],"note":"track-specific routes"}
+{"index":251,"cardId":"FW-AFRMU-0001","target":"Amapiano","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":252,"cardId":"FW-AFRMU-0002","target":"Afrobeats","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":253,"cardId":"FW-AFRMU-0003","target":"Burna Boy","scores":[4,5,4,4,5,5,4],"pathwayGrades":[2,3,3],"note":"birth name weak"}
+{"index":254,"cardId":"FW-AFRMU-0004","target":"Wizkid","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"birth name weak"}
+{"index":255,"cardId":"FW-AFRMU-0005","target":"Davido","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"birth name weak"}
+{"index":256,"cardId":"FW-AFRMU-0006","target":"Diamond Platnumz","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"birth name weak"}
+{"index":257,"cardId":"FW-AFRMU-0007","target":"Master KG","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"birth name weak"}
+{"index":258,"cardId":"FW-AFRMU-0008","target":"Kabza De Small","scores":[4,3,3,3,4,4,4],"pathwayGrades":[1,2,2],"note":"given names and generic last route"}
+{"index":259,"cardId":"FW-AFRMU-0009","target":"DJ Maphorisa","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"birth name weak"}
+{"index":260,"cardId":"FW-AFRMU-0010","target":"Tyla","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":261,"cardId":"FW-AFRMU-0011","target":"Makhadzi","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"birth name weak"}
+{"index":262,"cardId":"FW-AFRMU-0012","target":"Mafikizolo","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"artist names relatively specialist"}
+{"index":263,"cardId":"FW-AFRMU-0013","target":"Yemi Alade","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,2],"note":"album and collaborator dependence"}
+{"index":264,"cardId":"FW-AFRMU-0014","target":"Tems","scores":[4,4,4,4,4,5,4],"pathwayGrades":[2,3,3],"note":"birth name weak"}
+{"index":265,"cardId":"FW-AFRMU-0015","target":"Sauti Sol","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,2],"note":"song dependence"}
+{"index":266,"cardId":"FW-AFRMU-0016","target":"Fela Kuti","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,2],"note":"older musician knowledge"}
+{"index":267,"cardId":"FW-FIN-0267","target":"DStv","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":268,"cardId":"FW-AFRMU-0018","target":"Kwaito","scores":[4,3,3,3,3,4,4],"pathwayGrades":[2,2,2],"note":"generational exposure"}
+{"index":269,"cardId":"FW-FIN-0269","target":"MTN","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,2,3],"note":"local recognition varies, generic second"}
+{"index":270,"cardId":"FW-AFRMU-0020","target":"Bongo Flava","scores":[4,3,3,3,3,4,4],"pathwayGrades":[2,2,2],"note":"regional genre unfamiliarity"}
+{"index":271,"cardId":"FW-ENT-0001","target":"Spider-Man","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":272,"cardId":"FW-ENT-0002","target":"Batman","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":273,"cardId":"FW-ENT-0003","target":"Superman","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":274,"cardId":"FW-ENT-0004","target":"The Lion King","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":275,"cardId":"FW-ENT-0005","target":"Frozen","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":276,"cardId":"FW-ENT-0006","target":"Harry Potter","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":277,"cardId":"FW-ENT-0007","target":"Tom and Jerry","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,2,3],"note":"third generic"}
+{"index":278,"cardId":"FW-ENT-0008","target":"Shrek","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":279,"cardId":"FW-ENT-0009","target":"Minions","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":280,"cardId":"FW-ENT-0010","target":"Squid Game","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,2],"note":"third broad"}
+{"index":281,"cardId":"FW-ENT-0011","target":"Money Heist","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":282,"cardId":"FW-ENT-0012","target":"Black Panther","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":283,"cardId":"FW-ENT-0013","target":"Avatar","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":284,"cardId":"FW-ENT-0014","target":"Titanic","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":285,"cardId":"FW-ENT-0015","target":"The Matrix","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":286,"cardId":"FW-ENT-0016","target":"Kung Fu Panda","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":287,"cardId":"FW-ENT-0017","target":"Finding Nemo","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":288,"cardId":"FW-ENT-0018","target":"Jurassic Park","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":289,"cardId":"FW-ENT-0019","target":"Fast and Furious","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":290,"cardId":"FW-ENT-0020","target":"Mr Bean","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":291,"cardId":"FW-ENT-0021","target":"Friends","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"generational exposure"}
+{"index":292,"cardId":"FW-ENT-0022","target":"The Simpsons","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":293,"cardId":"FW-ENT-0023","target":"Naruto","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"anime exposure"}
+{"index":294,"cardId":"FW-ENT-0024","target":"One Piece","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"anime exposure"}
+{"index":295,"cardId":"FW-ENT-0025","target":"Fortnite","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"gaming exposure"}
+{"index":296,"cardId":"FW-ENT-0026","target":"Minecraft","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":297,"cardId":"FW-ENT-0027","target":"The Hunger Games","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"franchise exposure"}
+{"index":298,"cardId":"FW-ENT-0028","target":"Stranger Things","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"series exposure"}
+{"index":299,"cardId":"FW-ENT-0029","target":"The Lord of the Rings","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"franchise exposure"}
+{"index":300,"cardId":"FW-ENT-0030","target":"Interstellar","scores":[4,4,3,4,4,5,4],"pathwayGrades":[3,2,3],"note":"film exposure; third vague"}
