@@ -55,6 +55,8 @@ void main() {
     final a = AppHarness();
     await a.pump(t);
     expect(find.text('Who’s playing tonight?'), findsOneWidget);
+    expect(find.text('No sign-up · No internet needed once loaded'), findsNothing);
+    expect(find.text('Card decks are candidate drafts for private playtesting.'), findsNothing);
     await t.tap(find.text('30-Second Sprint'));
     await t.pump(const Duration(milliseconds: 400));
     await tapText(t, 'Start game');

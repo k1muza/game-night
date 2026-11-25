@@ -87,19 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
               _GameTile(game: g, tilt: const [-1.2, 1.0, 0.8, -1.0][i], onTap: () => scope.nav.setup(g)),
           ],
         ),
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-              Text('No sign-up · No internet needed once loaded',
-                  textAlign: TextAlign.center, style: Gn.uiStyle(13, color: Gn.text3)),
-              const SizedBox(height: 4),
-              Text('Card decks are candidate drafts for private playtesting.',
-                  textAlign: TextAlign.center, style: Gn.uiStyle(12, color: Gn.text3, weight: FontWeight.w500)),
-            ]),
-          ),
-        ),
       ]),
     );
   }
