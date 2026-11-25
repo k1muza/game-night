@@ -70,7 +70,7 @@ void main() {
         addTearDown(refereeService.stop);
 
         final hostPairing = await hostService.startHost();
-        final pairing = {...hostPairing.toJson(), 'host': '127.0.0.1'};
+        final pairing = {...hostPairing.toJson(), 'h': '127.0.0.1'};
         await refereeService.connect(jsonEncode(pairing));
         await _waitUntil(
           () => refereeService.status == RefereeConnectionStatus.connected,
@@ -140,8 +140,8 @@ void main() {
         final hostPairing = await hostService.startHost();
         final invalidPairing = {
           ...hostPairing.toJson(),
-          'host': '127.0.0.1',
-          'token': List.filled(64, '0').join(),
+          'h': '127.0.0.1',
+          't': List.filled(43, 'A').join(),
         };
         await refereeService.connect(jsonEncode(invalidPairing));
         await _waitUntil(
@@ -270,7 +270,7 @@ void main() {
         final hostPairing = await hostService.startHost();
         final pairingJson = jsonEncode({
           ...hostPairing.toJson(),
-          'host': '127.0.0.1',
+          'h': '127.0.0.1',
         });
         await refereeService.connect(pairingJson);
         await _waitUntil(
@@ -341,7 +341,7 @@ void main() {
 
         final hostPairing = await hostService.startHost();
         await refereeService.connect(
-          jsonEncode({...hostPairing.toJson(), 'host': '127.0.0.1'}),
+          jsonEncode({...hostPairing.toJson(), 'h': '127.0.0.1'}),
         );
         await _waitUntil(
           () => refereeService.status == RefereeConnectionStatus.connected,

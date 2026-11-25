@@ -53,6 +53,8 @@ npx playwright test tests/screenshots.spec.ts   # writes e2e/shots/<viewport>/*.
 |---|---|
 | `test/session_controller_test.dart` | Session creation, team config, rotation, rounds, every game's scoring, timer expiry at the exact deadline, no scoring after expiry, no duplicate scoring, pause/resume, referee Sprint decisions and Tabuu review, Trivia answer randomisation, correct/wrong/timeout, equal difficulty per round, repetition prevention, exhaustion + explicit reshuffle, cross-session freshness, persistence and restore, winners and ties, early end |
 | `test/local_referee_test.dart` | QR/manual pairing, authentication rejection, snapshots, duplicate and stale BUZZ, rapid Sprint actions, deadline races, reconnect, session reset, Classic fallback, correction and held-score confirmation |
+| `test/local_referee_qr_test.dart` | Legacy payload compatibility, compact payload size/QR version, and host QR visual configuration |
+| `integration_test/local_referee_qr_scan_test.dart` | On-device Mobile Scanner/ML Kit QR decode followed by an authenticated local WebSocket pairing |
 | `test/app_flow_test.dart` | Home → setup defaults → handover hides the card → play; Time! splash, late-tap guard, wake lock; double-tap can't skip results or start the next clock; Resume/Discard; refresh mid-turn; Trivia reveal; paused overlay |
 | `test/content_test.dart` | 2,300 cards match the manifest, IDs preserved, no editorial keys in runtime decks |
 | `e2e/tests/gameplay.spec.ts` | Real Chromium, release build, Pixel-class viewport: full journeys for all four games, concealment during handover, refresh mid-turn (no time gained), refresh between turns + Resume, discard confirmation, **offline play after first load**, 360×640 layout |
@@ -102,7 +104,9 @@ The host `SessionController` remains authoritative for card queues, turn/card-in
 
 Pairing tokens are random and temporary, but local WebSockets are unencrypted. Use a trusted in-person network. The embedded server is not kept alive in the background. If the host process is restarted, its ephemeral credentials are gone and the saved game is switched safely to Classic Mode. QR camera access is requested only when the referee selects scanning.
 
-The current one-device UI captures are in [`docs/screenshots/`](../docs/screenshots/). They show Home, Referee mode setup, and manual pairing; no live pairing credentials are included.
+The host QR uses the existing `qr_flutter` package: 260 logical pixels, circular data modules and finder eyes, medium error correction, dark ink on a warm-white card, and a 14-pixel renderer quiet zone surrounded by a 12-pixel same-color frame (more than four modules at the rendered v8 size). No center logo is used. Pairing payload v3 is compact JSON (`v`, `h`, `p`, `s`, `t`, `e`); the session ID remains 128 random bits and the token 256 random bits, encoded as unpadded base64url to reduce text length. Readers continue to accept verbose v2 payloads. An on-device integration test runs the entire framed QR through `mobile_scanner`'s Android ML Kit image analyzer and completes a local pairing.
+
+The current UI captures are in [`docs/screenshots/`](../docs/screenshots/). They include Home, Referee setup, manual joining, and the host pairing QR; sample pairing details are synthetic and no live credentials are included. The QR capture is from a debug session, so any yellow baseline guides are Flutter diagnostics rather than app text styling; release builds omit them.
 
 ## Single-device decisions
 

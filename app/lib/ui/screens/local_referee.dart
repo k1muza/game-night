@@ -88,17 +88,11 @@ class _HostPairingScreenState extends State<HostPairingScreen> {
                     ),
                     child: Column(
                       children: [
-                        if (pairing != null)
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            color: Colors.white,
-                            child: QrImageView(
-                              data: pairing.json,
-                              size: 196,
-                              errorCorrectionLevel: QrErrorCorrectLevel.M,
-                            ),
-                          )
-                        else
+                        if (pairing != null) ...[
+                          const Eyebrow('Scan to pair'),
+                          const SizedBox(height: 10),
+                          HostPairingQrCode(pairing: pairing),
+                        ] else
                           const SizedBox(
                             height: 220,
                             child: Center(child: CircularProgressIndicator()),
@@ -208,6 +202,45 @@ class _HostPairingScreenState extends State<HostPairingScreen> {
       ),
     );
   }
+}
+
+class HostPairingQrCode extends StatelessWidget {
+  const HostPairingQrCode({super.key, required this.pairing});
+
+  final PairingDetails pairing;
+
+  @override
+  Widget build(BuildContext context) => RepaintBoundary(
+    key: const ValueKey('host-pairing-qr'),
+    child: Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Gn.card,
+        borderRadius: BorderRadius.circular(Gn.rLg),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x26110E22),
+            offset: Offset(0, 5),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: QrImageView(
+        data: pairing.json,
+        size: 260,
+        padding: const EdgeInsets.all(14),
+        backgroundColor: Gn.card,
+        errorCorrectionLevel: QrErrorCorrectLevel.M,
+        gapless: false,
+        eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.circle, color: Gn.ink),
+        dataModuleStyle: const QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.circle,
+          color: Gn.ink,
+        ),
+        semanticsLabel: 'Secure referee pairing QR code',
+      ),
+    ),
+  );
 }
 
 class JoinRefereeScreen extends StatefulWidget {

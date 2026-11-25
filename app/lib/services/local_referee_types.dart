@@ -35,37 +35,44 @@ class PairingDetails {
   final String? pairingCode;
   final int? expiresAtMs;
 
+  // Compact QR v3: h=host, p=port, s=session ID, t=token, e=expiry.
   Map<String, Object> toJson() => {
-    'v': 2,
-    'host': host,
-    'port': port,
-    if (sessionId != null) 'sessionId': sessionId!,
-    if (token != null) 'token': token!,
-    if (expiresAtMs != null) 'expiresAtMs': expiresAtMs!,
+    'v': 3,
+    'h': host,
+    'p': port,
+    if (sessionId != null) 's': sessionId!,
+    if (token != null) 't': token!,
+    if (expiresAtMs != null) 'e': expiresAtMs!,
   };
 
   String get json => jsonEncode(toJson());
   String get encoded => Uri.encodeComponent(json);
 
   factory PairingDetails.fromJson(Object? value) {
-    if (value is! Map<String, dynamic> ||
-        value['v'] != 2 ||
-        value['host'] is! String ||
-        value['port'] is! int) {
+    if (value is! Map<String, dynamic>) {
+      throw const FormatException('Pairing data is invalid.');
+    }
+    final compact = value['v'] == 3;
+    final legacy = value['v'] == 2;
+    final host = value[compact ? 'h' : 'host'];
+    final port = value[compact ? 'p' : 'port'];
+    if ((!compact && !legacy) || host is! String || port is! int) {
       throw const FormatException('Pairing data is invalid.');
     }
     return PairingDetails(
-      host: value['host'] as String,
-      port: value['port'] as int,
-      sessionId: value['sessionId'] is String
-          ? value['sessionId'] as String
+      host: host,
+      port: port,
+      sessionId: value[compact ? 's' : 'sessionId'] is String
+          ? value[compact ? 's' : 'sessionId'] as String
           : null,
-      token: value['token'] is String ? value['token'] as String : null,
+      token: value[compact ? 't' : 'token'] is String
+          ? value[compact ? 't' : 'token'] as String
+          : null,
       pairingCode: value['pairingCode'] is String
           ? value['pairingCode'] as String
           : null,
-      expiresAtMs: value['expiresAtMs'] is int
-          ? value['expiresAtMs'] as int
+      expiresAtMs: value[compact ? 'e' : 'expiresAtMs'] is int
+          ? value[compact ? 'e' : 'expiresAtMs'] as int
           : null,
     );
   }

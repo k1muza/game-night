@@ -30,9 +30,17 @@ are completed. No merge or pull request was created.
   restores host state without queuing new client actions. The host can re-pair
   or switch safely to Classic while preserving progress. A process restart
   invalidates the ephemeral credentials and restores the session in Classic.
-- Screenshots of Home, Referee setup and manual joining are in
-  [`docs/screenshots/`](screenshots/). They contain no live pairing credentials.
-  Active referee-game screens could not be captured without a second device.
+- The host QR uses the existing `qr_flutter` renderer with circular data
+  modules and finder eyes, a 260-logical-pixel image, medium error correction,
+  dark ink on a warm-white card, 14-pixel renderer padding plus a 12-pixel
+  same-color frame (more than four modules of quiet area at v8), and no logo.
+- QR payload v3 uses compact JSON keys (`v`, `h`, `p`, `s`, `t`, `e`) and
+  unpadded base64url credentials. The 128-bit session ID and 256-bit token
+  retain their entropy. New readers continue to accept verbose v2 payloads.
+- Screenshots of Home, Referee setup, manual joining, and the host pairing QR
+  are in [`docs/screenshots/`](screenshots/); the QR screenshot uses synthetic
+  pairing data, not live credentials. Yellow lines in the debug capture are
+  Flutter baseline diagnostics, not text styling; release builds omit them.
 
 ## Validation
 
@@ -41,7 +49,9 @@ are completed. No merge or pull request was created.
 | Focused Referee/controller tests | **Pass**, including manual/QR pairing, invalid credentials, duplicate and stale BUZZ, rapid Sprint actions, deadline boundary, reconnect, new-session projection reset, Classic fallback, readiness gates and restored-turn pause. |
 | Full `flutter test` | **Pass**, 75 tests; includes all four Classic game regressions and the 2,300-card content integrity check. |
 | `flutter analyze` | No errors. Command exits non-zero because of 18 info-level lint findings (style/null-aware collection suggestions); the analyzer reports no warnings or errors. |
-| Android release | **Pass** using Android Studio JDK 21. APK: `app/build/app/outputs/flutter-apk/app-release.apk` (69,193,614 bytes), compile/target SDK 36. |
+| Pairing QR comparison | Fixture v2 JSON: 192 bytes, QR version 10 (57×57 modules) at M; compact v3: 133 bytes, version 8 (49×49). At 260 logical pixels, the rounded modules render at about 4.5 logical pixels versus about 3.0 pixels in the prior 196-pixel/version-10 rendering. The 14-pixel renderer padding and 12-pixel same-color frame leave over four modules of quiet area. |
+| On-device scan and pairing | **Pass** on Pixel 7 Pro / Android 17: `MobileScannerController.analyzeImage` (the installed Android ML Kit scanner) decoded the complete framed, circular QR. The decoded payload matched the generated pairing JSON, then authenticated host and referee services connected over loopback. This tests the scanner plugin and pairing path, not two-phone Wi-Fi. |
+| Android release | **Pass** using Android Studio JDK 21 after removing a stale generated plugin registrant and rebuilding. APK: `app/build/app/outputs/flutter-apk/app-release.apk` (69,196,834 bytes), compile/target SDK 36. |
 | Web release | **Pass** with `flutter build web --release --no-web-resources-cdn`. Flutter emitted non-fatal Wasm dry-run and Cupertino icon-font notices. |
 | Device smoke check | Debug app launched on one Pixel 7 Pro (Android 17/API 37). Host resolved a private Wi-Fi address, opened the pairing screen, and the Classic fallback control returned to handover. This did not verify a second device or an actual remote connection. |
 | Content preservation | Content build hook validated Sprint 400, Charades 600, Trivia 800 and Tabuu 500 cards. Canonical cards and generation tooling were not modified. |
@@ -60,6 +70,21 @@ completed successfully.
   because its platform APIs can require extra location permissions. Bonjour
   discovery was deferred; QR and manual pairing cover the v1 flow without
   extra platform setup.
+- No production QR dependency was added: the project already uses `qr_flutter`
+  4.1.0, whose `QrImageView` supports circular data modules and finder eyes.
+  The Flutter SDK `integration_test` dependency was added only for on-device
+  scanner validation.
+- The previous QR used v2 compact-JSON encoding with readable field names and
+  hex credentials. The v3 QR trims 59 characters in the representative fixture
+  (192→133) without reducing either credential's random-bit count; the new
+  parser remains backward-compatible with v2. No delimited encoding was
+  adopted because compact JSON stays easy to inspect and version while already
+  lowering the QR from v10 to v8 at the same M correction level.
+- M correction was retained instead of increasing to Q/H: the larger symbol
+  and larger modules, strong dark-on-light contrast, quiet zone, and lack of a
+  logo were validated by the app's Android ML Kit scanner and a completed
+  pairing. Cross-device camera scanning still belongs to the manual device
+  matrix.
 - No separate remote game engine, cloud service, accounts, Bluetooth, or
   internet multiplayer were introduced. Charades, Trivia and audience displays
   remain out of scope.
@@ -79,7 +104,7 @@ completed successfully.
 ## Manual verification checklist
 
 1. Pair two Android devices on shared Wi-Fi, then a mobile hotspot; repeat with
-   QR and manual details, with internet disabled.
+   live-camera QR and manual details, with internet disabled.
 2. Verify matching Sprint terms/context, timer and term state; test Correct,
    Disqualify, reversal, timeout review and host score confirmation.
 3. Verify matching Tabuu target/clues; test BUZZ, host Pass/Got It, delayed and

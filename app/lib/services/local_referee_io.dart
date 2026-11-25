@@ -136,8 +136,8 @@ class IoLocalRefereeService extends LocalRefereeService {
     _pairing = PairingDetails(
       host: address,
       port: server.port,
-      sessionId: _randomHex(16),
-      token: _randomHex(32),
+      sessionId: _randomBase64Url(16),
+      token: _randomBase64Url(32),
       pairingCode: _randomPairingCode(),
       expiresAtMs: DateTime.now().millisecondsSinceEpoch + _pairingLifetimeMs,
     );
@@ -709,8 +709,8 @@ class IoLocalRefereeService extends LocalRefereeService {
     final validQr =
         details.token != null &&
         details.sessionId != null &&
-        RegExp(r'^[0-9a-f]{64}$').hasMatch(details.token!) &&
-        RegExp(r'^[0-9a-f]{32}$').hasMatch(details.sessionId!) &&
+        _isPairingToken(details.token!) &&
+        _isPairingSessionId(details.sessionId!) &&
         details.expiresAtMs != null &&
         details.expiresAtMs! > DateTime.now().millisecondsSinceEpoch;
     final validCode =
@@ -838,7 +838,7 @@ class IoLocalRefereeService extends LocalRefereeService {
       final secret = pairing.token ?? pairing.pairingCode;
       if (message['protocolVersion'] != protocolVersion ||
           sessionId is! String ||
-          !RegExp(r'^[0-9a-f]{32}$').hasMatch(sessionId) ||
+          !_isPairingSessionId(sessionId) ||
           challenge is! String ||
           !RegExp(r'^[0-9a-f]{64}$').hasMatch(challenge) ||
           (pairing.sessionId != null && pairing.sessionId != sessionId) ||
@@ -897,8 +897,7 @@ class IoLocalRefereeService extends LocalRefereeService {
     switch (type) {
       case 'connection_accepted':
         final sessionId = message['sessionId'];
-        if (sessionId is! String ||
-            !RegExp(r'^[0-9a-f]{32}$').hasMatch(sessionId)) {
+        if (sessionId is! String || !_isPairingSessionId(sessionId)) {
           _protocolFailure(socket, 'Host pairing response is invalid.');
           return;
         }
@@ -1418,6 +1417,18 @@ class IoLocalRefereeService extends LocalRefereeService {
     bytes,
     (_) => _secureRandom.nextInt(256).toRadixString(16).padLeft(2, '0'),
   ).join();
+
+  String _randomBase64Url(int bytes) => base64Url
+      .encode(List.generate(bytes, (_) => _secureRandom.nextInt(256)))
+      .replaceAll('=', '');
+
+  bool _isPairingSessionId(String value) =>
+      RegExp(r'^[A-Za-z0-9_-]{22}$').hasMatch(value) ||
+      RegExp(r'^[0-9a-f]{32}$').hasMatch(value);
+
+  bool _isPairingToken(String value) =>
+      RegExp(r'^[A-Za-z0-9_-]{43}$').hasMatch(value) ||
+      RegExp(r'^[0-9a-f]{64}$').hasMatch(value);
 
   String _pairingProof(String secret, String sessionId, String challenge) =>
       base64Url.encode(
