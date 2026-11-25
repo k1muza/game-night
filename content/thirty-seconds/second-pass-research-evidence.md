@@ -42,3 +42,12 @@ No new external source verification was performed for these batches. Named-entit
 ## Checkpoints 008–013
 
 No external source verification performed. Deferred pathway identities: Mweya Mutsvene, Zorai Butter, Ndomudana, Jecha, Ta Ta Ta, Door Ratovharwa, Mwari Wakanaka, Too Much (Nutty O song), Hulengende. Flagged semantic conflicts include Muboora/pumpkin leaves, Ambuya/Grandmother, Jonah/Jonah's big fish, named voice assistants/generic voice assistant, Spider-Man/Tom Holland, and related songs and artists. Full-bank systematic review pending. Four supported restoration candidates remain staged.
+
+## Post-checkpoint-020 targeted identity verification
+
+- Bazooker: Umdala Wethu and Kumba Kwedu — https://nehandaradio.com/2019/04/29/bazooker-on-fire-in-gweru/
+- Tiriparwendo: Eddie Sandifolo's lead role in the 2004 ZBC programme — https://www.heraldonline.co.zw/sandifolo-zims-acting-juggernaut/ ; Aaron Chiundura Moyo and the historical setting — https://www.1zimlegends.com/2022/08/17/aaron-chiundura-moyo-the-farm-boy-who-rose-to-be-zimbabwes-finest-writer/
+- Qounfuzed: birth name and Kana Party Yapera — https://musicinafrica.net/node/8206 ; collaboration on Kamunamato Kekubhawa — https://zimbamusic.co.zw/qounfuzed-ft-bazooker-kamunamato-kekubhawa/
+- Master H: Hillary Marufu, Dhanzi collaboration with Voltz JT and Nawanadem — https://www.newsday.co.zw/theindependent/standard-style/article/200022957/nawanadem-takes-zimbabwe-by-storm ; https://myafrikamag.com/master-h-and-voltz-jt-fans-buzzing-with-nawanadem-hit/
+
+These checks establish plausible distinct clues, not present-day recognition across the intended audience. Source verification is not complete for every shortlisted candidate or every flagged record. Preserve uncertainty in the audit log.
