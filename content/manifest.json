@@ -10,11 +10,18 @@
       "source": "Deep Research upload, PR #3",
       "importedGitBlobSha": "6ad582dc9a58b31eb7e0acdb604c0289a7ecef23",
       "currentSchemaVersion": "2.0.0",
-      "currentGitBlobSha": "1c7a48d740aa1b922d0ca1d26338a976854abd5a",
-      "currentSource": "User-uploaded Sprint v2 candidate redesign; 1393 retained, 533 refined, 74 replaced",
+      "currentGitBlobSha": "a00ccafa7e4ec857ee336cd4eab3c90d98ead85d",
+      "currentSource": "Second-pass production candidate and targeted QA; 2000 terms, 400 regenerated cards; structural readback passed; application and human testing outstanding",
       "termCount": 2000,
       "termLibraryPath": "thirty-seconds/terms.jsonl",
-      "currentTermLibraryGitBlobSha": "00869312e10d45bf87d2420764c5720d270b6227"
+      "currentTermLibraryGitBlobSha": "4f82edebceedbc237447187119c9b9eb7ccc26ed",
+      "previousGitBlobSha": "c69661d76f37988d31fee255f867e6ed8b3bc1c6",
+      "previousTermLibraryGitBlobSha": "a3fe036037c828e96a32bb36b67b9e673960a6e2",
+      "contemporaryRefinementLogPath": "thirty-seconds/contemporary-term-refinement-log.jsonl",
+      "contemporaryResearchEvidencePath": "thirty-seconds/contemporary-research-evidence.md",
+      "contemporaryValidationReportPath": "thirty-seconds/contemporary-validation-report.md",
+      "secondPassRefinementLogPath": "thirty-seconds/second-pass-refinement-log.jsonl",
+      "secondPassSelectedCandidatesPath": "thirty-seconds/second-pass-selected-candidates.jsonl"
     },
     {
       "game": "charades",

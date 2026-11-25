@@ -1,0 +1,3 @@
+# Playtesting — proposed, not executed
+
+Recruit 24–48 Zimbabwean players aged 16–30, stratify 16–19, 20–24, 25–30, mix urban/rural exposure and genders. Counterbalance baseline and candidate decks between teams; randomise cards and describer order; no clue metadata visible. Record term ID, card ID, describer and age band, time-to-guess, skip, misunderstanding, route used, dispute, team score, enjoyment 1–5. Retain raw anonymous observations. Compare completion and skip rates by difficulty and age, card score dispersion, and disputed answers. Flag consistently skipped terms and unexplained team advantage; revise and retest. Do not treat estimated solve seconds as observations.
