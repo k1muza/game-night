@@ -24,6 +24,30 @@ const APPLY_STATUSES = new Set([
   "approved-direction-pending-integration",
 ]);
 const REJECT_STATUS = "rejected-final-editorial";
+const FINAL_QA_MEDIUM_SOURCE_INDICES = new Set([
+  2, 47, 76, 332, 336, 344, 357, 381, 385, 407, 418, 424, 436, 444, 455,
+  466, 475, 477, 549, 558, 609, 617, 657, 668, 688, 699, 726, 832, 1042,
+  1051, 1705,
+]);
+const FINAL_QA_HARD_SOURCE_INDICES = new Set([
+  738, 748, 794, 833, 834, 845, 858, 880, 909, 917, 970, 971, 992, 1039,
+  1097, 1154, 1191, 1262, 1299, 1327, 1343, 1369, 1382, 1394, 1432, 1476,
+  1522, 1605, 1701, 1769, 1898,
+]);
+const FINAL_QA_FAMILIES = new Map([
+  [9, "zimbabwe-apostolic-traditions"],
+  [199, "rotating-savings-groups"],
+  [209, "rotating-savings-groups"],
+  [388, "chibuku-brand"],
+  [399, "livestock-husbandry"],
+  [419, "zimbabwe-apostolic-traditions"],
+  [489, "zimbabwe-apostolic-traditions"],
+  [620, "livestock-husbandry"],
+  [648, "livestock-husbandry"],
+  [914, "chibuku-brand"],
+  [1621, "livestock-husbandry"],
+  [1645, "livestock-husbandry"],
+]);
 
 function readJsonl(filePath) {
   return fs
@@ -96,7 +120,7 @@ function inferPublicFigure(candidate, broadDomain) {
   if (!candidate.properNoun) return false;
   const clues = candidate.descriptionPathways.join(" ").toLowerCase();
   const personTerms =
-    /\b(actor|actress|artist|athlete|author|chef|choreographer|dj|fighter|medallist|owner|player|runner|singer|songwriter|sprinter|winger)\b/;
+    /\b(actor|actress|artist|athlete|author|captain|chef|choreographer|dj|fighter|hurdler|medallist|owner|player|runner|singer|songwriter|sprinter|winger)\b/;
   if (personTerms.test(clues)) return true;
   return broadDomain === "sport" && ["SPT-01", "SPT-02"].includes(candidate.category);
 }
@@ -237,6 +261,22 @@ function synchronizeCandidateContextLabels(terms, decisions) {
   }
 }
 
+function synchronizeAppliedCandidates(terms, decisions, profiles) {
+  const byId = new Map(terms.map((row) => [row.termId, row]));
+  const termsByNormalizedName = new Map(
+    terms.map((row) => [normalize(row.term), row]),
+  );
+  for (const decision of decisions) {
+    if (!APPLY_STATUSES.has(decision.status)) continue;
+    applyCandidate(
+      byId.get(decision.previousTermId),
+      decision,
+      profiles,
+      termsByNormalizedName,
+    );
+  }
+}
+
 function difficultyPressure(row) {
   const assessment = row.editorialAssessment;
   return (
@@ -312,6 +352,42 @@ function resolveDifficultyInventory(terms, pinnedTermIds) {
   }
 }
 
+function applyFinalQa(terms) {
+  if (FINAL_QA_MEDIUM_SOURCE_INDICES.size !== FINAL_QA_HARD_SOURCE_INDICES.size) {
+    throw new Error("final QA difficulty swaps must be one-for-one");
+  }
+  for (const row of terms) {
+    let finalQaDecision = null;
+    if (FINAL_QA_MEDIUM_SOURCE_INDICES.has(row.sourceIndex)) {
+      row.termDifficulty = "medium";
+      finalQaDecision = "reviewed-medium";
+    } else if (FINAL_QA_HARD_SOURCE_INDICES.has(row.sourceIndex)) {
+      row.termDifficulty = "hard";
+      finalQaDecision = "reviewed-hard";
+    }
+
+    const editorial = row.difficultyResolution.editorialDifficulty;
+    const production = row.termDifficulty;
+    row.difficultyResolution.productionDifficulty = production;
+    row.difficultyResolution.quotaAdjusted = editorial !== production;
+    row.difficultyResolution.method =
+      editorial !== production
+        ? "second-pass-final-qa-quota-adjustment"
+        : "second-pass-editorial-difficulty";
+    if (finalQaDecision) {
+      row.difficultyResolution.finalQaDecision = finalQaDecision;
+    } else {
+      delete row.difficultyResolution.finalQaDecision;
+    }
+    row.estimatedSolveSeconds =
+      { easy: 3.5, medium: 6, hard: 10 }[production] +
+      (row.highlyLocal || row.specialist ? 1 : 0);
+    if (FINAL_QA_FAMILIES.has(row.sourceIndex)) {
+      row.family = FINAL_QA_FAMILIES.get(row.sourceIndex);
+    }
+  }
+}
+
 function validateOutput(terms, decisions) {
   if (terms.length !== 2000) throw new Error(`expected 2000 terms, found ${terms.length}`);
   if (new Set(terms.map((row) => row.termId)).size !== 2000) {
@@ -326,6 +402,21 @@ function validateOutput(terms, decisions) {
   }
   if (terms.some((row) => row.descriptionPathways.length < 3)) {
     throw new Error("one or more production terms have fewer than three pathways");
+  }
+  const mediumToHard = terms.filter(
+    (row) =>
+      row.difficultyResolution.editorialDifficulty === "medium" &&
+      row.termDifficulty === "hard",
+  ).length;
+  const easyToMedium = terms.filter(
+    (row) =>
+      row.difficultyResolution.editorialDifficulty === "easy" &&
+      row.termDifficulty === "medium",
+  ).length;
+  if (mediumToHard !== 139 || easyToMedium !== 80) {
+    throw new Error(
+      `quota adjustment mismatch: easy-to-medium=${easyToMedium}, medium-to-hard=${mediumToHard}`,
+    );
   }
 
   const byId = new Map(terms.map((row) => [row.termId, row]));
@@ -354,6 +445,9 @@ function validateOutput(terms, decisions) {
     quotaAdjustedTerms: terms.filter(
       (row) => row.difficultyResolution.quotaAdjusted,
     ).length,
+    easyToMedium,
+    mediumToHard,
+    finalQaDifficultySwaps: FINAL_QA_MEDIUM_SOURCE_INDICES.size,
   };
 }
 
@@ -388,7 +482,10 @@ function main() {
         Array.isArray(row.humanReviewFlags),
     )
   ) {
+    const profiles = categoryProfiles(baseline);
+    synchronizeAppliedCandidates(baseline, decisions, profiles);
     synchronizeCandidateContextLabels(baseline, decisions);
+    applyFinalQa(baseline);
     const summary = validateOutput(baseline, decisions);
     summary.alreadyConsolidated = true;
     writeJsonl(TERMS_PATH, baseline);
@@ -443,6 +540,7 @@ function main() {
 
   resolveDifficultyInventory(output, pinnedTermIds);
   synchronizeCandidateContextLabels(output, decisions);
+  applyFinalQa(output);
   const summary = validateOutput(output, decisions);
   writeJsonl(TERMS_PATH, output);
   process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
