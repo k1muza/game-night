@@ -52,7 +52,7 @@ npx playwright test tests/screenshots.spec.ts   # writes e2e/shots/<viewport>/*.
 | Suite | What it covers |
 |---|---|
 | `test/session_controller_test.dart` | Session creation, team config, rotation, rounds, every game's scoring, timer expiry at the exact deadline, no scoring after expiry, no duplicate scoring, pause/resume, referee Sprint decisions and Tabuu review, Trivia answer randomisation, correct/wrong/timeout, equal difficulty per round, repetition prevention, exhaustion + explicit reshuffle, cross-session freshness, persistence and restore, winners and ties, early end |
-| `test/local_referee_test.dart` | WebSocket pairing/authentication, private snapshot sync, BUZZ idempotency, remote Sprint scoring, deadline races, correction requests and held score confirmation |
+| `test/local_referee_test.dart` | QR/manual pairing, authentication rejection, snapshots, duplicate and stale BUZZ, rapid Sprint actions, deadline races, reconnect, session reset, Classic fallback, correction and held-score confirmation |
 | `test/app_flow_test.dart` | Home → setup defaults → handover hides the card → play; Time! splash, late-tap guard, wake lock; double-tap can't skip results or start the next clock; Resume/Discard; refresh mid-turn; Trivia reveal; paused overlay |
 | `test/content_test.dart` | 2,300 cards match the manifest, IDs preserved, no editorial keys in runtime decks |
 | `e2e/tests/gameplay.spec.ts` | Real Chromium, release build, Pixel-class viewport: full journeys for all four games, concealment during handover, refresh mid-turn (no time gained), refresh between turns + Resume, discard confirmation, **offline play after first load**, 360×640 layout |
@@ -96,11 +96,13 @@ e2e/            Playwright tests + tiny static server
 
 ## Local Referee Mode
 
-On native Android and iOS, Sprint and Tabuu setup offer Classic (default) or Referee play. The host starts a temporary WebSocket server on its local IPv4 interface. Pair the second device by scanning the host QR code or pasting the displayed JSON pairing details; both devices must be on the same Wi-Fi or hotspot. Internet access is not used. Web builds leave Referee Mode unavailable and keep Classic play unchanged.
+On native Android and iOS, Sprint and Tabuu setup offer Classic (default) or Referee play. The host starts a temporary WebSocket server on its local Wi-Fi IPv4 interface. Pair by scanning the host QR code or manually entering its address, port and one-time code; both devices must be on the same Wi-Fi or hotspot. Internet access is not used. Web builds leave Referee Mode unavailable and keep Classic play unchanged.
 
-The host `SessionController` remains authoritative for card queues, turn/card-instance IDs, scoring, deadlines and persistence. The referee receives only the current playable card projection and sends authenticated, versioned actions. Commands are checked against the session, turn, card instance, game, phase and host deadline; message IDs are idempotent. Tabuu buzzes cannot carry over to another card. Sprint terms support Correct, Disqualify and reversal. Referee-mode scores are held through a review screen until the host confirms. On connection loss the host pauses; reconnect restores the host snapshot, while Classic fallback invalidates the pairing and preserves progress.
+The host `SessionController` remains authoritative for card queues, turn/card-instance IDs, scoring, deadlines and persistence. The referee receives only the current playable card projection and sends authenticated, versioned actions. Pairing uses a temporary QR token or a 12-character code, challenge-response authentication and signed messages; it provides integrity/authentication, not encryption. Commands are checked against the session, turn, card instance, game, phase and host deadline; message IDs are idempotent. Tabuu buzzes cannot carry over to another card. Sprint terms support Correct, Disqualify and reversal. Referee-mode scores are held through a review screen until the host confirms. On connection loss the host pauses; reconnect restores the host snapshot, while Classic fallback invalidates the pairing and preserves progress.
 
 Pairing tokens are random and temporary, but local WebSockets are unencrypted. Use a trusted in-person network. The embedded server is not kept alive in the background. If the host process is restarted, its ephemeral credentials are gone and the saved game is switched safely to Classic Mode. QR camera access is requested only when the referee selects scanning.
+
+The current one-device UI captures are in [`docs/screenshots/`](../docs/screenshots/). They show Home, Referee mode setup, and manual pairing; no live pairing credentials are included.
 
 ## Single-device decisions
 

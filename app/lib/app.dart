@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -92,6 +94,7 @@ class GameNightApp extends StatefulWidget {
 class _GameNightAppState extends State<GameNightApp>
     with WidgetsBindingObserver {
   final nav = AppNav();
+  late final bool _ownsReferee = widget.referee == null;
   late final LocalRefereeService referee =
       widget.referee ?? createLocalRefereeService(widget.controller);
 
@@ -120,6 +123,7 @@ class _GameNightAppState extends State<GameNightApp>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    if (_ownsReferee) referee.dispose();
     super.dispose();
   }
 
@@ -127,7 +131,13 @@ class _GameNightAppState extends State<GameNightApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       widget.controller.tick();
-      widget.fx.keepAwake(widget.controller.session?.phase == Phase.playing);
+      widget.fx.keepAwake(
+        (widget.controller.session?.phase == Phase.playing &&
+                widget.controller.session?.turn?.paused != true) ||
+            (referee.status == RefereeConnectionStatus.connected &&
+                referee.snapshot?['phase'] == Phase.playing.name &&
+                referee.snapshot?['paused'] != true),
+      );
     } else if (state == AppLifecycleState.detached ||
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
@@ -216,7 +226,10 @@ class _ShellState extends State<_Shell> {
     super.dispose();
   }
 
-  void _rebuild() => setState(() {});
+  void _rebuild() {
+    _syncWakeLock();
+    setState(() {});
+  }
 
   Future<void> _repairRefereePairing() async {
     try {
@@ -231,9 +244,19 @@ class _ShellState extends State<_Shell> {
     }
   }
 
+  Future<void> _cancelHostPairing() async {
+    await widget.referee.takeOverClassic();
+    if (mounted) widget.nav.session();
+  }
+
   void _syncWakeLock() => widget.fx.keepAwake(
-    widget.controller.session?.phase == Phase.playing &&
-        widget.nav.route == AppRoute.session,
+    (widget.controller.session?.phase == Phase.playing &&
+            widget.controller.session?.turn?.paused != true &&
+            widget.nav.route == AppRoute.session) ||
+        (widget.nav.route == AppRoute.referee &&
+            widget.referee.status == RefereeConnectionStatus.connected &&
+            widget.referee.snapshot?['phase'] == Phase.playing.name &&
+            widget.referee.snapshot?['paused'] != true),
   );
 
   void _onChange() {
@@ -333,7 +356,14 @@ class _ShellState extends State<_Shell> {
       canPop: route == AppRoute.home,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
+          if (route == AppRoute.hostPairing) {
+            unawaited(_cancelHostPairing());
+            return;
+          }
           if (s?.phase == Phase.playing) c.pause();
+          if (route == AppRoute.joinReferee || route == AppRoute.referee) {
+            unawaited(widget.referee.stop());
+          }
           widget.nav.home();
         }
       },

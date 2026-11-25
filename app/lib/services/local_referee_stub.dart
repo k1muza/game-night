@@ -25,6 +25,8 @@ class _UnsupportedLocalRefereeService extends LocalRefereeService {
   String? get lastActionMessage => null;
   @override
   bool? get lastActionAccepted => null;
+  @override
+  String? get connectionError => null;
 
   @override
   Future<PairingDetails> startHost() => Future.error(
@@ -39,14 +41,37 @@ class _UnsupportedLocalRefereeService extends LocalRefereeService {
     ),
   );
   @override
-  String sendAction(String action, {int? term, String? messageId}) =>
-      throw UnsupportedError(
-        'Local referee networking is unavailable on this platform.',
-      );
+  Future<void> connectManual({
+    required String host,
+    required int port,
+    required String pairingCode,
+  }) => Future.error(
+    UnsupportedError(
+      'Local referee networking is unavailable on this platform.',
+    ),
+  );
+  @override
+  Future<void> retryConnection() => Future.error(
+    UnsupportedError(
+      'Local referee networking is unavailable on this platform.',
+    ),
+  );
+  @override
+  String sendAction(
+    String action, {
+    required RefereeActionContext context,
+    int? term,
+    String? messageId,
+  }) => throw UnsupportedError(
+    'Local referee networking is unavailable on this platform.',
+  );
   @override
   Future<void> stop() async {}
   @override
-  Future<void> takeOverClassic() async {}
+  Future<void> takeOverClassic() async {
+    controller.switchToClassic();
+    if (controller.session?.turn?.paused == true) controller.resume();
+  }
   @override
   void pauseForBackground() {}
 }

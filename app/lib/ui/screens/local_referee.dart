@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -37,6 +36,18 @@ class _HostPairingScreenState extends State<HostPairingScreen> {
 
   void _changed() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _restartPairing() async {
+    try {
+      await _service.startHost();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not restart pairing: $error')),
+        );
+      }
+    }
   }
 
   @override
@@ -115,9 +126,46 @@ class _HostPairingScreenState extends State<HostPairingScreen> {
                           const SizedBox(height: 8),
                           GameChip(game),
                         ],
+                        if (pairing != null) ...[
+                          const SizedBox(height: 14),
+                          const Eyebrow('Manual connection'),
+                          const SizedBox(height: 6),
+                          SelectableText(
+                            '${pairing.host}:${pairing.port}',
+                            textAlign: TextAlign.center,
+                            style: Gn.uiStyle(15, weight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text('One-time pairing code'),
+                          const SizedBox(height: 4),
+                          SelectableText(
+                            _formatPairingCode(pairing.pairingCode ?? ''),
+                            textAlign: TextAlign.center,
+                            style: Gn.displayStyle(
+                              25,
+                              color: Gn.correct,
+                              spacing: 2,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
+                  if (_service.connectionError != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      _service.connectionError!,
+                      textAlign: TextAlign.center,
+                      style: Gn.uiStyle(13, color: Gn.warning),
+                    ),
+                  ],
+                  if (_service.isHost &&
+                      _service.status == RefereeConnectionStatus.disconnected)
+                    TextButton.icon(
+                      onPressed: _restartPairing,
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Create a new pairing'),
+                    ),
                   const SizedBox(height: 16),
                   Align(
                     alignment: Alignment.centerLeft,
@@ -125,7 +173,7 @@ class _HostPairingScreenState extends State<HostPairingScreen> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    'If scanning is unavailable, enter these exact details on the referee phone:',
+                    'If scanning is unavailable, enter the host address and one-time code on the referee phone:',
                     style: Gn.uiStyle(
                       14,
                       color: Gn.text2,
@@ -133,26 +181,9 @@ class _HostPairingScreenState extends State<HostPairingScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  if (pairing != null)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Gn.surface1,
-                        borderRadius: BorderRadius.circular(Gn.rMd),
-                      ),
-                      child: SelectableText(
-                        pairing.json,
-                        style: Gn.uiStyle(
-                          12,
-                          color: Gn.text1,
-                          weight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
                   const SizedBox(height: 12),
                   const Text(
-                    'The pairing token is temporary and is invalidated when this session ends.',
+                    'The secure pairing expires after four hours and is invalidated when this session ends.',
                     style: TextStyle(color: Gn.text3, fontSize: 12),
                   ),
                 ],
@@ -187,7 +218,9 @@ class JoinRefereeScreen extends StatefulWidget {
 }
 
 class _JoinRefereeScreenState extends State<JoinRefereeScreen> {
-  final _pairingText = TextEditingController();
+  final _hostText = TextEditingController();
+  final _portText = TextEditingController();
+  final _codeText = TextEditingController();
   late final LocalRefereeService _service = AppScope.read(context).referee;
   bool _scanning = false;
   bool _connecting = false;
@@ -202,7 +235,9 @@ class _JoinRefereeScreenState extends State<JoinRefereeScreen> {
   @override
   void dispose() {
     _service.removeListener(_changed);
-    _pairingText.dispose();
+    _hostText.dispose();
+    _portText.dispose();
+    _codeText.dispose();
     super.dispose();
   }
 
@@ -211,23 +246,25 @@ class _JoinRefereeScreenState extends State<JoinRefereeScreen> {
     if (_service.status == RefereeConnectionStatus.connected) {
       AppScope.of(context).nav.referee();
     } else {
-      setState(() {});
+      setState(() {
+        _connecting =
+            _service.status == RefereeConnectionStatus.connecting ||
+            _service.status == RefereeConnectionStatus.synchronizing;
+        if (_service.connectionError != null) {
+          _error = _service.connectionError;
+        }
+      });
     }
   }
 
-  Future<void> _connect(String value) async {
+  Future<void> _connectQr(String value) async {
     setState(() {
       _connecting = true;
       _error = null;
       _scanning = false;
     });
     try {
-      final text = value.trim();
-      final normalized = text.startsWith('{')
-          ? text
-          : Uri.decodeComponent(text);
-      jsonDecode(normalized);
-      await _service.connect(normalized);
+      await _service.connect(value.trim());
     } catch (error) {
       if (mounted) {
         setState(() {
@@ -236,12 +273,65 @@ class _JoinRefereeScreenState extends State<JoinRefereeScreen> {
         });
       }
     }
+    if (mounted) {
+      setState(() {
+        _connecting =
+            _service.status == RefereeConnectionStatus.connecting ||
+            _service.status == RefereeConnectionStatus.synchronizing;
+      });
+    }
+  }
+
+  Future<void> _connectManual() async {
+    final port = int.tryParse(_portText.text.trim());
+    if (port == null) {
+      setState(() => _error = 'Enter the port shown on the host phone.');
+      return;
+    }
+    setState(() {
+      _connecting = true;
+      _error = null;
+    });
+    try {
+      await _service.connectManual(
+        host: _hostText.text,
+        port: port,
+        pairingCode: _codeText.text,
+      );
+    } catch (error) {
+      if (mounted) setState(() => _error = 'Could not connect: $error');
+    }
+    if (mounted) {
+      setState(() {
+        _connecting =
+            _service.status == RefereeConnectionStatus.connecting ||
+            _service.status == RefereeConnectionStatus.synchronizing;
+      });
+    }
+  }
+
+  Future<void> _cancelConnection() async {
+    await _service.stop();
+    if (mounted) {
+      setState(() {
+        _scanning = false;
+        _connecting = false;
+        _error = null;
+      });
+    }
+  }
+
+  Future<void> _leave() async {
+    await _service.stop();
+    if (mounted) AppScope.of(context).nav.home();
   }
 
   void _barcodeDetected(BarcodeCapture capture) {
-    if (capture.barcodes.isEmpty) return;
+    if (_connecting || capture.barcodes.isEmpty) return;
     final value = capture.barcodes.first.rawValue;
-    if (value != null && value.startsWith('{')) _connect(value);
+    if (value != null && value.trim().startsWith('{')) {
+      unawaited(_connectQr(value));
+    }
   }
 
   @override
@@ -251,7 +341,7 @@ class _JoinRefereeScreenState extends State<JoinRefereeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _PageHeader(title: 'Join as Referee', onBack: scope.nav.home),
+          _PageHeader(title: 'Join as Referee', onBack: _leave),
           if (!scope.referee.supported)
             const Expanded(
               child: Center(
@@ -272,7 +362,36 @@ class _JoinRefereeScreenState extends State<JoinRefereeScreen> {
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(Gn.rXl),
-                  child: MobileScanner(onDetect: _barcodeDetected),
+                  child: MobileScanner(
+                    onDetect: _barcodeDetected,
+                    errorBuilder: (context, exception) => Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.no_photography_outlined,
+                              size: 44,
+                              color: Gn.warning,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Camera unavailable: ${exception.errorCode.message}',
+                              textAlign: TextAlign.center,
+                              style: Gn.uiStyle(14, color: Gn.text2),
+                            ),
+                            const SizedBox(height: 12),
+                            GnButton(
+                              label: 'Enter details manually',
+                              onPressed: () =>
+                                  setState(() => _scanning = false),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               )
             else
@@ -286,17 +405,56 @@ class _JoinRefereeScreenState extends State<JoinRefereeScreen> {
                     ),
                     const SizedBox(height: 18),
                     const Eyebrow('Manual pairing'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Enter the host address, port and one-time code shown on the host phone.',
+                      style: Gn.uiStyle(13, color: Gn.text2),
+                    ),
+                    const SizedBox(height: 10),
                     TextField(
-                      controller: _pairingText,
-                      minLines: 5,
-                      maxLines: 7,
+                      controller: _hostText,
+                      onChanged: (_) => setState(() {}),
                       autocorrect: false,
                       enableSuggestions: false,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Gn.surface1,
-                        hintText: 'Paste pairing details from the host phone',
+                        labelText: 'Host IP address',
+                        hintText: '192.168.1.20',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(Gn.rMd),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _portText,
+                      onChanged: (_) => setState(() {}),
+                      keyboardType: TextInputType.number,
+                      autocorrect: false,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Gn.surface1,
+                        labelText: 'Port',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(Gn.rMd),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _codeText,
+                      onChanged: (_) => setState(() {}),
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Gn.surface1,
+                        labelText: '12-character pairing code',
+                        hintText: 'ABCD-EFGH-JK23',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(Gn.rMd),
                           borderSide: BorderSide.none,
@@ -305,12 +463,43 @@ class _JoinRefereeScreenState extends State<JoinRefereeScreen> {
                     ),
                     const SizedBox(height: 10),
                     GnButton(
-                      label: _connecting ? 'Connecting…' : 'Connect manually',
+                      label: _connecting ? 'Connecting…' : 'Connect',
                       icon: Icons.link_rounded,
-                      onPressed: _connecting || _pairingText.text.trim().isEmpty
+                      onPressed:
+                          _connecting ||
+                              _hostText.text.trim().isEmpty ||
+                              int.tryParse(_portText.text.trim()) == null ||
+                              _codeText.text
+                                      .replaceAll(RegExp(r'[\s-]'), '')
+                                      .length !=
+                                  12
                           ? null
-                          : () => _connect(_pairingText.text),
+                          : _connectManual,
                     ),
+                    if (_service.status ==
+                            RefereeConnectionStatus.disconnected &&
+                        _service.pairing != null) ...[
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: _connecting
+                            ? null
+                            : () async {
+                                setState(() => _connecting = true);
+                                try {
+                                  await _service.retryConnection();
+                                } catch (error) {
+                                  if (mounted) {
+                                    setState(() => _error = '$error');
+                                  }
+                                }
+                                if (mounted) {
+                                  setState(() => _connecting = false);
+                                }
+                              },
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Retry connection'),
+                      ),
+                    ],
                     if (_error != null) ...[
                       const SizedBox(height: 10),
                       Text(
@@ -329,6 +518,14 @@ class _JoinRefereeScreenState extends State<JoinRefereeScreen> {
                         'Connection interrupted. Trying to reconnect…',
                       ),
                     ],
+                    if (_connecting ||
+                        _service.status == RefereeConnectionStatus.connecting ||
+                        _service.status ==
+                            RefereeConnectionStatus.synchronizing)
+                      TextButton(
+                        onPressed: _cancelConnection,
+                        child: const Text('Cancel connection'),
+                      ),
                   ],
                 ),
               ),
@@ -395,6 +592,7 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
   @override
   Widget build(BuildContext context) {
     final scope = AppScope.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     final state = _service.snapshot;
     if (state == null) {
       return PageFrame(
@@ -407,11 +605,22 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
                 if (mounted) scope.nav.home();
               },
             ),
-            const Expanded(
+            Expanded(
               child: Center(
-                child: Text('Waiting for the host to synchronise the game…'),
+                child: Text(
+                  _service.connectionError ??
+                      'Waiting for the host to synchronise the game…',
+                  textAlign: TextAlign.center,
+                  style: Gn.uiStyle(16, color: Gn.text2),
+                ),
               ),
             ),
+            if (_service.pairing == null)
+              GnButton(
+                label: 'Return to home',
+                icon: Icons.home_rounded,
+                onPressed: scope.nav.home,
+              ),
           ],
         ),
       );
@@ -445,6 +654,23 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
           const SizedBox(height: 10),
           TeamBadge(Team(team['name'] as String, team['paletteIndex'] as int)),
           const SizedBox(height: 12),
+          if (_service.status == RefereeConnectionStatus.reconnecting ||
+              _service.status == RefereeConnectionStatus.disconnected ||
+              _service.status == RefereeConnectionStatus.authenticationFailed)
+            _ConnectionRecovery(
+              service: _service,
+              onRetry: () async {
+                try {
+                  await _service.retryConnection();
+                } catch (error) {
+                  if (mounted) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('Could not reconnect: $error')),
+                    );
+                  }
+                }
+              },
+            ),
           if (phase == Phase.playing.name) ...[
             Row(
               children: [
@@ -467,7 +693,7 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            Expanded(child: _activeCard(game, state)),
+            Expanded(child: _activeCard(context, game, state)),
             if (state['paused'] == true)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
@@ -528,29 +754,48 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
     );
   }
 
-  Widget _activeCard(GameKind game, Map<String, dynamic> state) {
+  Widget _activeCard(
+    BuildContext context,
+    GameKind game,
+    Map<String, dynamic> state,
+  ) {
     final card = (state['card'] as Map?)?.cast<String, dynamic>();
     if (card == null) {
       return const Center(child: Text('Waiting for the active card…'));
     }
+    final actionContext = RefereeActionContext.fromSnapshot(state);
     if (game == GameKind.sprint) {
       final terms = (card['terms'] as List).cast<Map>();
       final marked = (state['marked'] as List).cast<int>().toSet();
       final disqualified = (state['disqualified'] as List).cast<int>().toSet();
-      return ListView(
-        children: [
-          for (var i = 0; i < terms.length; i++) ...[
-            _SprintRefereeTerm(
+      return LayoutBuilder(
+        builder: (context, box) {
+          const columns = 2;
+          const gap = 8.0;
+          final rows = (terms.length / columns).ceil();
+          final tileWidth = (box.maxWidth - gap) / columns;
+          final tileHeight = (box.maxHeight - gap * (rows - 1)) / rows;
+          return GridView.builder(
+            padding: EdgeInsets.zero,
+            physics: const ClampingScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              crossAxisSpacing: gap,
+              mainAxisSpacing: gap,
+              childAspectRatio: tileWidth / tileHeight,
+            ),
+            itemCount: terms.length,
+            itemBuilder: (context, i) => _SprintRefereeTerm(
               term: terms[i].cast<String, dynamic>(),
               index: i,
               marked: marked.contains(i),
               disqualified: disqualified.contains(i),
               enabled: _service.status == RefereeConnectionStatus.connected,
-              onAction: (action) => _service.sendAction(action, term: i),
+              onAction: (action) =>
+                  _service.sendAction(action, context: actionContext, term: i),
             ),
-            const SizedBox(height: 9),
-          ],
-        ],
+          );
+        },
       );
     }
     final clues = (card['clues'] as List).cast<String>();
@@ -606,7 +851,7 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
           height: 88,
           fontSize: 30,
           onPressed: _service.status == RefereeConnectionStatus.connected
-              ? () => _service.sendAction('buzz')
+              ? () => _service.sendAction('buzz', context: actionContext)
               : null,
         ),
         const SizedBox(height: 8),
@@ -622,6 +867,7 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
   Widget _turnReview(GameKind game, Map<String, dynamic> state) {
     final review = (state['review'] as Map?)?.cast<String, dynamic>();
     if (review == null) return const Center(child: Text('Turn finished.'));
+    final actionContext = RefereeActionContext.fromSnapshot(state);
     final points = review['points'] as int;
     final awaitingConfirmation = state['phase'] == Phase.turnReview.name;
     final correctionRequested = state['correctionRequested'] == true;
@@ -661,7 +907,10 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
             outline: true,
             foreground: Gn.text1,
             onPressed: _service.status == RefereeConnectionStatus.connected
-                ? () => _service.sendAction('request_correction')
+                ? () => _service.sendAction(
+                    'request_correction',
+                    context: actionContext,
+                  )
                 : null,
           ),
         if (awaitingConfirmation && correctionRequested) ...[
@@ -679,11 +928,15 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
                 marked: (state['marked'] as List).contains(i),
                 disqualified: (state['disqualified'] as List).contains(i),
                 enabled: _service.status == RefereeConnectionStatus.connected,
-                onAction: (action) => _service.sendAction(switch (action) {
-                  'mark_term_correct' => 'review_term_correct',
-                  'disqualify_term' => 'review_term_disqualified',
-                  _ => 'review_term_pending',
-                }, term: i),
+                onAction: (action) => _service.sendAction(
+                  switch (action) {
+                    'mark_term_correct' => 'review_term_correct',
+                    'disqualify_term' => 'review_term_disqualified',
+                    _ => 'review_term_pending',
+                  },
+                  context: actionContext,
+                  term: i,
+                ),
               ),
               const SizedBox(height: 8),
             ],
@@ -692,7 +945,11 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
               _TabuuCorrectionSuggestion(
                 event: (review['events'] as List)[i].cast<String, dynamic>(),
                 enabled: _service.status == RefereeConnectionStatus.connected,
-                onAction: (action) => _service.sendAction(action, term: i),
+                onAction: (action) => _service.sendAction(
+                  action,
+                  context: actionContext,
+                  term: i,
+                ),
               ),
         ],
         const SizedBox(height: 12),
@@ -728,7 +985,7 @@ class _SprintRefereeTerm extends StatelessWidget {
   Widget build(BuildContext context) {
     final bg = marked ? GameKind.sprint.palette.accent : Gn.card;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(Gn.rLg),
@@ -737,23 +994,27 @@ class _SprintRefereeTerm extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
+          FitText(
             term['text'] as String,
-            style: Gn.displayStyle(23, color: Gn.ink, height: 1.05),
+            maxLines: 2,
+            minSize: 14,
+            style: Gn.displayStyle(20, color: Gn.ink, height: 1.0),
           ),
           if (term['context'] != null)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.only(top: 3),
               child: Text(
                 term['context'] as String,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: Gn.uiStyle(
-                  12,
+                  11,
                   color: Gn.onCardMuted,
                   weight: FontWeight.w700,
                 ),
               ),
             ),
-          const SizedBox(height: 9),
+          const SizedBox(height: 6),
           Row(
             children: [
               Expanded(
@@ -850,6 +1111,16 @@ class _ConnectionPill extends StatelessWidget {
         Gn.correct,
         Icons.wifi_rounded,
       ),
+      RefereeConnectionStatus.synchronizing => (
+        'Syncing',
+        Gn.warning,
+        Icons.sync_rounded,
+      ),
+      RefereeConnectionStatus.waiting => (
+        'Waiting',
+        Gn.warning,
+        Icons.wifi_find_rounded,
+      ),
       RefereeConnectionStatus.reconnecting => (
         'Reconnecting',
         Gn.warning,
@@ -860,11 +1131,64 @@ class _ConnectionPill extends StatelessWidget {
         Gn.warning,
         Icons.wifi_find_rounded,
       ),
+      RefereeConnectionStatus.authenticationFailed => (
+        'Re-pair',
+        Gn.violation,
+        Icons.lock_outline_rounded,
+      ),
       _ => ('Disconnected', Gn.violation, Icons.wifi_off_rounded),
     };
     return Pill(text: label, icon: icon, fg: color, height: 32);
   }
 }
+
+class _ConnectionRecovery extends StatelessWidget {
+  const _ConnectionRecovery({required this.service, required this.onRetry});
+
+  final LocalRefereeService service;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final authenticationFailed =
+        service.status == RefereeConnectionStatus.authenticationFailed;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Gn.surface1,
+        borderRadius: BorderRadius.circular(Gn.rMd),
+        border: Border.all(color: Gn.warning, width: 1),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            authenticationFailed
+                ? Icons.lock_outline_rounded
+                : Icons.wifi_off_rounded,
+            color: Gn.warning,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              service.connectionError ??
+                  'Connection interrupted. The host remains authoritative.',
+              style: Gn.uiStyle(12, color: Gn.text1, weight: FontWeight.w700),
+            ),
+          ),
+          if (!authenticationFailed &&
+              service.status == RefereeConnectionStatus.disconnected &&
+              service.pairing != null)
+            TextButton(onPressed: onRetry, child: const Text('Retry')),
+        ],
+      ),
+    );
+  }
+}
+
+String _formatPairingCode(String code) => code.length == 12
+    ? '${code.substring(0, 4)}-${code.substring(4, 8)}-${code.substring(8)}'
+    : code;
 
 class RefereeHostReviewScreen extends StatelessWidget {
   const RefereeHostReviewScreen({super.key});

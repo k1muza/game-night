@@ -594,7 +594,7 @@ class PausedOverlay extends StatelessWidget {
                     GnButton(
                       label: 'Resume',
                       icon: Icons.play_arrow_rounded,
-                      onPressed: c.resume,
+                      onPressed: () => c.resume(expectedTurnId: s.turn?.turnId),
                     ),
                     const SizedBox(height: 10),
                     GnButton(
@@ -610,7 +610,7 @@ class PausedOverlay extends StatelessWidget {
                               'Points scored so far count. The remaining time is lost.',
                           yes: 'End turn',
                         )) {
-                          c.finishTurn();
+                          c.finishTurn(expectedTurnId: s.turn?.turnId);
                         }
                       },
                     ),
@@ -657,11 +657,15 @@ class PausedOverlay extends StatelessWidget {
 class PauseButton extends StatelessWidget {
   const PauseButton({super.key});
   @override
-  Widget build(BuildContext context) => IconSquare(
-    icon: Icons.pause_rounded,
-    label: 'Pause',
-    onTap: AppScope.of(context).controller.pause,
-  );
+  Widget build(BuildContext context) {
+    final controller = AppScope.of(context).controller;
+    final turnId = controller.session?.turn?.turnId;
+    return IconSquare(
+      icon: Icons.pause_rounded,
+      label: 'Pause',
+      onTap: () => controller.pause(expectedTurnId: turnId),
+    );
+  }
 }
 
 String teamTurnLabel(Team t) => '${t.name.toUpperCase()}’S TURN';

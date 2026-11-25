@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_night/model/game_kind.dart';
 import 'package:game_night/services/local_referee.dart';
+import 'package:game_night/services/local_referee_io.dart';
 import 'package:game_night/session/session.dart';
 import 'package:game_night/session/session_controller.dart';
 import 'package:game_night/session/store.dart';
@@ -11,6 +12,40 @@ import 'helpers.dart';
 
 void main() {
   group('local referee WebSocket session', () {
+    test('pairs by manual address and one-time code', () async {
+      final host = Harness();
+      host.controller.newSession(
+        const GameConfig(game: GameKind.forbidden, mode: PlayMode.referee),
+        [Team('Team A', 0), Team('Team B', 1)],
+      );
+      final hostService = IoLocalRefereeService(
+        host.controller,
+        allowLoopbackForTesting: true,
+      );
+      final refereeController = SessionController(
+        library: host.controller.library,
+        store: MemorySessionStore(),
+      );
+      final refereeService = IoLocalRefereeService(
+        refereeController,
+        allowLoopbackForTesting: true,
+      );
+      addTearDown(hostService.stop);
+      addTearDown(refereeService.stop);
+
+      final pairing = await hostService.startHost();
+      await refereeService.connectManual(
+        host: '127.0.0.1',
+        port: pairing.port,
+        pairingCode: pairing.pairingCode!,
+      );
+      await _waitUntil(
+        () => refereeService.status == RefereeConnectionStatus.connected,
+      );
+      await _waitUntil(() => refereeService.snapshot != null);
+      expect(refereeService.snapshot!['sessionId'], pairing.sessionId);
+    });
+
     test(
       'authenticates, synchronises active Tabuu, and deduplicates BUZZ',
       () async {
@@ -19,12 +54,18 @@ void main() {
           const GameConfig(game: GameKind.forbidden, mode: PlayMode.referee),
           [Team('Team A', 0), Team('Team B', 1)],
         );
-        final hostService = createLocalRefereeService(host.controller);
+        final hostService = IoLocalRefereeService(
+          host.controller,
+          allowLoopbackForTesting: true,
+        );
         final refereeController = SessionController(
           library: host.controller.library,
           store: MemorySessionStore(),
         );
-        final refereeService = createLocalRefereeService(refereeController);
+        final refereeService = IoLocalRefereeService(
+          refereeController,
+          allowLoopbackForTesting: true,
+        );
         addTearDown(hostService.stop);
         addTearDown(refereeService.stop);
 
@@ -46,12 +87,18 @@ void main() {
         expect(card['target'], isA<String>());
         expect((card['clues'] as List), hasLength(5));
 
-        final messageId = refereeService.sendAction('buzz');
+        final context = _actionContext(refereeService);
+        final messageId = refereeService.sendAction('buzz', context: context);
         await _waitUntil(() => refereeService.lastActionAccepted == true);
         expect(host.s.turn!.events, hasLength(1));
         expect(host.s.turn!.events.single.outcome, Outcome.violation);
+        expect(host.s.turn!.events.single.origin, ActionOrigin.referee);
 
-        refereeService.sendAction('buzz', messageId: messageId);
+        refereeService.sendAction(
+          'buzz',
+          context: context,
+          messageId: messageId,
+        );
         await _waitUntil(() => refereeService.lastActionAccepted == true);
         expect(host.s.turn!.events, hasLength(1));
         expect(host.s.scores, [0, 0], reason: 'score settles at turn end');
@@ -59,6 +106,7 @@ void main() {
         expect(
           () => refereeService.sendAction(
             'request_correction',
+            context: context,
             messageId: messageId,
           ),
           throwsStateError,
@@ -74,12 +122,18 @@ void main() {
           const GameConfig(game: GameKind.sprint, mode: PlayMode.referee),
           [Team('Team A', 0), Team('Team B', 1)],
         );
-        final hostService = createLocalRefereeService(host.controller);
+        final hostService = IoLocalRefereeService(
+          host.controller,
+          allowLoopbackForTesting: true,
+        );
         final refereeController = SessionController(
           library: host.controller.library,
           store: MemorySessionStore(),
         );
-        final refereeService = createLocalRefereeService(refereeController);
+        final refereeService = IoLocalRefereeService(
+          refereeController,
+          allowLoopbackForTesting: true,
+        );
         addTearDown(hostService.stop);
         addTearDown(refereeService.stop);
 
@@ -87,13 +141,106 @@ void main() {
         final invalidPairing = {
           ...hostPairing.toJson(),
           'host': '127.0.0.1',
-          'token': 'invalid-token',
+          'token': List.filled(64, '0').join(),
         };
         await refereeService.connect(jsonEncode(invalidPairing));
         await _waitUntil(
-          () => refereeService.status == RefereeConnectionStatus.disconnected,
+          () =>
+              refereeService.status ==
+              RefereeConnectionStatus.authenticationFailed,
         );
         expect(refereeService.snapshot, isNull);
+      },
+    );
+
+    test('new pairing clears the previous session projection', () async {
+      final firstHost = Harness();
+      firstHost.controller.newSession(
+        const GameConfig(game: GameKind.forbidden, mode: PlayMode.referee),
+        [Team('First', 0), Team('Other', 1)],
+      );
+      final firstHostService = IoLocalRefereeService(
+        firstHost.controller,
+        allowLoopbackForTesting: true,
+      );
+      final secondHost = Harness();
+      secondHost.controller.newSession(
+        const GameConfig(game: GameKind.sprint, mode: PlayMode.referee),
+        [Team('Second', 0), Team('Other', 1)],
+      );
+      final secondHostService = IoLocalRefereeService(
+        secondHost.controller,
+        allowLoopbackForTesting: true,
+      );
+      final refereeController = SessionController(
+        library: firstHost.controller.library,
+        store: MemorySessionStore(),
+      );
+      final refereeService = IoLocalRefereeService(
+        refereeController,
+        allowLoopbackForTesting: true,
+      );
+      addTearDown(firstHostService.stop);
+      addTearDown(secondHostService.stop);
+      addTearDown(refereeService.stop);
+
+      final firstPairing = await firstHostService.startHost();
+      await refereeService.connect(jsonEncode(firstPairing.toJson()));
+      await _waitUntil(
+        () =>
+            refereeService.status == RefereeConnectionStatus.connected &&
+            refereeService.snapshot != null,
+      );
+      expect(refereeService.snapshot!['sessionId'], firstPairing.sessionId);
+
+      await firstHostService.stop();
+      final secondPairing = await secondHostService.startHost();
+      await refereeService.connect(jsonEncode(secondPairing.toJson()));
+      await _waitUntil(
+        () =>
+            refereeService.status == RefereeConnectionStatus.connected &&
+            refereeService.snapshot?['sessionId'] == secondPairing.sessionId,
+      );
+      expect(refereeService.snapshot!['game'], GameKind.sprint.name);
+      expect(refereeService.lastActionMessage, isNull);
+    });
+
+    test(
+      'host can fall back to Classic without reconnecting the referee',
+      () async {
+        final host = Harness();
+        host.controller.newSession(
+          const GameConfig(game: GameKind.forbidden, mode: PlayMode.referee),
+          [Team('Team A', 0), Team('Team B', 1)],
+        );
+        final hostService = IoLocalRefereeService(
+          host.controller,
+          allowLoopbackForTesting: true,
+        );
+        final refereeController = SessionController(
+          library: host.controller.library,
+          store: MemorySessionStore(),
+        );
+        final refereeService = IoLocalRefereeService(
+          refereeController,
+          allowLoopbackForTesting: true,
+        );
+        addTearDown(hostService.stop);
+        addTearDown(refereeService.stop);
+
+        final pairing = await hostService.startHost();
+        await refereeService.connect(jsonEncode(pairing.toJson()));
+        await _waitUntil(
+          () => refereeService.status == RefereeConnectionStatus.connected,
+        );
+        await hostService.takeOverClassic();
+        await _waitUntil(
+          () =>
+              refereeService.snapshot == null &&
+              refereeService.connectionError?.contains('Classic Mode') == true,
+        );
+        expect(host.s.config.mode, PlayMode.classic);
+        expect(refereeService.pairing, isNull);
       },
     );
 
@@ -105,12 +252,18 @@ void main() {
           const GameConfig(game: GameKind.forbidden, mode: PlayMode.referee),
           [Team('Team A', 0), Team('Team B', 1)],
         );
-        final hostService = createLocalRefereeService(host.controller);
+        final hostService = IoLocalRefereeService(
+          host.controller,
+          allowLoopbackForTesting: true,
+        );
         final refereeController = SessionController(
           library: host.controller.library,
           store: MemorySessionStore(),
         );
-        final refereeService = createLocalRefereeService(refereeController);
+        final refereeService = IoLocalRefereeService(
+          refereeController,
+          allowLoopbackForTesting: true,
+        );
         addTearDown(hostService.stop);
         addTearDown(refereeService.stop);
 
@@ -129,11 +282,12 @@ void main() {
         );
 
         final previousCard = refereeService.snapshot!['cardId'];
+        final delayedContext = _actionContext(refereeService);
         host.controller.mark(Outcome.correct);
         final activeCard = host.s.turn!.cardId;
         expect(activeCard, isNot(previousCard));
 
-        refereeService.sendAction('buzz');
+        refereeService.sendAction('buzz', context: delayedContext);
         await _waitUntil(() => refereeService.lastActionAccepted != null);
         expect(refereeService.lastActionAccepted, isFalse);
         expect(host.s.turn!.events, hasLength(1));
@@ -170,12 +324,18 @@ void main() {
           const GameConfig(game: GameKind.sprint, mode: PlayMode.referee),
           [Team('Team A', 0), Team('Team B', 1)],
         );
-        final hostService = createLocalRefereeService(host.controller);
+        final hostService = IoLocalRefereeService(
+          host.controller,
+          allowLoopbackForTesting: true,
+        );
         final refereeController = SessionController(
           library: host.controller.library,
           store: MemorySessionStore(),
         );
-        final refereeService = createLocalRefereeService(refereeController);
+        final refereeService = IoLocalRefereeService(
+          refereeController,
+          allowLoopbackForTesting: true,
+        );
         addTearDown(hostService.stop);
         addTearDown(refereeService.stop);
 
@@ -195,24 +355,39 @@ void main() {
           hasLength(5),
         );
 
-        refereeService.sendAction('mark_term_correct', term: 0);
-        await _waitUntil(() => refereeService.lastActionAccepted == true);
-        expect(host.s.turn!.marked, {0});
-        refereeService.sendAction('disqualify_term', term: 1);
+        final actionsContext = _actionContext(refereeService);
+        refereeService.sendAction(
+          'mark_term_correct',
+          context: actionsContext,
+          term: 0,
+        );
+        refereeService.sendAction(
+          'disqualify_term',
+          context: actionsContext,
+          term: 1,
+        );
         await _waitUntil(
           () =>
-              refereeService.snapshot?['disqualified'] is List &&
-              (refereeService.snapshot!['disqualified'] as List).contains(1),
+              host.s.turn!.marked.contains(0) &&
+              host.s.turn!.disqualified.contains(1),
         );
         expect(host.s.turn!.disqualified, {1});
 
         host.clock.advance(const Duration(milliseconds: 29999));
-        refereeService.sendAction('mark_term_correct', term: 2);
-        await _waitUntil(() => refereeService.lastActionAccepted == true);
+        refereeService.sendAction(
+          'mark_term_correct',
+          context: _actionContext(refereeService),
+          term: 2,
+        );
+        await _waitUntil(() => host.s.turn!.marked.contains(2));
         expect(host.s.turn!.marked, contains(2));
 
         host.clock.advance(const Duration(milliseconds: 1));
-        refereeService.sendAction('mark_term_correct', term: 3);
+        refereeService.sendAction(
+          'mark_term_correct',
+          context: _actionContext(refereeService),
+          term: 3,
+        );
         await _waitUntil(
           () => refereeService.snapshot?['phase'] == Phase.turnReview.name,
         );
@@ -221,9 +396,16 @@ void main() {
         expect(host.s.scores, [0, 0]);
         expect(host.s.history.single.points, 2);
 
-        refereeService.sendAction('request_correction');
+        refereeService.sendAction(
+          'request_correction',
+          context: _actionContext(refereeService),
+        );
         await _waitUntil(() => hostService.correctionRequested);
-        refereeService.sendAction('review_term_correct', term: 1);
+        refereeService.sendAction(
+          'review_term_correct',
+          context: _actionContext(refereeService),
+          term: 1,
+        );
         await _waitUntil(() => host.s.history.single.points == 3);
         host.controller.confirmReview();
         expect(host.s.scores, [3, 0]);
@@ -231,6 +413,14 @@ void main() {
       },
     );
   });
+}
+
+RefereeActionContext _actionContext(LocalRefereeService service) {
+  final snapshot = service.snapshot;
+  if (snapshot == null) {
+    throw StateError('The referee has not received a session snapshot.');
+  }
+  return RefereeActionContext.fromSnapshot(snapshot);
 }
 
 Future<void> _waitUntil(bool Function() condition) async {

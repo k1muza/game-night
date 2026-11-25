@@ -35,6 +35,21 @@ class SessionController extends ChangeNotifier {
 
   Session? _session;
   Session? get session => _session;
+  bool _refereeReady = false;
+
+  bool get refereeReady => _refereeReady;
+
+  /// The networking service enables referee control only after a valid snapshot
+  /// has been acknowledged by the paired device.
+  void setRefereeConnectionReady(bool ready) {
+    final next =
+        ready &&
+        _session?.config.mode == PlayMode.referee &&
+        _session?.phase != Phase.gameResults;
+    if (_refereeReady == next) return;
+    _refereeReady = next;
+    notifyListeners();
+  }
 
   /// Number of milliseconds input stays locked after a turn ends, so late taps
   /// from the clue-giver aren't mistaken for anything else.
@@ -45,8 +60,9 @@ class SessionController extends ChangeNotifier {
   /// Restores an unfinished session (e.g. after a refresh). An expired clock is
   /// settled immediately; no extra time is granted.
   void restore() {
+    _refereeReady = false;
     _session = store.loadSession();
-    var migratedRefereeIdentity = false;
+    var needsCommit = false;
     for (final game in GameKind.values) {
       _reconcilePersistentDeck(game);
     }
@@ -60,16 +76,23 @@ class SessionController extends ChangeNotifier {
         if (turn != null) {
           if (turn.turnId == null) {
             turn.turnId = _newId();
-            migratedRefereeIdentity = true;
+            needsCommit = true;
           }
           if (turn.cardId != null && turn.cardInstanceId == null) {
             turn.cardInstanceId = _newId();
-            migratedRefereeIdentity = true;
+            needsCommit = true;
+          }
+          if (_session!.config.mode == PlayMode.referee &&
+              _session!.phase == Phase.playing &&
+              turn.deadlineMs != null) {
+            turn.pausedRemainingMs = max(0, turn.deadlineMs! - now());
+            turn.deadlineMs = null;
+            needsCommit = true;
           }
         }
       }
     }
-    if (migratedRefereeIdentity) _commit();
+    if (needsCommit) _commit();
     tick();
     notifyListeners();
   }
@@ -157,6 +180,7 @@ class SessionController extends ChangeNotifier {
 
   void newSession(GameConfig config, List<Team> teams) {
     assert(teams.length >= 2 && teams.length <= 6);
+    _refereeReady = false;
     final seed = _random.nextInt(1 << 31);
     _reconcilePersistentDeck(config.game);
     _session = Session(
@@ -180,6 +204,7 @@ class SessionController extends ChangeNotifier {
   }
 
   void discard() {
+    _refereeReady = false;
     _session = null;
     store.saveSession(null);
     notifyListeners();
@@ -189,6 +214,7 @@ class SessionController extends ChangeNotifier {
   void switchToClassic() {
     final s = _session;
     if (s == null || s.config.mode == PlayMode.classic) return;
+    _refereeReady = false;
     if (s.phase == Phase.turnReview) confirmReview();
     s.config = GameConfig(
       game: s.config.game,
@@ -241,7 +267,11 @@ class SessionController extends ChangeNotifier {
 
   bool get canStartTurn {
     final s = _session;
-    if (s == null || s.phase != Phase.ready) return false;
+    if (s == null ||
+        s.phase != Phase.ready ||
+        (s.config.mode == PlayMode.referee && !_refereeReady)) {
+      return false;
+    }
     final q = store.loadDeck(s.game);
     if (s.game == GameKind.trivia) {
       final slots = DeckPlanner.triviaSlots(
@@ -350,31 +380,45 @@ class SessionController extends ChangeNotifier {
         t.deadlineMs != null;
   }
 
-  void pause() {
+  void pause({String? expectedTurnId}) {
     final t = _session?.turn;
-    if (!_live || t == null) return;
+    if (!_live ||
+        t == null ||
+        (expectedTurnId != null && t.turnId != expectedTurnId)) {
+      return;
+    }
     t.pausedRemainingMs = max(0, t.deadlineMs! - now());
     t.deadlineMs = null;
     _commit();
   }
 
-  void resume() {
+  void resume({String? expectedTurnId}) {
     final s = _session;
     final t = s?.turn;
     if (s == null ||
         t == null ||
         s.phase != Phase.playing ||
-        t.pausedRemainingMs == null)
+        t.pausedRemainingMs == null ||
+        (expectedTurnId != null && t.turnId != expectedTurnId) ||
+        (s.config.mode == PlayMode.referee && !_refereeReady))
       return;
+    if (t.pausedRemainingMs! <= 0) {
+      _endTurn(EndReason.time);
+      return;
+    }
     t.deadlineMs = now() + t.pausedRemainingMs!;
     t.pausedRemainingMs = null;
     _commit();
   }
 
   /// Ends the current turn early (Finish Turn / End turn).
-  void finishTurn() {
+  void finishTurn({String? expectedTurnId}) {
     final s = _session;
-    if (s == null || s.phase != Phase.playing) return;
+    if (s == null ||
+        s.phase != Phase.playing ||
+        (expectedTurnId != null && s.turn?.turnId != expectedTurnId)) {
+      return;
+    }
     tick();
     if (s.phase != Phase.playing) return;
     _endTurn(EndReason.finished);
@@ -394,9 +438,12 @@ class SessionController extends ChangeNotifier {
   }
 
   /// Confirms a referee-mode review and posts its score exactly once.
-  bool confirmReview() {
+  bool confirmReview({String? expectedTurnId}) {
     final s = _session;
-    if (s == null || s.phase != Phase.turnReview || s.history.isEmpty) {
+    if (s == null ||
+        s.phase != Phase.turnReview ||
+        s.history.isEmpty ||
+        (expectedTurnId != null && s.turn?.turnId != expectedTurnId)) {
       return false;
     }
     final record = s.history.last;
@@ -427,6 +474,8 @@ class SessionController extends ChangeNotifier {
       events[eventIndex].cardId,
       outcome,
       term: index,
+      cardInstanceId: events[eventIndex].cardInstanceId,
+      origin: events[eventIndex].origin,
     );
     s.history[s.history.length - 1] = TurnRecord(
       team: record.team,
@@ -459,7 +508,12 @@ class SessionController extends ChangeNotifier {
     final record = s.history.last;
     final events = List<TurnEvent>.of(record.events);
     final previous = events[index];
-    events[index] = TurnEvent(previous.cardId, outcome);
+    events[index] = TurnEvent(
+      previous.cardId,
+      outcome,
+      cardInstanceId: previous.cardInstanceId,
+      origin: previous.origin,
+    );
     s.history[s.history.length - 1] = TurnRecord(
       team: record.team,
       round: record.round,
@@ -474,11 +528,21 @@ class SessionController extends ChangeNotifier {
   // ------------------------------------------------------------------- Sprint
 
   /// Marks or un-marks a term. Corrections are allowed while the clock runs.
-  void toggleTerm(int index) {
+  void toggleTerm(int index, {String? expectedCardInstanceId}) {
     final s = _session;
-    if (s?.game != GameKind.sprint || !_live) return;
+    if (s?.game != GameKind.sprint ||
+        s?.config.mode == PlayMode.referee ||
+        !_live) {
+      return;
+    }
     final t = s!.turn!;
-    if (t.cardId == null || index < 0 || index >= 5) return;
+    if (t.cardId == null ||
+        (expectedCardInstanceId != null &&
+            t.cardInstanceId != expectedCardInstanceId) ||
+        index < 0 ||
+        index >= 5) {
+      return;
+    }
     if (!t.marked.remove(index)) t.marked.add(index);
     t.disqualified.remove(index);
     if (t.marked.length + t.disqualified.length == 5) {
@@ -498,7 +562,12 @@ class SessionController extends ChangeNotifier {
     bool disqualified = false,
   }) {
     final s = _session;
-    if (s?.game != GameKind.sprint || !_live) return false;
+    if (s?.game != GameKind.sprint ||
+        s?.config.mode != PlayMode.referee ||
+        !_refereeReady ||
+        !_live) {
+      return false;
+    }
     final t = s!.turn!;
     if (t.cardId == null ||
         t.cardInstanceId != cardInstanceId ||
@@ -540,9 +609,13 @@ class SessionController extends ChangeNotifier {
 
   /// Replaces the Sprint card with a fresh one. The clock keeps running; the
   /// skipped card is used up and won't be dealt again this game.
-  void skipSprintCard() {
+  void skipSprintCard({String? expectedCardInstanceId}) {
     if (!_live || !canSkipSprintCard) return;
     final t = _session!.turn!;
+    if (expectedCardInstanceId != null &&
+        t.cardInstanceId != expectedCardInstanceId) {
+      return;
+    }
     t.cardId = _draw();
     t.cardInstanceId = _newId();
     t.skips++;
@@ -552,9 +625,43 @@ class SessionController extends ChangeNotifier {
   // ------------------------------------------------------ Charades / Forbidden
 
   /// Records the on-screen card and immediately deals the next one.
-  void mark(Outcome outcome) {
+  void mark(Outcome outcome, {String? expectedCardInstanceId}) {
     final s = _session;
-    if (s == null || !_live) return;
+    if (s == null ||
+        (s.config.mode == PlayMode.referee && !_refereeReady) ||
+        !_live) {
+      return;
+    }
+    _recordCardOutcome(
+      outcome,
+      expectedCardInstanceId: expectedCardInstanceId,
+      origin: ActionOrigin.host,
+    );
+  }
+
+  bool markRefereeViolation(String expectedCardInstanceId) {
+    final s = _session;
+    if (s == null ||
+        s.config.mode != PlayMode.referee ||
+        !_refereeReady ||
+        s.game != GameKind.forbidden ||
+        !_live) {
+      return false;
+    }
+    return _recordCardOutcome(
+      Outcome.violation,
+      expectedCardInstanceId: expectedCardInstanceId,
+      origin: ActionOrigin.referee,
+    );
+  }
+
+  bool _recordCardOutcome(
+    Outcome outcome, {
+    required String? expectedCardInstanceId,
+    required ActionOrigin origin,
+  }) {
+    final s = _session;
+    if (s == null) return false;
     final allowed = switch (s.game) {
       GameKind.charades =>
         outcome == Outcome.correct || outcome == Outcome.pass,
@@ -565,16 +672,46 @@ class SessionController extends ChangeNotifier {
       _ => false,
     };
     final t = s.turn!;
-    if (!allowed || t.cardId == null) return;
-    t.events.add(TurnEvent(t.cardId!, outcome));
+    if (!allowed ||
+        t.cardId == null ||
+        (expectedCardInstanceId != null &&
+            t.cardInstanceId != expectedCardInstanceId)) {
+      return false;
+    }
+    t.events.add(
+      TurnEvent(
+        t.cardId!,
+        outcome,
+        cardInstanceId: t.cardInstanceId,
+        origin: origin,
+      ),
+    );
     t.cardId = _draw();
     t.cardInstanceId = _newId();
     _commit();
+    return true;
   }
 
   /// Undoes the most recent Correct/Pass/Violation and returns that card to the
   /// screen. Only while the clock is still running.
-  bool undoLast() {
+  bool get canUndoLast {
+    final s = _session;
+    final t = s?.turn;
+    if (s == null ||
+        (s.game != GameKind.charades && s.game != GameKind.forbidden) ||
+        s.phase != Phase.playing ||
+        t == null ||
+        t.events.isEmpty ||
+        t.paused ||
+        t.deadlineMs == null ||
+        now() >= t.deadlineMs!) {
+      return false;
+    }
+    return !(s.config.mode == PlayMode.referee &&
+        t.events.last.origin == ActionOrigin.referee);
+  }
+
+  bool undoLast({String? expectedCardInstanceId}) {
     final s = _session;
     if (s == null ||
         (s.game != GameKind.charades && s.game != GameKind.forbidden) ||
@@ -582,7 +719,14 @@ class SessionController extends ChangeNotifier {
       return false;
     final t = s.turn!;
     if (t.events.isEmpty) return false;
-    final last = t.events.removeLast();
+    final last = t.events.last;
+    if ((expectedCardInstanceId != null &&
+            last.cardInstanceId != expectedCardInstanceId) ||
+        (s.config.mode == PlayMode.referee &&
+            last.origin == ActionOrigin.referee)) {
+      return false;
+    }
+    t.events.removeLast();
     t.cardId = last.cardId;
     t.cardInstanceId = _newId();
     _commit();
@@ -693,7 +837,14 @@ class SessionController extends ChangeNotifier {
     final outcome = choice == null
         ? Outcome.timeout
         : (choice == 0 ? Outcome.correct : Outcome.wrong);
-    t.events.add(TurnEvent(t.cardId!, outcome, choice: choice));
+    t.events.add(
+      TurnEvent(
+        t.cardId!,
+        outcome,
+        choice: choice,
+        cardInstanceId: t.cardInstanceId,
+      ),
+    );
     t.revealed = true;
     t.deadlineMs = null;
     t.pausedRemainingMs = null;
@@ -770,6 +921,10 @@ class SessionController extends ChangeNotifier {
                         ? Outcome.disqualified
                         : Outcome.pass),
               term: i,
+              cardInstanceId: t.cardInstanceId,
+              origin: s.config.mode == PlayMode.referee
+                  ? ActionOrigin.referee
+                  : ActionOrigin.host,
             ),
         ]);
     }

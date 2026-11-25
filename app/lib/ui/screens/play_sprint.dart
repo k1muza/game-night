@@ -81,10 +81,14 @@ class SprintPlayScreen extends StatelessWidget {
                                   term: card.terms[i],
                                   marked: t.marked.contains(i),
                                   disqualified: t.disqualified.contains(i),
-                                  enabled: !refereeConnected,
-                                  onTap: refereeConnected
+                                  enabled: s.config.mode == PlayMode.classic,
+                                  onTap: s.config.mode == PlayMode.referee
                                       ? null
-                                      : () => c.toggleTerm(i),
+                                      : () => c.toggleTerm(
+                                          i,
+                                          expectedCardInstanceId:
+                                              t.cardInstanceId,
+                                        ),
                                 ),
                               ),
                             ],
@@ -110,7 +114,9 @@ class SprintPlayScreen extends StatelessWidget {
                             foreground: Gn.text2,
                             height: 39,
                             fontSize: 17,
-                            onPressed: c.skipSprintCard,
+                            onPressed: () => c.skipSprintCard(
+                              expectedCardInstanceId: t.cardInstanceId,
+                            ),
                           )
                         : Center(
                             child: Text(

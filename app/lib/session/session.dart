@@ -36,6 +36,8 @@ enum Outcome {
 
 enum EndReason { time, allFound, finished, questionsDone }
 
+enum ActionOrigin { host, referee }
+
 class Team {
   Team(this.name, this.paletteIndex);
   String name;
@@ -90,7 +92,14 @@ class GameConfig {
 }
 
 class TurnEvent {
-  TurnEvent(this.cardId, this.outcome, {this.term, this.choice});
+  TurnEvent(
+    this.cardId,
+    this.outcome, {
+    this.term,
+    this.choice,
+    this.cardInstanceId,
+    this.origin = ActionOrigin.host,
+  });
   final String cardId;
   final Outcome outcome;
 
@@ -100,17 +109,26 @@ class TurnEvent {
   /// Trivia: option index chosen (0 = correct), null when unanswered.
   final int? choice;
 
+  final String? cardInstanceId;
+  final ActionOrigin origin;
+
   Map<String, dynamic> toJson() => {
     'c': cardId,
     'o': outcome.name,
     if (term != null) 't': term,
     if (choice != null) 'x': choice,
+    if (cardInstanceId != null) 'ci': cardInstanceId,
+    if (origin != ActionOrigin.host) 'by': origin.name,
   };
   factory TurnEvent.fromJson(Map<String, dynamic> j) => TurnEvent(
     j['c'],
     Outcome.values.byName(j['o']),
     term: j['t'],
     choice: j['x'],
+    cardInstanceId: j['ci'],
+    origin: j['by'] == null
+        ? ActionOrigin.host
+        : ActionOrigin.values.byName(j['by']),
   );
 }
 

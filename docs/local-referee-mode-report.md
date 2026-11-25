@@ -2,96 +2,97 @@
 
 ## Status
 
-Implemented on `feature/local-referee-mode`, based on `main` commit `1173dc5`.
-Automated tests and Android/web release builds pass. The implementation is **not
-recommended for merge yet**: real two-phone LAN play and iOS still need physical
-verification.
+Implemented on `feature/local-referee-mode`, based on `dc89423`. The host remains
+the only gameplay authority. Automated tests and Android/web release builds
+pass. The feature is **not merge-ready** until two-device LAN and iOS validation
+are completed. No merge or pull request was created.
 
 ## Delivered
 
-- Classic remains the default. Sprint and Tabuu setup can opt into Referee Mode;
-  Home has a Join as Referee entry.
-- The host creates a temporary local IPv4 WebSocket session. Pairing is available
-  as a QR code or manual connection details. A random temporary token protects
-  the pairing, and only one referee is accepted for a session.
-- A platform-conditional `dart:io` host/client implements snapshots, authenticated
-  actions, acknowledgements, duplicate-action handling, stale turn/card checks,
-  heartbeats, reconnect attempts, and connection status. Web uses an unsupported
-  stub and retains Classic play.
-- `SessionController` remains the only gameplay engine and source of truth.
-  Versioned session state, turn IDs, card-instance IDs, Sprint term decisions,
-  Tabuu events, and review state persist with the session.
-- Sprint referees can mark correct terms, disqualify terms, and request/review
-  corrections. Tabuu referees receive the active target and all five forbidden
-  clues and can BUZZ. The host retains Tabuu Pass/Got It controls. Referee-mode
-  scores are held for host confirmation.
-- Disconnecting pauses a live host turn. Reconnection receives the current host
-  snapshot; the host can resume or switch safely to Classic while preserving
-  progress. A process restart loses the temporary token and restores the session
-  in Classic Mode.
-- Android network/camera permissions and iOS local-network/camera explanations
-  are configured. Android's app-wide cleartext allowance supports the local
-  `ws://` transport; the app's referee transport connects only to the local
-  network. iOS allows ATS local-network traffic without enabling arbitrary
-  insecure internet connections.
+- Classic remains the default. Sprint and Tabuu support Referee setup; Home
+  provides **Join as Referee**.
+- The native service hosts a WebSocket on a selected private Wi-Fi IPv4 address
+  and dynamic port. Pairing supports a QR token and manual address/port/one-time
+  code. The web target uses an unsupported networking stub.
+- Pairing uses a four-hour temporary credential, challenge-response HMAC
+  authentication and signed messages. The server limits failed pairing
+  attempts, allows one authenticated referee, and sends no gameplay snapshot
+  before authentication.
+- `SessionController` remains authoritative for session persistence, cards,
+  scores, deadlines and progression. Actions carry session, turn, card-instance,
+  state-version and message identities; the host checks permissions, stale
+  state and deadlines before mutation. Processed action IDs are retained for the
+  pairing session, with a bounded action capacity.
+- Tabuu synchronises the active target and five forbidden words. The referee
+  BUZZ is remote; the host retains Pass/Got It. Sprint supports referee Correct,
+  Disqualify and reversal. Both games use host-confirmed turn review.
+- Disconnect and background handling pause a live host turn. Reconnection
+  restores host state without queuing new client actions. The host can re-pair
+  or switch safely to Classic while preserving progress. A process restart
+  invalidates the ephemeral credentials and restores the session in Classic.
+- Screenshots of Home, Referee setup and manual joining are in
+  [`docs/screenshots/`](screenshots/). They contain no live pairing credentials.
+  Active referee-game screens could not be captured without a second device.
 
-The canonical card library and content-generation tooling were not modified.
-The content test still validates all 2,300 cards against the manifest.
-
-## Automated validation
+## Validation
 
 | Check | Result |
 |---|---|
-| `flutter test` | **Pass**, 69 tests. Includes all four games' Classic controller/UI regression coverage, referee-screen initialization, and content integrity. |
-| Local referee WebSocket tests | **Pass**: valid/invalid authentication, no snapshot on invalid credentials, Tabuu snapshot and duplicate BUZZ, stale BUZZ after the host advances a card, disconnect/reconnect snapshot recovery, Sprint correct/disqualified actions, acceptance at 29,999 ms, rejection at the 30,000 ms deadline, correction and held-score confirmation. |
-| `flutter build web --release --no-web-resources-cdn` | **Pass**. Non-fatal Flutter icon-font and Wasm dry-run notices remain. |
-| Android release build | **Pass** using Android Studio JDK 21 and Gradle `assembleRelease`. APK: `app/build/app/outputs/flutter-apk/app-release.apk` (69,416,986 bytes). |
-| Platform XML | **Pass**: Android manifest and iOS property list parse successfully. |
-| `git diff --check` | **Pass**. |
-| `flutter analyze` | No errors; exits non-zero because of 13 existing info-level `curly_braces_in_flow_control_structures` findings in unchanged code. |
+| Focused Referee/controller tests | **Pass**, including manual/QR pairing, invalid credentials, duplicate and stale BUZZ, rapid Sprint actions, deadline boundary, reconnect, new-session projection reset, Classic fallback, readiness gates and restored-turn pause. |
+| Full `flutter test` | **Pass**, 75 tests; includes all four Classic game regressions and the 2,300-card content integrity check. |
+| `flutter analyze` | No errors. Command exits non-zero because of 18 info-level lint findings (style/null-aware collection suggestions); the analyzer reports no warnings or errors. |
+| Android release | **Pass** using Android Studio JDK 21. APK: `app/build/app/outputs/flutter-apk/app-release.apk` (69,193,614 bytes), compile/target SDK 36. |
+| Web release | **Pass** with `flutter build web --release --no-web-resources-cdn`. Flutter emitted non-fatal Wasm dry-run and Cupertino icon-font notices. |
+| Device smoke check | Debug app launched on one Pixel 7 Pro (Android 17/API 37). Host resolved a private Wi-Fi address, opened the pairing screen, and the Classic fallback control returned to handover. This did not verify a second device or an actual remote connection. |
+| Content preservation | Content build hook validated Sprint 400, Charades 600, Trivia 800 and Tabuu 500 cards. Canonical cards and generation tooling were not modified. |
+| iOS | Not built: this environment is Windows and has no macOS/Xcode toolchain. iOS local-network and camera usage descriptions are present in `Info.plist`. |
+| Device/network matrix | Two-phone Wi-Fi/hotspot, Android↔iOS, no-internet operation, camera-denial handling, background recovery and screen-lock behavior remain unverified. Only one Android device was available. |
 
-Flutter Doctor reports missing Android command-line tools and unknown Android
-license status in this environment, although the configured SDK and installed
-Gradle toolchain completed the release build.
+`flutter analyze` findings are info-level, not compile/type errors. Flutter's
+web build also printed its usual Wasm dry-run and icon-font notices; the build
+completed successfully.
 
-The APK installed successfully on the single attached Pixel 7 Pro. Interactive
-UI validation was not completed: the phone remained on an unrelated foreground
-screen. A screen capture returned that unrelated screen, so it was discarded;
-no screenshot is included. This avoids presenting a misleading image or retaining
-personal screen content.
+## Architecture and dependency decisions
 
-## Architecture notes and deviations
-
-- `SessionController` was extended rather than creating a second remote game
-  engine. Referee commands carry session, turn, card-instance, state-version,
-  and message identities; the host validates them before applying any mutation.
-- The protocol is intentionally limited to Sprint and Tabuu, but snapshots and
-  action envelopes are game-neutral enough to extend later. Charades, Trivia,
-  and audience displays are not implemented.
-- LAN WebSockets are unencrypted. Pair only on a trusted in-person network.
-  No internet service, Bluetooth, account, or cloud dependency was added.
-- Background process survival and network-change behavior depend on mobile OS
-  lifecycle/network scheduling and need device testing. The UI explicitly pauses
-  the host during backgrounding/disconnection.
-- No iOS build was possible: this work ran on Windows, and iOS builds require
-  macOS and Xcode.
+- A conditional native `dart:io` WebSocket service preserves the web build.
+  `connectivity_plus` is used for Wi-Fi/VPN connectivity state; the local IP is
+  selected from private Wi-Fi interfaces. `network_info_plus` was not adopted
+  because its platform APIs can require extra location permissions. Bonjour
+  discovery was deferred; QR and manual pairing cover the v1 flow without
+  extra platform setup.
+- No separate remote game engine, cloud service, accounts, Bluetooth, or
+  internet multiplayer were introduced. Charades, Trivia and audience displays
+  remain out of scope.
+- WebSockets are **authenticated and integrity-protected, not encrypted**.
+  Pair only on a trusted local network. Android permits cleartext transport for
+  the app because the local WebSocket uses `ws://`; the application validates
+  private IPv4 pairing addresses and does not use this transport for internet
+  play.
+- The tested Android build targets API 36. Android 17/API 37
+  [requires](https://developer.android.com/about/versions/17/behavior-changes-17#local-network-permission-required-for-apps-targeting-android-17) the new
+  `ACCESS_LOCAL_NETWORK` runtime permission for apps that target API 37 or
+  higher; that future target-SDK migration and prompt flow are not implemented
+  or exercised here.
+- The Android Gradle Plugin is 8.12.1 and the wrapper is 8.14. iOS configuration
+  is present, but no iOS build or runtime compatibility is claimed.
 
 ## Manual verification checklist
 
-1. Use two Android phones on the same Wi-Fi and then a mobile hotspot. Host one
-   Sprint and one Tabuu game; pair once by QR and once by manual details.
-2. Verify matching Sprint terms, context labels, timer and term state; test
-   Correct, Disqualify, reversal, timeout review and host score confirmation.
-3. Verify matching Tabuu target and five clues; test BUZZ, host Pass/Got It,
-   duplicate/delayed BUZZ after card advancement, and turn review.
+1. Pair two Android devices on shared Wi-Fi, then a mobile hotspot; repeat with
+   QR and manual details, with internet disabled.
+2. Verify matching Sprint terms/context, timer and term state; test Correct,
+   Disqualify, reversal, timeout review and host score confirmation.
+3. Verify matching Tabuu target/clues; test BUZZ, host Pass/Got It, delayed and
+   duplicate BUZZ, and turn review.
 4. Disconnect/reconnect Wi-Fi during scoring, background and lock each phone,
-   and confirm pause, recovery, score integrity, and Classic fallback.
-5. Deny camera permission and verify manual pairing remains usable. Repeat on
-   iOS after building on macOS/Xcode, including local-network permission prompts.
+   and confirm pause, recovery, score integrity and Classic fallback.
+5. Deny camera permission and verify manual pairing remains available. Build
+   and repeat the matrix on iOS using macOS/Xcode.
+6. Before raising Android target SDK to 37, implement and test the
+   `ACCESS_LOCAL_NETWORK` runtime permission flow on Android 17.
 
-## Merge recommendation
+## Recommendation
 
-**Hold merge pending the manual checklist**, especially two-device Wi-Fi/hotspot
-testing and iOS validation. The branch has passing automated coverage and
-release builds, but those do not establish device-to-device compatibility or
-background/recovery behavior. No merge to `main` was performed.
+**Hold merge** pending the two-device Wi-Fi/hotspot matrix, disconnection and
+recovery checks, and iOS validation. The feature branch has automated and build
+coverage, but those do not establish physical-device interoperability.

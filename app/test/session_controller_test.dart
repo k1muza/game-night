@@ -191,8 +191,15 @@ void main() {
           const GameConfig(game: GameKind.sprint, mode: PlayMode.referee),
           [Team('Team A', 0), Team('Team B', 1)],
         );
-        c.startTurn();
+        expect(c.canStartTurn, isFalse);
+        expect(c.startTurn(), isFalse);
+        c.setRefereeConnectionReady(true);
+        expect(c.canStartTurn, isTrue);
+        expect(c.startTurn(), isTrue);
         final instance = h.s.turn!.cardInstanceId!;
+        c.setRefereeConnectionReady(false);
+        expect(c.setSprintTerm(0, instance, correct: true), isFalse);
+        c.setRefereeConnectionReady(true);
         expect(c.setSprintTerm(0, instance, correct: true), isTrue);
         expect(
           c.setSprintTerm(1, instance, correct: false, disqualified: true),
@@ -326,7 +333,8 @@ void main() {
           const GameConfig(game: GameKind.forbidden, mode: PlayMode.referee),
           [Team('Team A', 0), Team('Team B', 1)],
         );
-        c.startTurn();
+        c.setRefereeConnectionReady(true);
+        expect(c.startTurn(), isTrue);
         c.mark(Outcome.violation);
         c.finishTurn();
         expect(h.s.phase, Phase.turnReview);
@@ -685,6 +693,30 @@ void main() {
       expect(r.remainingMs(), 18000);
       expect(r.session!.turn!.marked, {4});
       expect(r.session!.turn!.cardId, h.s.turn!.cardId);
+    });
+
+    test('restored Referee turn stays paused until the referee reconnects', () {
+      final h = Harness();
+      h.controller.newSession(
+        const GameConfig(game: GameKind.sprint, mode: PlayMode.referee),
+        [Team('Team A', 0), Team('Team B', 1)],
+      );
+      h.controller.setRefereeConnectionReady(true);
+      expect(h.controller.startTurn(), isTrue);
+      h.clock.advance(const Duration(seconds: 8));
+
+      final restored = h.reload();
+      expect(restored.refereeReady, isFalse);
+      expect(restored.session!.phase, Phase.playing);
+      expect(restored.session!.turn!.paused, isTrue);
+      expect(restored.remainingMs(), 22000);
+      restored.resume();
+      expect(restored.session!.turn!.paused, isTrue);
+
+      restored.setRefereeConnectionReady(true);
+      restored.resume();
+      expect(restored.session!.turn!.paused, isFalse);
+      expect(restored.remainingMs(), 22000);
     });
 
     test(
