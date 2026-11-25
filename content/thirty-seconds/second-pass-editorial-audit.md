@@ -110,3 +110,63 @@ Remaining source rows 101–2000 not individually reviewed in this pass. Flagged
 Supersedes checkpoint 001 progress counts. Rows 201–2000 outstanding. All proposals staged; no final quota balancing. Universal concepts previously coded Zimbabwean due to local relevance need consistent global review: retain local-association information separately before changing region. Named brands and entertainment titles should be counted as proper names consistently, even if this temporarily increases the count. Do not force geographic or proper-name targets by incorrect classification.
 
 Potential overlap: Elijah/Elisha (distinct stories but avoid same card), Funke Akindele/Jenifa's Diary, Chicken Inn FC/restaurant chain, Hwange town/park/club, named musician and associated hit. These are candidate constraints, not full-bank collision results.
+
+## Checkpoint 003 — source rows 201–300
+
+```json
+{
+  "records": 100,
+  "dispositions": {
+    "FLAG FOR HUMAN REVIEW": 19,
+    "RETAIN": 41,
+    "REFINE": 40
+  },
+  "previousDifficulty": {
+    "hard": 24,
+    "easy": 35,
+    "medium": 41
+  },
+  "proposedDifficulty": {
+    "hard": 20,
+    "easy": 37,
+    "medium": 43
+  },
+  "difficultyCorrections": 37,
+  "threePathways": 99,
+  "unflaggedThreePathways": 81,
+  "mean": 89.13,
+  "properBefore": 67,
+  "properProposed": 70
+}
+```
+
+### Cumulative checkpoints 001–003
+
+```json
+{
+  "records": 300,
+  "dispositions": {
+    "RETAIN": 130,
+    "REFINE": 114,
+    "FLAG FOR HUMAN REVIEW": 56
+  },
+  "previousDifficulty": {
+    "easy": 120,
+    "medium": 123,
+    "hard": 57
+  },
+  "proposedDifficulty": {
+    "easy": 116,
+    "medium": 116,
+    "hard": 68
+  },
+  "difficultyCorrections": 103,
+  "threePathways": 297,
+  "unflaggedThreePathways": 244,
+  "mean": 87.94666666666667,
+  "properBefore": 189,
+  "properProposed": 200
+}
+```
+
+Rows 301–2000 outstanding. Mother-in-law proposed easy rather than hard; retain comparison with Babamukuru as unresolved. Other questionable first-pass candidates reviewed here include Vosho and Biniam Girmay. No identity changes applied. Fixed literal answer-token leakage in Mutapa Empire and Great Zimbabwe clues from checkpoint 001–002. Additional literal token screen: 3 matches; further review required. Potential overlapping families: Biblical characters, musicians and songs, Matobo Hills/Rhodes grave, city/country names, footballers and clubs. Full-bank semantic review outstanding.

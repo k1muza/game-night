@@ -17,3 +17,7 @@ No comprehensive broader-African candidate research or replacement comparisons c
 - UK government and British Council: Shingai's Noisettes role and Zimbabwe heritage.
 - Learn Shona and Gamegbee: nhodo as traditional pebble toss/scoop game.
 - Laho remains flagged for comparison against Qongqothwane; no reversal approved. Koroba remains flagged for stronger track evidence.
+
+## Checkpoint 003
+
+No new external research completed for this batch; prior source references carried forward for existing replacements. Scores and clues are provisional knowledge-based editorial judgments. Named-person claims, song attribution, regional expressions and historical references require verification where flagged. Mother-in-law/Babamukuru and Vosho/Pokimane comparisons remain unresolved; no replacements authorised yet.
