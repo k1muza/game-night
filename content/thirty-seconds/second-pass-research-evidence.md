@@ -21,3 +21,7 @@ No comprehensive broader-African candidate research or replacement comparisons c
 ## Checkpoint 003
 
 No new external research completed for this batch; prior source references carried forward for existing replacements. Scores and clues are provisional knowledge-based editorial judgments. Named-person claims, song attribution, regional expressions and historical references require verification where flagged. Mother-in-law/Babamukuru and Vosho/Pokimane comparisons remain unresolved; no replacements authorised yet.
+
+## Priority checkpoint 001
+
+First-pass links carried forward; no new fact verification for these named cases. See second-pass-disputed-replacements.jsonl for same-rubric comparisons and proposed restoration candidates. Namib Desert, Virtual reality headset, Qongqothwane and Babamukuru merit serious restoration consideration. Athletes from the same Olympic final have highly overlapping cues; do not put both on one card. No actual restorations or replacements yet.

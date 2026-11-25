@@ -170,3 +170,37 @@ Potential overlap: Elijah/Elisha (distinct stories but avoid same card), Funke A
 ```
 
 Rows 301–2000 outstanding. Mother-in-law proposed easy rather than hard; retain comparison with Babamukuru as unresolved. Other questionable first-pass candidates reviewed here include Vosho and Biniam Girmay. No identity changes applied. Fixed literal answer-token leakage in Mutapa Empire and Great Zimbabwe clues from checkpoint 001–002. Additional literal token screen: 3 matches; further review required. Potential overlapping families: Biblical characters, musicians and songs, Matobo Hills/Rhodes grave, city/country names, footballers and clubs. Full-bank semantic review outstanding.
+
+## Priority checkpoint 001
+
+17 additional named examples audited out of order (all ten difficulty examples and all eleven disputed first-pass replacements now have preliminary individual records, including those already in contiguous batches). Source index remains authoritative. The eleven original/replacement comparisons are separate, provisional and not applied. Three literal token matches corrected from checkpoint 003. Remaining literal matches: [].
+
+```json
+{
+  "records": 317,
+  "dispositions": {
+    "RETAIN": 130,
+    "REFINE": 125,
+    "FLAG FOR HUMAN REVIEW": 62
+  },
+  "previousDifficulty": {
+    "easy": 120,
+    "medium": 128,
+    "hard": 69
+  },
+  "proposedDifficulty": {
+    "easy": 122,
+    "medium": 121,
+    "hard": 74
+  },
+  "difficultyCorrections": 114,
+  "threePathways": 313,
+  "unflaggedThreePathways": 255,
+  "priorPathwayOverlap": 31,
+  "mean": 87.82334384858044,
+  "properBefore": 197,
+  "properProposed": 208
+}
+```
+
+1683 current term identities not yet individually reviewed in this pass. No changes to playable bank, deck or manifest. Prioritise outstanding contiguous rows 301 onward, skipping priority rows already staged. No overall rating or final distribution claimed.
