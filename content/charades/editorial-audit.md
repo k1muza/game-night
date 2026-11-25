@@ -131,147 +131,94 @@ Two single-editor passes, not independent agents. First pass curated explicit pr
 | Dwayne Johnson | Shaka Zulu |
 
 
-# Contemporary popular culture refinement — 25 November 2026
+# Targeted contemporary refinement — 25 November 2026
 
-Base 9462a219a957e28cf1fd0c7a9738dfbac4f7104c; exactly 45 targeted replacements; 65 previously flagged cards reviewed. Original and previous branch identities recorded in contemporary-refinement-log.jsonl. Existing canonical schema and all unchanged IDs preserved. No game UI or other dataset changes. Draft only.
+Base: 9462a219a957e28cf1fd0c7a9738dfbac4f7104c. Final comparison is against that branch head, not the intermediate candidate commit. 54 answers replaced, 546 unchanged identities with stable IDs. Two targeted passes, not independent reviewers. All 65 previous provisional failures reviewed; details in contemporary-failure-review.jsonl. Changes recorded in contemporary-refinement-log.jsonl, while revision-log.jsonl continues the full mapping to the original 600-card dataset.
 
 | Player-facing category | Before | After | Flexible target |
 |---|---:|---:|---:|
-| Internet Personality | 3 | 13 | 20 |
-| Musician | 12 | 31 | 30 |
-| Comedian | 5 | 11 | 10 |
-| Famous Person | 7 | 11 | 10 |
+| Internet Personality | 3 | 11 | 20 |
+| Musician | 12 | 28 | 30 |
+| Comedian | 5 | 12 | 10 |
+| Famous Person | 7 | 12 | 10 |
 
-| Regional classification | Before | After |
+Additional labels Internet Creator (collective) and Online Show (title, not individual host) avoid misleading identity classifications.
+
+| Region | Before | After |
 |---|---:|---:|
-| international | 519 | 489 |
-| africa-regional | 40 | 61 |
-| zimbabwe-national | 41 | 50 |
+| international | 519 | 481 |
+| africa-regional | 40 | 63 |
+| zimbabwe-national | 41 | 56 |
 
-Combined Zimbabwean and African representation: 111/600 (18.50%). Region denotes origin or primary cultural association, not audience survey evidence. Targets were not forced with poor candidates. Internet creator counts include a channel-host brand (Magriza Made Me Cook) as an accepted host alias. Additional cultural labels remain clear. Some artists are deliberately retained with flags, and some new ones also have low convergence scores. No attempt to claim 92% by recoding estimates.
+Regional combined 119/600 = 19.83%. Region denotes origin or major cultural association, not surveyed familiarity. Khaby Lame retains international/global classification for comparability; no quota-driven reassignment.
 
-## Changed answers
+## Final replacement decisions
 
-| Previous answer | New answer | Category | Region | Provisional score |
-|---|---|---|---|---:|
-| Green Lantern | Laiza the Mop Driver | Internet Personality | zimbabwe-national | 76% |
-| Hawkeye | Magriza Made Me Cook | Internet Personality | zimbabwe-national | 66% |
-| Rocket Raccoon | Jadrolita | Internet Personality | africa-regional | 80% |
-| Mr. Potato Head | William Last KRM | Internet Personality | africa-regional | 70% |
-| Pluto | Wian | Internet Personality | africa-regional | 70% |
-| Sylvester | Zach King | Internet Personality | international | 80% |
-| Goofy | Dream | Internet Personality | international | 75% |
-| Squidward | Salt Bae | Internet Personality | international | 88% |
-| Jafar | Poco Lee | Internet Personality | africa-regional | 70% |
-| The Penguins of Madagascar | Enzo Ishall | Musician | zimbabwe-national | 88% |
-| Miraculous: Tales of Ladybug & Cat Noir | Hope Masike | Musician | zimbabwe-national | 76% |
-| Blue Planet | Minister Michael Mahendere | Musician | zimbabwe-national | 71% |
-| The Amazing Race | Nathaniel Bassey | Musician | africa-regional | 85% |
-| The Great British Bake Off | Tyla | Musician | africa-regional | 92% |
-| Young Sheldon | Uncle Waffles | Musician | africa-regional | 88% |
-| Formula 1: Drive to Survive | Kamo Mphela | Musician | africa-regional | 76% |
-| Arrow | Davido | Musician | africa-regional | 84% |
-| Family Guy | Kizz Daniel | Musician | africa-regional | 88% |
-| Shape of You | Rema | Musician | africa-regional | 81% |
-| Photograph | Sinach | Musician | africa-regional | 71% |
-| Counting Stars | PSY | Musician | international | 91% |
-| Dancing Queen | Beyoncé | Musician | international | 87% |
-| This Little Light of Mine | Shakira | Musician | international | 87% |
-| The Big Bang Theory | Sabhuku Vharazipi | Comedian | zimbabwe-national | 81% |
-| Skeem Saam | Mama Vee | Comedian | zimbabwe-national | 75% |
-| The Queen | Comic Elder | Comedian | zimbabwe-national | 81% |
-| Uzalo | Oga Sabinus | Comedian | africa-regional | 88% |
-| Albus Dumbledore | Brain Jotter | Comedian | africa-regional | 88% |
-| Hagrid | Lasisi Elenu | Comedian | africa-regional | 76% |
-| Dobby | Pawpaw (Osita Iheme) | Famous Person | africa-regional | 75% |
-| Robin | Dwayne Johnson | Famous Person | international | 96% |
-| Ant-Man | John Cena | Famous Person | international | 96% |
-| Isaac | Tshwala Bam | Dance | africa-regional | 84% |
-| Miriam | Shaku Shaku | Dance | africa-regional | 76% |
-| Ruth | Zanku | Dance | africa-regional | 76% |
-| Thomas | Pantsula | Dance | africa-regional | 81% |
-| The Writing on the Wall | Makhadzi | Musician | africa-regional | 70% |
-| Mafaro | Killer T | Musician | zimbabwe-national | 71% |
-| Musarova Bigman | Charles Charamba | Musician | zimbabwe-national | 71% |
-| The Simpsons | Zlatan Ibile | Musician | africa-regional | 76% |
-| The Fresh Prince of Bel-Air | Will Smith | Famous Person | international | 88% |
-| Brooklyn Nine-Nine | Kai Cenat | Internet Personality | international | 65% |
-| Ariel | African Queen | Song | africa-regional | 81% |
-| Road Runner | Amapiano | Music Genre | africa-regional | 75% |
-| The Lion Sleeps Tonight | Mkhululi Bhebhe | Musician | zimbabwe-national | 66% |
+| Previous answer | New answer | Category | Provisional score |
+|---|---|---|---:|
+| The Croods | Ndombolo | Dance | 70% |
+| Finding Dory | Dude Perfect | Internet Creator | 87% |
+| The Angry Birds Movie | Wavin' Flag | Song | 89% |
+| The Secret Life of Pets | Cook Off | Movie | 80% |
+| The Polar Express | Bako Rangu | Song | 74% |
+| Gravity | Ndinobuda Pakaoma | Song | 74% |
+| The Dark Knight | Sulumani Chimbetu | Musician | 74% |
+| Arrow | Davido | Musician | 84% |
+| The Simpsons | Zlatan Ibile | Musician | 76% |
+| Family Guy | Kizz Daniel | Musician | 88% |
+| The Big Bang Theory | Sabhuku Vharazipi | Comedian | 81% |
+| Brooklyn Nine-Nine | Mark Rober | Internet Personality | 79% |
+| The Fresh Prince of Bel-Air | Will Smith | Famous Person | 88% |
+| Young Sheldon | Uncle Waffles | Musician | 88% |
+| The Amazing Race | Nathaniel Bassey | Musician | 85% |
+| Formula 1: Drive to Survive | Kamo Mphela | Musician | 76% |
+| The Great British Bake Off | Tyla | Musician | 92% |
+| Blue Planet | Minister Michael Mahendere | Musician | 71% |
+| The Penguins of Madagascar | Enzo Ishall | Musician | 88% |
+| Miraculous: Tales of Ladybug & Cat Noir | Hope Masike | Musician | 76% |
+| The Queen | Comic Elder | Comedian | 81% |
+| Uzalo | Oga Sabinus | Comedian | 88% |
+| Skeem Saam | Mama Vee | Comedian | 75% |
+| Green Lantern | Laiza the Mop Driver | Internet Personality | 80% |
+| Robin | Dwayne Johnson | Famous Person | 96% |
+| Hawkeye | Magriza Made Me Cook | Online Show | 66% |
+| Ant-Man | John Cena | Famous Person | 96% |
+| Rocket Raccoon | Jadrolita | Internet Personality | 80% |
+| Hagrid | Lasisi Elenu | Comedian | 76% |
+| Dobby | Pawpaw (Osita Iheme) | Famous Person | 75% |
+| Albus Dumbledore | Brain Jotter | Comedian | 88% |
+| Ariel | African Queen | Song | 81% |
+| Patrick Star | Sydney Talker | Internet Personality | 74% |
+| Squidward | Salt Bae | Internet Personality | 88% |
+| Mr. Krabs | Kapfupi | Comedian | 71% |
+| Sylvester | Zach King | Internet Personality | 80% |
+| Road Runner | Blood & Water | TV Show | 80% |
+| Goofy | Dream | Internet Personality | 75% |
+| Jafar | Nixxi The Codebreaker | Internet Personality | 74% |
+| Dancing Queen | Beyoncé | Musician | 87% |
+| The Lion Sleeps Tonight | Danai Gurira | Famous Person | 85% |
+| Counting Stars | PSY | Musician | 91% |
+| Shape of You | Rema | Musician | 81% |
+| Photograph | Way Maker | Song | 85% |
+| This Little Light of Mine | Shakira | Musician | 87% |
+| Mafaro | Hello Mwari | Song | 85% |
+| Musarova Bigman | Machira Chete | Song | 81% |
+| Isaac | Tshwala Bam | Dance | 84% |
+| Miriam | Shaku Shaku | Dance | 76% |
+| Ruth | Coffin Dance | Internet Meme | 92% |
+| Thomas | Pantsula | Dance | 81% |
+| The Cat in the Hat | Skelewu | Dance | 70% |
+| The Princess and the Pea | Shoki | Dance | 70% |
+| The Writing on the Wall | Makhadzi | Musician | 70% |
 
-## Review of all prior provisional failures
+## Quality review
 
-| Prompt | Decision | Rationale |
-|---|---|---|
-| Sarafina! | retain-flagged | Retain established African film for regional diversity; test title-specific convergence. |
-| Mr. Bones | retain-flagged | Retain established African film for regional diversity; test title-specific convergence. |
-| The Woman King | retain-flagged | Retain established African film for regional diversity; test title-specific convergence. |
-| Tsotsi | retain-flagged | Retain established African film for regional diversity; test title-specific convergence. |
-| District 9 | retain-flagged | Retain established African film for regional diversity; test title-specific convergence. |
-| Queen of Katwe | retain-flagged | Retain established African film for regional diversity; test title-specific convergence. |
-| The Simpsons | replace | Targeted enrichment; see replacement mapping. |
-| Victoria Falls | retain-refine-hints | Keep iconic landmark; possible generic waterfall guess. |
-| Great Zimbabwe | retain-refine-hints | Specific visual architecture; preserve but do not inflate score. |
-| Chiremba Balancing Rocks | retain-refine-hints | Banknote link adds a local cue; keep flag pending recognition. |
-| Lake Kariba | retain-flagged | Not selected for limited replacement budget; still requires human recognition and convergence review. |
-| The Queen | replace | Targeted enrichment; see replacement mapping. |
-| Uzalo | replace | Targeted enrichment; see replacement mapping. |
-| Skeem Saam | replace | Targeted enrichment; see replacement mapping. |
-| Gringo | retain-refine-hints | Legacy Zimbabwean reference; candidate remains flagged. |
-| Shaka Zulu | retain-flagged | Not selected for limited replacement budget; still requires human recognition and convergence review. |
-| Kirsty Coventry | retain-refine-hints | Zimbabwean relevance high; signature remains insufficiently distinctive. |
-| Serena Williams | retain-refine-hints | Still overlaps tennis athletes. |
-| Siya Kolisi | retain-flagged | Recognisable athlete with recorded gesture pathway but overlaps with athletes in same sport; test independently. |
-| Jah Prayzah | retain-refine-hints | The artist's documented military-style stage identity distinguishes him; keep same identity. |
-| Oliver Mtukudzi | retain-refine-hints | Preserve local classic; title clue remains weak. |
-| Winky D | retain-refine-hints | Youth relevance supported, but second route remains weak; keep prior score. |
-| Thomas Mapfumo | retain-flagged | Established local or regional music identity; test signature-pathway convergence rather than relying on genre. |
-| Tongai Moyo | retain-flagged | Established local or regional music identity; test signature-pathway convergence rather than relying on genre. |
-| Madam Boss | retain-refine-hints | Specific skit identification remains uncertain. |
-| Mai Titi | retain-refine-hints | Keep culturally relevant but still flagged. |
-| Comic Pastor | retain-refine-hints | Preserve Zimbabwean comedy history; avoid religious mockery. |
-| Eliud Kipchoge | retain-flagged | Recognisable athlete with recorded gesture pathway but overlaps with athletes in same sport; test independently. |
-| Brenda Fassie | retain-flagged | Established local or regional music identity; test signature-pathway convergence rather than relying on genre. |
-| Miriam Makeba | retain-flagged | Established local or regional music identity; test signature-pathway convergence rather than relying on genre. |
-| Hugh Masekela | retain-flagged | Established local or regional music identity; test signature-pathway convergence rather than relying on genre. |
-| Mo Salah | retain-refine-hints | Distinct celebration, but no independent test. |
-| Didier Drogba | retain-flagged | Recognisable athlete with recorded gesture pathway but overlaps with athletes in same sport; test independently. |
-| Shape of You | replace | Targeted enrichment; see replacement mapping. |
-| Mudhara Vachauya | retain-flagged | Preserve established regional song where practical; title-based gestures must be checked without singing. |
-| Mafaro | replace | Targeted enrichment; see replacement mapping. |
-| Kure Kure | retain-flagged | Preserve established regional song where practical; title-based gestures must be checked without singing. |
-| Musarova Bigman | replace | Targeted enrichment; see replacement mapping. |
-| Neria | retain-flagged | Preserve established regional song where practical; title-based gestures must be checked without singing. |
-| Springboks | retain-flagged | Not selected for limited replacement budget; still requires human recognition and convergence review. |
-| Morabaraba | retain-flagged | Not selected for limited replacement budget; still requires human recognition and convergence review. |
-| Jerusarema Dance | retain-refine-hints | Preserve cultural relevance; local dance practitioner should verify. |
-| Lionel Messi | retain-flagged | Recognisable athlete with recorded gesture pathway but overlaps with athletes in same sport; test independently. |
-| Tiger Woods | retain-flagged | Recognisable athlete with recorded gesture pathway but overlaps with athletes in same sport; test independently. |
-| Mike Tyson | retain-refine-hints | Keep boxing identity, no unsafe contact. |
-| Zimbabwe Bird | retain-flagged | Conventional regional concept, not a scenario; confirm specific identification and language variants. |
-| Chara Chimwe Hachitswanyi Inda | retain-flagged | Preserve language/cultural identity; native speakers must verify expression and gesture pathway. |
-| Izandla Ziyagezana | retain-flagged | Preserve language/cultural identity; native speakers must verify expression and gesture pathway. |
-| MrBeast | retain-refine-hints | Still depends on creator recognition; keep flag. |
-| IShowSpeed | retain-refine-hints | 2026 Zimbabwe visit confirms local relevance; gesture may be confused with Ronaldo so retain flag. |
-| Sarah | retain-flagged | Preserve specific biblical identity and scriptural pathway; test character-name convergence with church youth. |
-| Isaac | replace | Targeted enrichment; see replacement mapping. |
-| Joseph | retain-refine-hints | Specific Old Testament identity strengthened; no score change. |
-| Miriam | replace | Targeted enrichment; see replacement mapping. |
-| Ruth | replace | Targeted enrichment; see replacement mapping. |
-| Naomi | retain-flagged | Preserve specific biblical identity and scriptural pathway; test character-name convergence with church youth. |
-| Thomas | replace | Targeted enrichment; see replacement mapping. |
-| Mary Magdalene | retain-flagged | Preserve specific biblical identity and scriptural pathway; test character-name convergence with church youth. |
-| Kandiro Kanoenda Kunobva Kamwe | retain-flagged | Preserve language/cultural identity; native speakers must verify expression and gesture pathway. |
-| Umuntu Ngumuntu Ngabantu | retain-flagged | Preserve language/cultural identity; native speakers must verify expression and gesture pathway. |
-| Rume Rimwe Harikombi Churu | retain-flagged | Preserve language/cultural identity; native speakers must verify expression and gesture pathway. |
-| Kora | retain-flagged | Conventional regional concept, not a scenario; confirm specific identification and language variants. |
-| Duri neMutswi | retain-flagged | Conventional regional concept, not a scenario; confirm specific identification and language variants. |
-| Ngoma | retain-flagged | Conventional regional concept, not a scenario; confirm specific identification and language variants. |
-| Djembe | retain-flagged | Conventional regional concept, not a scenario; confirm specific identification and language variants. |
+Prior heuristic average 83.48%; current 83.62%. Prior 65 provisional failures; now 70. Of new replacements 21 remain flagged. Prior failure dispositions: {"retain-flagged":36,"replace":11,"retain-refine":18}. The independently supplied 8.9/10 baseline is a different assessment, not comparable to these heuristics. The 92% target is not established. No blanket rescoring. Six specific cards reassessed with explicit concrete rationale: Jah Prayzah: Military-regalia band identity explicitly documented by artist; combination of salute and musician category distinguishes him. Prior 3/5 gesture and specificity underestimated the concrete persona.; IShowSpeed: January 2026 Zimbabwe tour documents relevant recognition context; safe hand-figure backflip plus Siu in livestream context supplies two distinct signature cues. Ronaldo overlap remains a review risk.; Laiza the Mop Driver: The established name and reported mop-driver persona supply a direct, distinctive physical route. Familiarity remains 3/5, not inferred from reach.; Great Zimbabwe: Dry-stone walls plus conical tower give a specific visual combination, not merely building; cultural landmark relevance high, recognition still estimated.; Chiremba Balancing Rocks: Distinct stacked rock formation and banknote cue provide specific combination; keep subject to landmark playtest.; Joseph: Coat plus seven ears of grain and dream interpretation distinguish Joseph son of Jacob from other biblical Josephs; church-youth audience estimate only.. All other retained scores remain unchanged. Newly added identities scored conservatively; do not count fame as evidence of solvability.
 
-Review is single-editor, not independent. Source-linked mime clues describe recognised performance motifs or editorial title-wordplay, not proven distinctiveness. No score changed on retained cards. New candidates individually rated on four dimensions with explicit scores; remaining three dimensions derived conservatively from clue quality, region and accessibility. This is not comparable to the user's independent provisional 8.9/10 rating. Prior heuristic mean 83.48%; current 83.47%; prior 65 flags, current 76. Score target 92% remains unfulfilled. Difficulty carried forward from slots and swapped only among new candidates when possible; empirical calibration pending. Remaining flagged prompts: Sarafina!; Mr. Bones; The Woman King; Tsotsi; District 9; Queen of Katwe; Zlatan Ibile; Kai Cenat; Victoria Falls; Great Zimbabwe; Chiremba Balancing Rocks; Kamo Mphela; Minister Michael Mahendere; Lake Kariba; Hope Masike; Mama Vee; Gringo; Laiza the Mop Driver; Magriza Made Me Cook; Lasisi Elenu; Pawpaw (Osita Iheme); Amapiano; Dream; Wian; Poco Lee; William Last KRM; Shaka Zulu; Kirsty Coventry; Serena Williams; Siya Kolisi; Jah Prayzah; Oliver Mtukudzi; Winky D; Thomas Mapfumo; Tongai Moyo; Madam Boss; Mai Titi; Comic Pastor; Eliud Kipchoge; Brenda Fassie; Miriam Makeba; Hugh Masekela; Mo Salah; Didier Drogba; Mkhululi Bhebhe; Sinach; Mudhara Vachauya; Killer T; Kure Kure; Charles Charamba; Neria; Springboks; Morabaraba; Jerusarema Dance; Lionel Messi; Tiger Woods; Mike Tyson; Zimbabwe Bird; Chara Chimwe Hachitswanyi Inda; Izandla Ziyagezana; MrBeast; IShowSpeed; Sarah; Joseph; Shaku Shaku; Zanku; Naomi; Mary Magdalene; Kandiro Kanoenda Kunobva Kamwe; Makhadzi; Umuntu Ngumuntu Ngabantu; Rume Rimwe Harikombi Churu; Kora; Duri neMutswi; Ngoma; Djembe. Prior audit is historical; this addendum supersedes its current counts.
+Second screening removed Killer T's primarily audible signature in favour of a recognisable song title, separated the online show from its host, removed shared Zlatan/Zanku pathways, and restored two prior answers where proposed creators lacked enough specific nonverbal cues. Artist identities and dance/song cards may still share visual cues (e.g. Shakira/Waka Waka, Beyoncé/Single Ladies and PSY/Gangnam Style); shown category helps but human convergence testing remains necessary. Dances whose exact choreography has not been independently inspected remain flagged. Rejected additional high-follower personalities without distinct visual motifs; did not force Internet Personality target. Contemporary musicians and skit creators remain the key improvement, but no empirical Zimbabwean audience evidence was collected. Some older local references remain intentionally because they connect age groups and church gatherings.
 
-## Zimbabwean youth perspective
+## Zimbabwean youth gathering perspective
 
-Compared with the baseline's redundant cartoons and secondary superhero characters, creator and music additions offer more opportunities to act out TikTok/YouTube identities and Afrobeats, amapiano and Zimbabwean performance motifs. Contemporary relevance is stronger, but coverage is not uniform across ages, rural/urban access and languages. Broad fame, award nominations and online reach cannot guarantee silent identification. Several local creators were rejected for voice-dependent or generic clues. Similar song and artist associations may still overlap; displayed category mitigates but does not resolve them. Retain the draft gate until representative playtests, source and safety review, and Flutter tests are complete.
+A participant can now mime the Kanjiva, Buga, Water and Unavailable performances, the silent robot persona, a mop-driver video, the Gwo Gwo Ngwo dance-comedy personality, a film actor's two roles, and established local gospel/song titles. Reduced secondary superhero, animated, television and film overlaps; preserved core titles and most specific Bible characters. A 16-year-old and a 30-year-old may differ substantially in local social media exposure, and group familiarity remains untested. More local candidates are identified in research, but those depending on voice, niche trends or generic skits were not used to satisfy quotas. All draft, releaseReady false.
+
+Prior audit text is historical; the final tables above supersede its current counts.

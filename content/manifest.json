@@ -24,11 +24,12 @@
       "source": "Deep Research upload, PR #3",
       "importedGitBlobSha": "14930146c206baa56bf1532f09d3db358617c5c1",
       "currentSchemaVersion": "3.1.0",
-      "currentGitBlobSha": "5a0c9c77d488113fa561edd3f4a55a691c77e45a",
-      "currentSource": "Targeted contemporary culture refinement; 45 replacements; draft structural validation; release gates pending",
+      "currentGitBlobSha": "6a31aed5cf46fd7fcd7ebc4c40fe4933497cd976",
+      "currentSource": "Targeted contemporary cultural refinement, 54 final replacements; draft; all 65 previous rubric flags reviewed",
       "previousGitBlobSha": "f72664462962dc807ba1edab0a421af93ac49ee8",
       "revisionLogPath": "charades/revision-log.jsonl",
-      "contemporaryRefinementLogPath": "charades/contemporary-refinement-log.jsonl"
+      "contemporaryRefinementLogPath": "charades/contemporary-refinement-log.jsonl",
+      "contemporaryFailureReviewPath": "charades/contemporary-failure-review.jsonl"
     },
     {
       "game": "trivia",
