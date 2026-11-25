@@ -223,3 +223,17 @@ User guidance: distinguish functional terms from exceptional entertainment and c
 | Total new | 296 | 143 | 68 | 85 | 85 | 291 | 85.86 |
 
 Cumulative: 712/2,000 individual records (35.6%), including 700 contiguous source rows and 12 later priority rows. 322 retain, 215 refine, 175 flag; 227 proposed difficulty changes. 703 second-pass records have three pathways, 537 unflagged. Combined distinct first/second-pass coverage: 804 (40.2%). 1,288 identities remain unassessed. Reviewed difficulty counts before: 287 easy, 287 medium, 138 hard; proposed: 297 easy, 270 medium, 145 hard. Reviewed proper-noun flags: 446 previous, 470 proposed. Cumulative mean 86.86/100 (not a deck rating; calibration differs). One perfect score in these 296 records (Tom and Jerry); 137 previous perfect records remain staged and require focused calibration, not repetition of the full audit. Five newly assessed identities lack sufficient pathways: Wenyasha, Estate Blues, Tanyaradzwa, Munyama, Peter Pan (music entry). Resume row 701, skipping previously assessed priorities. No production changes.
+
+## Checkpoints 008–013 — source rows 701–1300
+
+| Batch | New reviews | Retain | Refine | Flag | Difficulty changes | Three pathways | Mean score |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 008 | 99 | 38 | 25 | 36 | 37 | 97 | 86.56 |
+| 009 | 98 | 38 | 32 | 28 | 34 | 97 | 86.17 |
+| 010 | 98 | 43 | 20 | 35 | 21 | 95 | 86.18 |
+| 011 | 100 | 34 | 28 | 38 | 35 | 98 | 85.46 |
+| 012 | 100 | 52 | 27 | 21 | 32 | 99 | 86.96 |
+| 013 | 100 | 43 | 33 | 24 | 36 | 100 | 87.69 |
+| Total new | 595 | 248 | 165 | 182 | 195 | 586 | 86.51 |
+
+Cumulative: 1,307/2,000 (65.35%); 1,300 contiguous source rows and seven later priority rows. 570 retain, 380 refine, 357 flag; 422 difficulty changes; 1,289 records have three pathways, 950 unflagged; combined deduplicated coverage 1,348 (67.4%). 693 remaining. Proposed reviewed difficulty counts 554 easy, 531 medium, 222 hard versus 518/533/256 original. Proper-noun flags 806 previous, 844 proposed. Mean 86.70/100, not comparable to earlier provisional deck rating. No perfect scores in batches 008–013. Earlier 137 perfect records require focused calibration. Resume row 1301, skipping priorities. Production content unchanged.
