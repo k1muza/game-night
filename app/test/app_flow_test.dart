@@ -5,12 +5,15 @@ import 'package:game_night/app.dart';
 import 'package:game_night/model/game_kind.dart';
 import 'package:game_night/services/fx.dart';
 import 'package:game_night/session/session.dart';
+import 'package:game_night/ui/screens/local_referee.dart';
 
 import 'helpers.dart';
 
 class AppHarness {
   AppHarness() {
-    h.store.flags.addAll({for (final g in GameKind.values) 'rules.${g.name}': true});
+    h.store.flags.addAll({
+      for (final g in GameKind.values) 'rules.${g.name}': true,
+    });
   }
   final h = Harness();
   final fx = SilentFx();
@@ -19,7 +22,9 @@ class AppHarness {
     t.view.physicalSize = const Size(390, 844);
     t.view.devicePixelRatio = 1;
     addTearDown(t.view.reset);
-    await t.pumpWidget(GameNightApp(controller: h.controller, fx: fx, store: h.store));
+    await t.pumpWidget(
+      GameNightApp(controller: h.controller, fx: fx, store: h.store),
+    );
     await t.pump();
   }
 
@@ -36,7 +41,9 @@ class AppHarness {
   }
 
   Future<void> startViaHandover(WidgetTester t) async {
-    await t.pump(const Duration(milliseconds: 800)); // screens ignore taps briefly (InputGuard)
+    await t.pump(
+      const Duration(milliseconds: 800),
+    ); // screens ignore taps briefly (InputGuard)
     await t.tap(find.textContaining(RegExp(r'^Start the (clock|questions)$')));
     await advance(t, const Duration(milliseconds: 2100)); // 3-2-1
     expect(h.s.phase, Phase.playing);
@@ -45,18 +52,52 @@ class AppHarness {
 
 Future<void> tapText(WidgetTester t, String text) async {
   await t.tap(find.text(text).last);
-  await t.pump(const Duration(milliseconds: 800)); // let the next screen's tap guard lapse
+  await t.pump(
+    const Duration(milliseconds: 800),
+  ); // let the next screen's tap guard lapse
 }
 
 void main() {
   setUpAll(loadAppFonts);
 
-  testWidgets('Home → setup with defaults → handover hides the card → play', (t) async {
+  testWidgets('referee pairing and game screens initialize from AppScope', (
+    t,
+  ) async {
+    final a = AppHarness();
+    await a.pump(t);
+    final nav = t.widget<AppScope>(find.byType(AppScope)).nav;
+
+    nav.hostPairing();
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.byType(HostPairingScreen), findsOneWidget);
+
+    nav.joinReferee();
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.byType(JoinRefereeScreen), findsOneWidget);
+
+    nav.referee();
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.byType(RefereeGameScreen), findsOneWidget);
+    expect(
+      find.text('Waiting for the host to synchronise the game…'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Home → setup with defaults → handover hides the card → play', (
+    t,
+  ) async {
     final a = AppHarness();
     await a.pump(t);
     expect(find.text('Who’s playing tonight?'), findsOneWidget);
-    expect(find.text('No sign-up · No internet needed once loaded'), findsNothing);
-    expect(find.text('Card decks are candidate drafts for private playtesting.'), findsNothing);
+    expect(
+      find.text('No sign-up · No internet needed once loaded'),
+      findsNothing,
+    );
+    expect(
+      find.text('Card decks are candidate drafts for private playtesting.'),
+      findsNothing,
+    );
     await t.tap(find.text('30-Second Sprint'));
     await t.pump(const Duration(milliseconds: 400));
     await tapText(t, 'Start game');
@@ -70,63 +111,99 @@ void main() {
       expect(find.text(term.text), findsNothing);
     }
     expect(find.text('Pass the phone to your clue-giver'), findsOneWidget);
-    expect(a.h.controller.remainingMs(), 0, reason: 'clock not running during handover');
+    expect(
+      a.h.controller.remainingMs(),
+      0,
+      reason: 'clock not running during handover',
+    );
 
     await a.startViaHandover(t);
     expect(find.text(next.terms.first.text), findsOneWidget);
     expect(a.fx.awake, isTrue, reason: 'wake lock held during play');
   });
 
-  testWidgets('Sprint: timer expiry shows Time!, posts score once, then rotates team', (t) async {
-    final a = AppHarness();
-    a.h.start(GameKind.sprint);
-    await a.pump(t);
-    await tapText(t, 'Resume');
-    await a.startViaHandover(t);
-    final card = a.h.controller.library.sprint[a.h.s.turn!.cardId]!;
-    await t.tap(find.text(card.terms[2].text));
-    await t.pump();
-    // The 3-2-1 countdown overshoots by up to one 100 ms step; land just past the deadline.
-    await a.advance(t, Duration(milliseconds: a.h.controller.remainingMs() + 100));
-    expect(find.text('Time!'), findsOneWidget);
-    expect(a.h.s.scores, [1, 0]);
-    expect(a.fx.played, contains(Cue.timeUp));
-    expect(a.fx.awake, isFalse, reason: 'wake lock released when the turn ends');
-    // Late taps after expiry change nothing.
-    await t.tap(find.text('See the scores'), warnIfMissed: false);
-    await t.pump();
-    expect(find.text('Time!'), findsOneWidget, reason: 'button locked briefly against late taps');
-    await a.advance(t, const Duration(seconds: 1));
-    await tapText(t, 'See the scores');
-    expect(find.text('Team A take the lead!'), findsOneWidget);
-    await tapText(t, 'Next team');
-    expect(find.text('TEAM B’S TURN'), findsOneWidget);
-    expect(a.h.s.scores, [1, 0]);
-    await t.pump(const Duration(seconds: 1)); // let the tap guard's timer finish
-  });
+  testWidgets(
+    'Sprint: timer expiry shows Time!, posts score once, then rotates team',
+    (t) async {
+      final a = AppHarness();
+      a.h.start(GameKind.sprint);
+      await a.pump(t);
+      await tapText(t, 'Resume');
+      await a.startViaHandover(t);
+      final card = a.h.controller.library.sprint[a.h.s.turn!.cardId]!;
+      await t.tap(find.text(card.terms[2].text));
+      await t.pump();
+      // The 3-2-1 countdown overshoots by up to one 100 ms step; land just past the deadline.
+      await a.advance(
+        t,
+        Duration(milliseconds: a.h.controller.remainingMs() + 100),
+      );
+      expect(find.text('Time!'), findsOneWidget);
+      expect(a.h.s.scores, [1, 0]);
+      expect(a.fx.played, contains(Cue.timeUp));
+      expect(
+        a.fx.awake,
+        isFalse,
+        reason: 'wake lock released when the turn ends',
+      );
+      // Late taps after expiry change nothing.
+      await t.tap(find.text('See the scores'), warnIfMissed: false);
+      await t.pump();
+      expect(
+        find.text('Time!'),
+        findsOneWidget,
+        reason: 'button locked briefly against late taps',
+      );
+      await a.advance(t, const Duration(seconds: 1));
+      await tapText(t, 'See the scores');
+      expect(find.text('Team A take the lead!'), findsOneWidget);
+      await tapText(t, 'Next team');
+      expect(find.text('TEAM B’S TURN'), findsOneWidget);
+      expect(a.h.s.scores, [1, 0]);
+      await t.pump(
+        const Duration(seconds: 1),
+      ); // let the tap guard's timer finish
+    },
+  );
 
-  testWidgets('a double-tap cannot skip results or start the next team\'s clock (regression)', (t) async {
-    final a = AppHarness();
-    a.h.start(GameKind.charades);
-    a.h.controller.startTurn();
-    await a.pump(t);
-    a.h.controller.finishTurn(); // → turn results
-    await t.pump(const Duration(milliseconds: 50));
-    // Frantic taps where the previous screen's button was.
-    await t.tap(find.text('Next team'), warnIfMissed: false);
-    await t.pump(const Duration(milliseconds: 100));
-    await t.tap(find.text('Next team'), warnIfMissed: false);
-    expect(a.h.s.phase, Phase.turnResults, reason: 'results stay up long enough to be read');
-    await t.pump(const Duration(milliseconds: 800));
-    await t.tap(find.text('Next team'));
-    await t.pump(const Duration(milliseconds: 100));
-    expect(a.h.s.phase, Phase.ready);
-    await t.tap(find.text('Start the clock'), warnIfMissed: false); // the double-tap's second half
-    await t.pump(const Duration(seconds: 3));
-    expect(a.h.s.phase, Phase.ready, reason: 'next team\'s clock not started by a stray tap');
-  });
+  testWidgets(
+    'a double-tap cannot skip results or start the next team\'s clock (regression)',
+    (t) async {
+      final a = AppHarness();
+      a.h.start(GameKind.charades);
+      a.h.controller.startTurn();
+      await a.pump(t);
+      a.h.controller.finishTurn(); // → turn results
+      await t.pump(const Duration(milliseconds: 50));
+      // Frantic taps where the previous screen's button was.
+      await t.tap(find.text('Next team'), warnIfMissed: false);
+      await t.pump(const Duration(milliseconds: 100));
+      await t.tap(find.text('Next team'), warnIfMissed: false);
+      expect(
+        a.h.s.phase,
+        Phase.turnResults,
+        reason: 'results stay up long enough to be read',
+      );
+      await t.pump(const Duration(milliseconds: 800));
+      await t.tap(find.text('Next team'));
+      await t.pump(const Duration(milliseconds: 100));
+      expect(a.h.s.phase, Phase.ready);
+      await t.tap(
+        find.text('Start the clock'),
+        warnIfMissed: false,
+      ); // the double-tap's second half
+      await t.pump(const Duration(seconds: 3));
+      expect(
+        a.h.s.phase,
+        Phase.ready,
+        reason: 'next team\'s clock not started by a stray tap',
+      );
+    },
+  );
 
-  testWidgets('Discard from Home removes the Resume card (regression)', (t) async {
+  testWidgets('Discard from Home removes the Resume card (regression)', (
+    t,
+  ) async {
     final a = AppHarness();
     a.h.start(GameKind.charades);
     await a.pump(t);
@@ -137,27 +214,41 @@ void main() {
     expect(find.text('Who’s playing tonight?'), findsOneWidget);
   });
 
-  testWidgets('Refresh mid-turn reopens the game with the same deadline', (t) async {
+  testWidgets('Refresh mid-turn reopens the game with the same deadline', (
+    t,
+  ) async {
     final a = AppHarness();
     a.h.start(GameKind.forbidden);
     a.h.controller.startTurn();
     a.h.controller.mark(Outcome.correct);
     a.h.clock.advance(const Duration(seconds: 15));
     final restored = a.h.reload();
-    await t.pumpWidget(GameNightApp(controller: restored, fx: a.fx, store: a.h.store));
+    await t.pumpWidget(
+      GameNightApp(controller: restored, fx: a.fx, store: a.h.store),
+    );
     await t.pump();
-    expect(find.text('45'), findsOneWidget, reason: 'bar timer shows the true remaining time');
+    expect(
+      find.text('45'),
+      findsOneWidget,
+      reason: 'bar timer shows the true remaining time',
+    );
     expect(find.textContaining('Get them to say'), findsWidgets);
   });
 
-  testWidgets('Trivia: question → lock in → reveal with explanation', (t) async {
+  testWidgets('Trivia: question → lock in → reveal with explanation', (
+    t,
+  ) async {
     final a = AppHarness();
     a.h.start(GameKind.trivia);
     await a.pump(t);
     await tapText(t, 'Resume');
     await a.startViaHandover(t);
     final q = a.h.controller.library.trivia[a.h.s.turn!.cardId]!;
-    expect(find.text(q.explanation), findsNothing, reason: 'no reveal before lock-in');
+    expect(
+      find.text(q.explanation),
+      findsNothing,
+      reason: 'no reveal before lock-in',
+    );
     await t.tap(find.text(q.answer));
     await t.pump();
     await t.tap(find.textContaining('Lock in'));

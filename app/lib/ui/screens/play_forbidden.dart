@@ -19,12 +19,14 @@ class ForbiddenPlayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AppScope.of(context).controller;
+    final refereeConnected = AppScope.of(context).referee.isHostConnected;
     final lib = c.library;
     return RapidPlay(
       buzzCount: true,
       labelOf: (id) => lib.forbidden[id]!.target,
       top: _BuzzStrip(
-        onBuzz: c.session!.turn!.cardId == null
+        remote: refereeConnected,
+        onBuzz: refereeConnected || c.session!.turn!.cardId == null
             ? null
             : () => c.mark(Outcome.violation),
       ),
@@ -38,8 +40,9 @@ class ForbiddenPlayScreen extends StatelessWidget {
 }
 
 class _BuzzStrip extends StatefulWidget {
-  const _BuzzStrip({required this.onBuzz});
+  const _BuzzStrip({required this.onBuzz, this.remote = false});
   final VoidCallback? onBuzz;
+  final bool remote;
   @override
   State<_BuzzStrip> createState() => _BuzzStripState();
 }
@@ -50,7 +53,9 @@ class _BuzzStripState extends State<_BuzzStrip> {
   Widget build(BuildContext context) => Semantics(
     button: true,
     enabled: widget.onBuzz != null,
-    label: 'Buzz: forbidden word said, minus one point',
+    label: widget.remote
+        ? 'Referee connected and monitoring'
+        : 'Buzz: forbidden word said, minus one point',
     excludeSemantics: true,
     onTap: widget.onBuzz,
     child: GestureDetector(
@@ -80,11 +85,20 @@ class _BuzzStripState extends State<_BuzzStrip> {
           children: [
             const Icon(Icons.warning_amber_rounded, color: Gn.ink, size: 26),
             const SizedBox(width: 10),
-            Text('BUZZ', style: Gn.displayStyle(24, color: Gn.ink, spacing: 0)),
+            Text(
+              widget.remote ? 'REFEREE CONNECTED' : 'BUZZ',
+              style: Gn.displayStyle(
+                widget.remote ? 16 : 24,
+                color: Gn.ink,
+                spacing: 0,
+              ),
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Referee: forbidden word said · −1',
+                widget.remote
+                    ? 'Remote referee is monitoring'
+                    : 'Local referee: forbidden word said · −1',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Gn.uiStyle(

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'model/game_kind.dart';
 import 'services/fx.dart';
+import 'services/local_referee.dart';
 import 'session/session.dart';
 import 'session/session_controller.dart';
 import 'session/store.dart';
@@ -11,6 +12,7 @@ import 'theme/tokens.dart';
 import 'ui/screens/final_results.dart';
 import 'ui/screens/handover.dart';
 import 'ui/screens/home.dart';
+import 'ui/screens/local_referee.dart';
 import 'ui/screens/play_charades.dart';
 import 'ui/screens/play_forbidden.dart';
 import 'ui/screens/play_sprint.dart';
@@ -26,24 +28,29 @@ class AppScope extends InheritedWidget {
     required this.controller,
     required this.fx,
     required this.store,
+    required this.referee,
     required this.nav,
     required super.child,
   });
   final SessionController controller;
   final Fx fx;
   final SessionStore store;
+  final LocalRefereeService referee;
   final AppNav nav;
 
   static AppScope of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppScope>()!;
 
+  static AppScope read(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<AppScope>()!;
+
   @override
   bool updateShouldNotify(AppScope old) => false;
 }
 
-enum AppRoute { home, setup, session }
+enum AppRoute { home, setup, hostPairing, joinReferee, referee, session }
 
-/// Minimal top-level navigation: there are only three places to be.
+/// Small top-level navigation for game and pairing flows.
 class AppNav extends ChangeNotifier {
   AppRoute route = AppRoute.home;
   GameKind setupGame = GameKind.sprint;
@@ -55,6 +62,9 @@ class AppNav extends ChangeNotifier {
   }
 
   void session() => _go(AppRoute.session);
+  void hostPairing() => _go(AppRoute.hostPairing);
+  void joinReferee() => _go(AppRoute.joinReferee);
+  void referee() => _go(AppRoute.referee);
 
   void _go(AppRoute r) {
     route = r;
@@ -68,10 +78,12 @@ class GameNightApp extends StatefulWidget {
     required this.controller,
     required this.fx,
     required this.store,
+    this.referee,
   });
   final SessionController controller;
   final Fx fx;
   final SessionStore store;
+  final LocalRefereeService? referee;
 
   @override
   State<GameNightApp> createState() => _GameNightAppState();
@@ -80,6 +92,8 @@ class GameNightApp extends StatefulWidget {
 class _GameNightAppState extends State<GameNightApp>
     with WidgetsBindingObserver {
   final nav = AppNav();
+  late final LocalRefereeService referee =
+      widget.referee ?? createLocalRefereeService(widget.controller);
 
   @override
   void initState() {
@@ -118,6 +132,7 @@ class _GameNightAppState extends State<GameNightApp>
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       widget.controller.store.saveSession(widget.controller.session);
+      referee.pauseForBackground();
       if (state == AppLifecycleState.paused ||
           state == AppLifecycleState.hidden ||
           state == AppLifecycleState.detached) {
@@ -132,6 +147,7 @@ class _GameNightAppState extends State<GameNightApp>
       controller: widget.controller,
       fx: widget.fx,
       store: widget.store,
+      referee: referee,
       nav: nav,
       child: MaterialApp(
         title: 'Game Night',
@@ -147,17 +163,28 @@ class _GameNightAppState extends State<GameNightApp>
             child: child!,
           );
         },
-        home: _Shell(nav: nav, controller: widget.controller, fx: widget.fx),
+        home: _Shell(
+          nav: nav,
+          controller: widget.controller,
+          fx: widget.fx,
+          referee: referee,
+        ),
       ),
     );
   }
 }
 
 class _Shell extends StatefulWidget {
-  const _Shell({required this.nav, required this.controller, required this.fx});
+  const _Shell({
+    required this.nav,
+    required this.controller,
+    required this.fx,
+    required this.referee,
+  });
   final AppNav nav;
   final SessionController controller;
   final Fx fx;
+  final LocalRefereeService referee;
 
   @override
   State<_Shell> createState() => _ShellState();
@@ -175,6 +202,7 @@ class _ShellState extends State<_Shell> {
     super.initState();
     _prev = _Snapshot.of(widget.controller.session);
     widget.controller.addListener(_onChange);
+    widget.referee.addListener(_rebuild);
     widget.nav.addListener(_rebuild);
     _syncWakeLock();
   }
@@ -182,12 +210,26 @@ class _ShellState extends State<_Shell> {
   @override
   void dispose() {
     widget.controller.removeListener(_onChange);
+    widget.referee.removeListener(_rebuild);
     widget.nav.removeListener(_rebuild);
     widget.fx.keepAwake(false);
     super.dispose();
   }
 
   void _rebuild() => setState(() {});
+
+  Future<void> _repairRefereePairing() async {
+    try {
+      await widget.referee.startHost();
+      if (mounted) widget.nav.hostPairing();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not restart pairing: $error')),
+        );
+      }
+    }
+  }
 
   void _syncWakeLock() => widget.fx.keepAwake(
     widget.controller.session?.phase == Phase.playing &&
@@ -209,7 +251,8 @@ class _ShellState extends State<_Shell> {
 
   void _cues(_Snapshot a, _Snapshot b, Session s) {
     final fx = widget.fx;
-    if (a.phase == Phase.playing && b.phase == Phase.turnResults) {
+    if (a.phase == Phase.playing &&
+        (b.phase == Phase.turnResults || b.phase == Phase.turnReview)) {
       liveEndedAt = s.history.length;
       switch (s.turn?.ended) {
         case EndReason.time:
@@ -240,6 +283,8 @@ class _ShellState extends State<_Shell> {
         case Outcome.timeout:
           fx.play(Cue.timeUp);
           fx.vibrate([250]);
+        case Outcome.disqualified:
+          break;
       }
     }
   }
@@ -254,6 +299,9 @@ class _ShellState extends State<_Shell> {
     final Widget screen = switch (route) {
       AppRoute.home => const HomeScreen(),
       AppRoute.setup => SetupScreen(game: widget.nav.setupGame),
+      AppRoute.hostPairing => const HostPairingScreen(),
+      AppRoute.joinReferee => const JoinRefereeScreen(),
+      AppRoute.referee => const RefereeGameScreen(),
       AppRoute.session => switch (s!.phase) {
         Phase.ready => HandoverScreen(
           key: ValueKey('ready-${s.history.length}'),
@@ -264,6 +312,7 @@ class _ShellState extends State<_Shell> {
           GameKind.trivia => const TriviaPlayScreen(),
           GameKind.forbidden => const ForbiddenPlayScreen(),
         },
+        Phase.turnReview => const RefereeHostReviewScreen(),
         Phase.turnResults => TurnEndFlow(
           key: ValueKey('end-${s.history.length}'),
           showSplash: liveEndedAt == s.history.length,
@@ -274,6 +323,12 @@ class _ShellState extends State<_Shell> {
     final key = route == AppRoute.session
         ? 'session-${s!.phase.name}-${s.history.length}'
         : route.name;
+    final remoteSession =
+        s?.config.mode == PlayMode.referee && route == AppRoute.session;
+    final needsFallback =
+        remoteSession &&
+        s?.phase != Phase.gameResults &&
+        !widget.referee.isHostConnected;
     return PopScope(
       canPop: route == AppRoute.home,
       onPopInvokedWithResult: (didPop, _) {
@@ -283,16 +338,74 @@ class _ShellState extends State<_Shell> {
         }
       },
       child: Scaffold(
-        body: AnimatedSwitcher(
-          duration: MediaQuery.of(context).disableAnimations
-              ? Duration.zero
-              : Gn.quick,
-          // Guard screens whose main button sits where the previous screen's
-          // did. Play screens aren't guarded: the 3-2-1 countdown already
-          // separates them, and the first guess can come instantly.
-          child: route == AppRoute.session && s!.phase != Phase.playing
-              ? InputGuard(key: ValueKey(key), child: screen)
-              : KeyedSubtree(key: ValueKey(key), child: screen),
+        body: Stack(
+          children: [
+            AnimatedSwitcher(
+              duration: MediaQuery.of(context).disableAnimations
+                  ? Duration.zero
+                  : Gn.quick,
+              // Guard screens whose main button sits where the previous screen's
+              // did. Play screens aren't guarded: the 3-2-1 countdown already
+              // separates them, and the first guess can come instantly.
+              child: route == AppRoute.session && s!.phase != Phase.playing
+                  ? InputGuard(key: ValueKey(key), child: screen)
+                  : KeyedSubtree(key: ValueKey(key), child: screen),
+            ),
+            if (needsFallback)
+              Positioned(
+                left: 12,
+                right: 12,
+                bottom: 12,
+                child: SafeArea(
+                  top: false,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Gn.surface1,
+                      borderRadius: BorderRadius.circular(Gn.rLg),
+                      border: Border.all(color: Gn.warning, width: 2),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.wifi_off_rounded,
+                              color: Gn.warning,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Referee disconnected. The turn is paused.',
+                                style: Gn.uiStyle(
+                                  13,
+                                  color: Gn.text1,
+                                  weight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: _repairRefereePairing,
+                              child: const Text('Re-pair'),
+                            ),
+                            TextButton(
+                              onPressed: widget.referee.takeOverClassic,
+                              child: const Text('Continue in Classic'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
