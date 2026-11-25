@@ -38,3 +38,7 @@ Exact URLs in the relevant audit records. Other cues are provisional editorial k
 ## Checkpoints 005–007
 
 No new external source verification was performed for these batches. Named-entity facts, track titles, local-language expressions and media identities are provisional. Wenyasha, Estate Blues, Tanyaradzwa, Munyama and the Zimbabwean music entry Peter Pan need identity/source confirmation before pathways or retention. User endorsed serious consideration of restoring Namib Desert, Qongqothwane, Virtual reality headset and Babamukuru. Preserve both original and replacement if justified by placing one in a weaker slot; exact slot allocation and identity traceability remain pending until full audit. No restorations or production replacements applied.
+
+## Checkpoints 008–013
+
+No external source verification performed. Deferred pathway identities: Mweya Mutsvene, Zorai Butter, Ndomudana, Jecha, Ta Ta Ta, Door Ratovharwa, Mwari Wakanaka, Too Much (Nutty O song), Hulengende. Flagged semantic conflicts include Muboora/pumpkin leaves, Ambuya/Grandmother, Jonah/Jonah's big fish, named voice assistants/generic voice assistant, Spider-Man/Tom Holland, and related songs and artists. Full-bank systematic review pending. Four supported restoration candidates remain staged.
