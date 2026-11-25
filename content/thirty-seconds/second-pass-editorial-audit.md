@@ -210,3 +210,16 @@ Rows 301–2000 outstanding. Mother-in-law proposed easy rather than hard; retai
 99 newly assessed terms; source row 345 (Car wash) already covered by the priority batch and not duplicated. 49 retain, 22 refine, 28 flag for human review; 28 proposed difficulty corrections. All 99 have three proposed pathways. Batch mean 86.74/100, estimated, not measured. Named-entity references and narrowly local places remain important flag categories.
 
 Cumulative: 416/2,000 individual reviews (20.8%); 179 retain, 147 refine, 90 flag; 142 difficulty corrections; 412 have three pathways, 326 unflagged; 522/2,000 distinct terms have three recorded pathways across both passes (26.1%). Proper-noun flags in reviewed subset: 264 previous, 276 proposed. Mean 87.56/100, not an overall rating. 1,584 source identities remain unassessed. Resume at row 401, skipping already audited priority rows. Playable bank and deck unchanged.
+
+## Checkpoints 005–007 — source rows 401–700
+
+User guidance: distinguish functional terms from exceptional entertainment and cultural relevance. Preserve completed audit records, reserve perfect scores for truly exceptional terms, and perform an explicit cross-batch score calibration before final comparison. All scores remain estimates.
+
+| Batch | New reviews | Retain | Refine | Flag | Difficulty changes | Three pathways | Mean score |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 005 (401–500) | 98 | 52 | 22 | 24 | 22 | 97 | 85.37 |
+| 006 (501–600) | 98 | 44 | 25 | 29 | 30 | 94 | 86.24 |
+| 007 (601–700) | 100 | 47 | 21 | 32 | 33 | 100 | 85.98 |
+| Total new | 296 | 143 | 68 | 85 | 85 | 291 | 85.86 |
+
+Cumulative: 712/2,000 individual records (35.6%), including 700 contiguous source rows and 12 later priority rows. 322 retain, 215 refine, 175 flag; 227 proposed difficulty changes. 703 second-pass records have three pathways, 537 unflagged. Combined distinct first/second-pass coverage: 804 (40.2%). 1,288 identities remain unassessed. Reviewed difficulty counts before: 287 easy, 287 medium, 138 hard; proposed: 297 easy, 270 medium, 145 hard. Reviewed proper-noun flags: 446 previous, 470 proposed. Cumulative mean 86.86/100 (not a deck rating; calibration differs). One perfect score in these 296 records (Tom and Jerry); 137 previous perfect records remain staged and require focused calibration, not repetition of the full audit. Five newly assessed identities lack sufficient pathways: Wenyasha, Estate Blues, Tanyaradzwa, Munyama, Peter Pan (music entry). Resume row 701, skipping previously assessed priorities. No production changes.
