@@ -1,6 +1,6 @@
-# Game Night — single-device Flutter mobile and web app
+# Game Night — Flutter mobile and web app
 
-Four party games on **one phone**, passed around the room: 30-Second Sprint, Charades, Trivia Challenge and Tabuu. No accounts, rooms, pairing or backend. Installable, and playable offline once loaded.
+Four party games for a group: 30-Second Sprint, Charades, Trivia Challenge and Tabuu. Classic play remains one phone passed around the room. Sprint and Tabuu optionally support a second, locally connected referee phone. There are no accounts or cloud backend.
 
 The card decks are **candidate drafts** (see `../content/README.md`). The app is suitable for development and private playtesting, not release.
 
@@ -51,7 +51,8 @@ npx playwright test tests/screenshots.spec.ts   # writes e2e/shots/<viewport>/*.
 
 | Suite | What it covers |
 |---|---|
-| `test/session_controller_test.dart` | Session creation, team config, rotation, rounds, every game's scoring, timer expiry at the exact deadline, no scoring after expiry, no duplicate scoring, pause/resume, Sprint marking and correction, Trivia answer randomisation, correct/wrong/timeout, equal difficulty per round, repetition prevention, exhaustion + explicit reshuffle, cross-session freshness, persistence and restore (between turns, mid-turn, after the deadline), winners and ties, early end |
+| `test/session_controller_test.dart` | Session creation, team config, rotation, rounds, every game's scoring, timer expiry at the exact deadline, no scoring after expiry, no duplicate scoring, pause/resume, referee Sprint decisions and Tabuu review, Trivia answer randomisation, correct/wrong/timeout, equal difficulty per round, repetition prevention, exhaustion + explicit reshuffle, cross-session freshness, persistence and restore, winners and ties, early end |
+| `test/local_referee_test.dart` | WebSocket pairing/authentication, private snapshot sync, BUZZ idempotency, remote Sprint scoring, deadline races, correction requests and held score confirmation |
 | `test/app_flow_test.dart` | Home → setup defaults → handover hides the card → play; Time! splash, late-tap guard, wake lock; double-tap can't skip results or start the next clock; Resume/Discard; refresh mid-turn; Trivia reveal; paused overlay |
 | `test/content_test.dart` | 2,300 cards match the manifest, IDs preserved, no editorial keys in runtime decks |
 | `e2e/tests/gameplay.spec.ts` | Real Chromium, release build, Pixel-class viewport: full journeys for all four games, concealment during handover, refresh mid-turn (no time gained), refresh between turns + Resume, discard confirmation, **offline play after first load**, 360×640 layout |
@@ -63,7 +64,7 @@ lib/
   model/        GameKind (per-game rules/meta), cards + ContentLibrary (runtime adapters)
   session/      Session state (JSON-serialisable), SessionController (all rules),
                 DeckPlanner (draw order, difficulty balance), SessionStore (localStorage)
-  services/     Fx: Web Audio cues, vibration, screen wake lock (no-op off-web)
+  services/     Fx plus conditional native local WebSocket server/client, protocol and pairing
   theme/        Design tokens transcribed from design/design-system/tokens.json
   ui/widgets/   GnButton, chips, score strip, ring/bar timers, FitText, glyphs/shapes
   ui/screens/   home, setup, handover(+countdown), play_* per game, rapid (shared
@@ -76,7 +77,7 @@ e2e/            Playwright tests + tiny static server
 
 **One controller, plain Dart.** `SessionController` (a `ChangeNotifier`) owns every rule. Each method checks the current phase first, so invalid transitions and double scoring are impossible by construction; the UI only calls methods and renders state. No state-management framework.
 
-**Lifecycle.** `ready → playing → turnResults → ready … → gameResults` (Setup is a screen before the session exists). A round ends when every team has played once; the game ends after `rounds × teams` turns, so every team gets the same number of turns.
+**Lifecycle.** Classic: `ready → playing → turnResults → ready … → gameResults`. Referee mode adds `turnReview` before the host confirms and posts a score. A round ends when every team has played once; the game ends after `rounds × teams` turns, so every team gets the same number of turns.
 
 **Timer.** The turn stores an absolute `deadlineMs`, never a counter. `remainingMs()` is computed from the clock; `tick()` settles expiry exactly once (it changes the phase). Every scoring action calls `tick()` first, so a tap that lands after the deadline is ignored even if no frame has run. Refresh and backgrounding can't add time; pause stores the remaining time explicitly. The clock is injectable, so tests advance a fake clock instead of waiting.
 
@@ -93,6 +94,14 @@ e2e/            Playwright tests + tiny static server
 
 **Offline.** Flutter no longer generates a caching service worker (its `flutter_service_worker.js` now unregisters itself), so `tool/build_web.dart` writes `sw.js`: cache-first precache of the shell, code, fonts, icons and the four decks (4.3 MB), versioned by content hash. The engine is built with `--no-web-resources-cdn` (no CDN at runtime); the page tells the worker which CanvasKit variant it loaded so only that one is cached, instead of precaching every variant (20 MB). Fonts are bundled TTFs, so Flutter never fetches fallback fonts.
 
+## Local Referee Mode
+
+On native Android and iOS, Sprint and Tabuu setup offer Classic (default) or Referee play. The host starts a temporary WebSocket server on its local IPv4 interface. Pair the second device by scanning the host QR code or pasting the displayed JSON pairing details; both devices must be on the same Wi-Fi or hotspot. Internet access is not used. Web builds leave Referee Mode unavailable and keep Classic play unchanged.
+
+The host `SessionController` remains authoritative for card queues, turn/card-instance IDs, scoring, deadlines and persistence. The referee receives only the current playable card projection and sends authenticated, versioned actions. Commands are checked against the session, turn, card instance, game, phase and host deadline; message IDs are idempotent. Tabuu buzzes cannot carry over to another card. Sprint terms support Correct, Disqualify and reversal. Referee-mode scores are held through a review screen until the host confirms. On connection loss the host pauses; reconnect restores the host snapshot, while Classic fallback invalidates the pairing and preserves progress.
+
+Pairing tokens are random and temporary, but local WebSockets are unencrypted. Use a trusted in-person network. The embedded server is not kept alive in the background. If the host process is restarted, its ephemeral credentials are gone and the saved game is switched safely to Classic Mode. QR camera access is requested only when the referee selects scanning.
+
 ## Single-device decisions
 
 | Topic | Decision |
@@ -108,7 +117,7 @@ e2e/            Playwright tests + tiny static server
 
 ## Removed or deferred
 
-Online multiplayer, WebSockets, rooms and room codes, QR joining, device pairing, host/client roles, referee and audience phones, hold-to-peek, cross-phone review approval, waiting lobbies, connection states, accounts, profiles and avatars, player names, cloud sessions, leaderboards, tournaments and cross-game scoring, share cards, speed bonuses and "worth double" finals, handicap dice, mime-hint ("Need an idea?") chips, AI/voice refereeing. No backend, database or auth was introduced. None of the design's multiplayer screens were built, so there is no dormant multiplayer code to maintain.
+Internet multiplayer, cloud rooms, accounts, profiles, leaderboards, tournaments, cross-game scoring, share cards, speed bonuses, handicap dice, audience displays, Charades/Trivia refereeing, and AI/voice refereeing remain deferred. The v1 local referee feature is limited to Sprint and Tabuu.
 
 ## Visual comparison with the design
 
@@ -135,10 +144,14 @@ Newly proposed (not in the boards): the paused overlay, the "deck empty" states,
 - The browser Back button on Android leaves the app (the session is saved and offered for Resume). Flutter's default single-page navigation doesn't map browser history.
 - First load downloads the rendering engine (CanvasKit: 5.7 MB on Chromium browsers, 7.2 MB elsewhere, before compression) on top of the 4.3 MB precache. On slow connections, open the app once on Wi-Fi before the party.
 - Offline was verified in Chromium; Safari/Firefox installation and offline behaviour have not been tested on devices.
+- Local referee transport has automated loopback integration coverage, but two-physical-phone Wi-Fi/hotspot play, cross-platform Android/iOS pairing, camera-denial recovery, screen locking and Wi-Fi changes still require manual verification.
+- An iOS build cannot be produced on Windows; it requires macOS and Xcode.
 - The UI is English only (Shona/Ndebele strings were an open item in the design review).
 - No real-world playtest has been run; difficulty mixes and timer lengths are editorial defaults.
 
 ## Review and verification log
+
+- **Local Referee implementation:** see the [implementation and validation report](../docs/local-referee-mode-report.md) for automated results, Android APK build details, platform limits, and the remaining physical-device checklist.
 
 - **Automated:** 52 Flutter unit/widget tests; 9 Playwright journeys plus a 24-screen capture at 390×844 and 360×740, run in headless Chromium against the release build.
 - **Independent review:** one adversarial reviewer agent read the code, design boards and screenshots without seeing my conclusions. It scored the build ~82.5/100 and found no score-corrupting bug. It raised two major flow issues (double-taps carrying over between screens; a late Lock in tap skipping the Trivia reveal) and four robustness issues (dead Pause button on the Trivia reveal, crash on saved sessions with removed card IDs, a race in engine caching for offline, Trivia explanation off-screen at 360 px). All six were fixed, with regression tests where testable. Minor fixes followed: strict lock-in, accurate "ended early" text, Undo moved away from the Got it pad, the wake-lock race, the ticker idling while paused, duplicate team names, validation before writing decks, and dead code.

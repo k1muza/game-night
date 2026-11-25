@@ -1,6 +1,6 @@
 # Game Night
 
-Mobile-first party games for Zimbabwean youth aged 16–30, with African and global appeal. Original content, family-friendly tone, one phone per team by default.
+Mobile-first party games for Zimbabwean youth aged 16–30, with African and global appeal. Original content, family-friendly tone, one phone per team by default. The native Flutter app also offers optional local referee phones for Sprint and Tabuu; see [the app guide](app/README.md#local-referee-mode) and the [implementation and validation report](docs/local-referee-mode-report.md).
 
 ## Content library
 
