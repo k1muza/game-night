@@ -49,3 +49,49 @@ Local radio and year-end charts support recent songs; comedy reporting supports 
 - Scorpion Kings: https://zifmstereo.co.zw/spotify-wrapped-2025-homegrown-stars-take-over/ — identity or cultural visibility; local familiarity unmeasured.
 - Uzizwa Kanjan: https://musicinafrica.net/node/378331 — identity or cultural visibility; local familiarity unmeasured.
 - Three-step music: https://newsroom.tiktok.com/summer-2025-songs-dominating-tiktok-in-nigeria-and-south-africa?lang=en-ZA — identity or cultural visibility; local familiarity unmeasured.
+
+
+## Second pass sources
+
+- https://guardian.ng/news/nathaniel-bassey-maverick-city-music-most-streamed-gospel-artistes-in-2024-spotify/
+- https://www.monitor.co.ug/uganda/news/national/african-gospel-choirs-artistes-find-their-voice-4917866
+- https://southernafricantimes.com/zimbabwean-music-next-big-thing-everton-mlalazi/
+- https://gospelregister.bandzoogle.com/blogs/africa-gospel-music/posts/7630832/top-20-african-gospel-artists-in-2025
+- https://mamaafrica.nl/music/afro-dance/
+- https://www.hashtagdance.com/what-is-afro-dance/
+- https://www.southafrica.net/gl/en/trade/welcome/tip/south-african-food-slang
+- https://www.bellanaija.com/2023/12/the-most-watched-nollywood-titles-on-netflix-africa/
+- https://onuaonline.com/nigeria-and-south-africa-lead-african-countries-for-most-watched-movies-series-on-netflix-in-2023/
+- https://www.teamzim.org/olympics/
+- https://newsroom.tiktok.com/winners-newsroom?lang=en-ZA
+- https://www.bbc.co.uk/sport/olympics/articles/c3rqn5prp8go
+- https://42matters.com/most-popular-shopping-apps-south-africa
+
+- Sinach: https://southernafricantimes.com/zimbabwean-music-next-big-thing-everton-mlalazi/ — contextual evidence only.
+- Joyous Celebration: https://guardian.ng/news/nathaniel-bassey-maverick-city-music-most-streamed-gospel-artistes-in-2024-spotify/, https://www.monitor.co.ug/uganda/news/national/african-gospel-choirs-artistes-find-their-voice-4917866 — contextual evidence only.
+- Spirit of Praise: https://guardian.ng/news/nathaniel-bassey-maverick-city-music-most-streamed-gospel-artistes-in-2024-spotify/, https://www.monitor.co.ug/uganda/news/national/african-gospel-choirs-artistes-find-their-voice-4917866 — contextual evidence only.
+- Benjamin Dube: https://guardian.ng/news/nathaniel-bassey-maverick-city-music-most-streamed-gospel-artistes-in-2024-spotify/, https://southernafricantimes.com/zimbabwean-music-next-big-thing-everton-mlalazi/ — contextual evidence only.
+- Dunsin Oyekan: https://guardian.ng/news/nathaniel-bassey-maverick-city-music-most-streamed-gospel-artistes-in-2024-spotify/, https://gospelregister.bandzoogle.com/blogs/africa-gospel-music/posts/7630832/top-20-african-gospel-artists-in-2025 — contextual evidence only.
+- Moses Bliss: https://guardian.ng/news/nathaniel-bassey-maverick-city-music-most-streamed-gospel-artistes-in-2024-spotify/, https://www.monitor.co.ug/uganda/news/national/african-gospel-choirs-artistes-find-their-voice-4917866 — contextual evidence only.
+- Way Maker: https://southernafricantimes.com/zimbabwean-music-next-big-thing-everton-mlalazi/ — contextual evidence only.
+- Excess Love: https://guardian.ng/news/nathaniel-bassey-maverick-city-music-most-streamed-gospel-artistes-in-2024-spotify/ — contextual evidence only.
+- Ntokozo Mbambo: https://southernafricantimes.com/zimbabwean-music-next-big-thing-everton-mlalazi/ — contextual evidence only.
+- Ada Ehi: https://southernafricantimes.com/zimbabwean-music-next-big-thing-everton-mlalazi/ — contextual evidence only.
+- Soweto Gospel Choir: https://southernafricantimes.com/zimbabwean-music-next-big-thing-everton-mlalazi/ — contextual evidence only.
+- Azonto: https://mamaafrica.nl/music/afro-dance/, https://www.hashtagdance.com/what-is-afro-dance/ — contextual evidence only.
+- Gwara Gwara: https://mamaafrica.nl/music/afro-dance/, https://www.hashtagdance.com/what-is-afro-dance/ — contextual evidence only.
+- Shaku Shaku: https://mamaafrica.nl/music/afro-dance/, https://www.hashtagdance.com/what-is-afro-dance/ — contextual evidence only.
+- Pantsula: https://www.hashtagdance.com/what-is-afro-dance/ — contextual evidence only.
+- Zanku: https://mamaafrica.nl/music/afro-dance/, https://www.hashtagdance.com/what-is-afro-dance/ — contextual evidence only.
+- Ndombolo: https://www.hashtagdance.com/what-is-afro-dance/ — contextual evidence only.
+- Vosho: https://www.hashtagdance.com/what-is-afro-dance/ — contextual evidence only.
+- Kuduro: https://www.hashtagdance.com/what-is-afro-dance/ — contextual evidence only.
+- Milk tart: https://www.southafrica.net/gl/en/trade/welcome/tip/south-african-food-slang — contextual evidence only.
+- Malva pudding: https://www.southafrica.net/gl/en/trade/welcome/tip/south-african-food-slang — contextual evidence only.
+- Takealot: https://42matters.com/most-popular-shopping-apps-south-africa — contextual evidence only.
+- Shanty Town: https://www.bellanaija.com/2023/12/the-most-watched-nollywood-titles-on-netflix-africa/ — contextual evidence only.
+- Kings of Jo'burg: https://www.bellanaija.com/2023/12/the-most-watched-nollywood-titles-on-netflix-africa/ — contextual evidence only.
+- Far From Home (series): https://www.bellanaija.com/2023/12/the-most-watched-nollywood-titles-on-netflix-africa/ — contextual evidence only.
+- Unseen (series): https://www.bellanaija.com/2023/12/the-most-watched-nollywood-titles-on-netflix-africa/ — contextual evidence only.
+- Everton Mlalazi: https://southernafricantimes.com/zimbabwean-music-next-big-thing-everton-mlalazi/ — contextual evidence only.
+- Akani Simbine: https://www.bbc.co.uk/sport/olympics/articles/c3rqn5prp8go — contextual evidence only.
