@@ -3,7 +3,7 @@
 Product design, UI/UX and visual identity for the Game Night PWA.
 
 **Editable design canvas (source of truth):** https://claude.ai/artifact/LTWghapiQk4uboycEp9eZU
-Pages: Overview · Discovery · Directions · Brand · Design system · Wireframes · Core & Room · 30-Second Sprint · Charades · Trivia · Forbidden Words · Results & States · Tablet & TV · Prototype · Specs & Review.
+Pages: Overview · Discovery · Directions · Brand · Design system · Wireframes · Core & Room · 30-Second Sprint · Charades · Trivia · Tabuu · Results & States · Tablet & TV · Prototype · Specs & Review.
 
 | Folder | Contents |
 |---|---|

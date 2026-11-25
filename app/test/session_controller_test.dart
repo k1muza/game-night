@@ -226,7 +226,7 @@ void main() {
     });
   });
 
-  group('Charades and Forbidden Words', () {
+  group('Charades and Tabuu', () {
     test('Charades: correct +1, pass 0, next card dealt immediately', () {
       final h = Harness()..start(GameKind.charades);
       final c = h.controller..startTurn();
@@ -378,6 +378,10 @@ void main() {
   });
 
   group('content selection', () {
+    test('Tabuu is the displayed game name', () {
+      expect(GameKind.forbidden.title, 'Tabuu');
+    });
+
     test('initialises one full, unique persistent deck per game', () {
       final h = Harness();
       for (final game in GameKind.values) {

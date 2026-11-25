@@ -29,7 +29,7 @@ Put future per-game QA reports, evidence files, category allocations and game-sp
 | 30-Second Sprint | 400 | 1.2.0 |
 | Charades | 600 | 2.0.0 |
 | Trivia | 800 | 1.1.0 |
-| Forbidden Words | 500 | 1.0.0 |
+| Tabuu | 500 | 1.0.0 |
 | Total | 2,300 | |
 
 All deck blobs are preserved byte for byte. manifest.json records their source branches and Git blob hashes at import. Update the manifest when deliberately revising a dataset.

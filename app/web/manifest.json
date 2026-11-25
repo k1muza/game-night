@@ -7,7 +7,7 @@
   "display": "standalone",
   "background_color": "#110E22",
   "theme_color": "#110E22",
-  "description": "Four party games on one phone: 30-Second Sprint, Charades, Trivia Challenge and Forbidden Words. No sign-up. Works offline.",
+  "description": "Four party games on one phone: 30-Second Sprint, Charades, Trivia Challenge and Tabuu. No sign-up. Works offline.",
   "orientation": "portrait",
   "categories": ["games", "entertainment"],
   "prefer_related_applications": false,

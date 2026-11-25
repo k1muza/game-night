@@ -20,7 +20,7 @@ CH1 Rules, CH2 Actor handover, CH3 Reveal, CH5 Active, CH6 Correct, CH7 Next pro
 ## Trivia
 TR1 Rules, TR2 Intro, TR3 Question, TR4 Selected, TR5 Locked, TR6 Reveal ✓, TR7 Reveal ✕, TR8 Explanation, TR9 Responses, TR10 Leaderboard, TR11 Next question
 
-## Forbidden Words
+## Tabuu
 FW1 Rules, FW2 Handover, FW3 Reveal, FW5 Active card, FW6 Referee, FW7 Correct→next, FW8 Violation, FW9 Referee after buzz, FW10 Over-the-shoulder, FW11–FW13 Time up → results
 
 ## States & system

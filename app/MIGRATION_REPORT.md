@@ -17,7 +17,7 @@
 
 ## Verification
 
-- Canonical content validation: 400 Sprint, 600 Charades, 800 Trivia and 500 Forbidden Words cards.
+- Canonical content validation: 400 Sprint, 600 Charades, 800 Trivia and 500 Tabuu cards.
 - Flutter tests: 55 tests passed.
 - Android debug APK: built successfully.
 - Android release APK: built successfully with debug signing fallback.

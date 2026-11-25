@@ -23,7 +23,7 @@ enum GameKind {
     difficulties: [Difficulty.easy, Difficulty.medium, Difficulty.hard, Difficulty.expert],
   ),
   forbidden(
-    title: 'Forbidden Words',
+    title: 'Tabuu',
     tagline: 'Say everything except the obvious.',
     defaultSeconds: 60,
     timerOptions: [45, 60, 90],

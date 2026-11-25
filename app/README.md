@@ -1,6 +1,6 @@
 # Game Night — single-device Flutter mobile and web app
 
-Four party games on **one phone**, passed around the room: 30-Second Sprint, Charades, Trivia Challenge and Forbidden Words. No accounts, rooms, pairing or backend. Installable, and playable offline once loaded.
+Four party games on **one phone**, passed around the room: 30-Second Sprint, Charades, Trivia Challenge and Tabuu. No accounts, rooms, pairing or backend. Installable, and playable offline once loaded.
 
 The card decks are **candidate drafts** (see `../content/README.md`). The app is suitable for development and private playtesting, not release.
 
@@ -86,7 +86,7 @@ e2e/            Playwright tests + tiny static server
 
 **Card selection.**
 - Sprint: the pre-balanced v2 cards are used as authored (2 easy, 2 medium, 1 hard term).
-- Charades / Forbidden Words: a mixed deck interleaves difficulty buckets by weight (Charades 50/38/12 % easy/medium/hard, Forbidden 40/45/15 %), so hard cards are spread out, not clustered.
+- Charades / Tabuu: a mixed deck interleaves difficulty buckets by weight (Charades 50/38/12 % easy/medium/hard, Tabuu 40/45/15 %), so hard cards are spread out, not clustered.
 - Trivia: each round has a difficulty pattern every team receives — mixed default is easy-or-expert + 2 medium + 2 hard (easy warm-up on odd rounds, expert finale on even), with categories varied within a turn.
 - A displayed card always cycles to the bottom, including passed, wrong and unanswered cards. A card cannot repeat within a session even if the persistent queue wraps; starting another session continues at the queue's current front.
 - A manual Shuffle Deck action is available in the in-game menu and asks for confirmation.
@@ -98,7 +98,7 @@ e2e/            Playwright tests + tiny static server
 | Topic | Decision |
 |---|---|
 | Hidden cards | Handover never builds the card. The clock starts only on the clue-giver's tap, after a 3-2-1 countdown. Pause covers the card with an opaque overlay. |
-| Forbidden Words referee | The design's single-phone "over the shoulder" layout (FW10): an opposing player reaches the BUZZ strip at the top; the clue-giver's thumb has Pass / Got it at the bottom, far from it. |
+| Tabuu referee | The design's single-phone "over the shoulder" layout (FW10): an opposing player reaches the BUZZ strip at the top; the clue-giver's thumb has Pass / Got it at the bottom, far from it. |
 | Mis-taps | Sprint terms toggle while the clock runs. Charades/Forbidden show a 4-second banner with Undo for the last action. After time runs out nothing can be scored; the Time! screen locks input for 0.9 s against late taps. |
 | Trivia | Two-step select → Lock in (from the design) to prevent accidental answers by a crowd around one phone. Only a locked answer counts; at timeout the question is unanswered. No timer on the explanation; the next question's clock starts when it appears. |
 | Players | No names or registration: "Pass the phone to your clue-giver". Team names are optional. |
