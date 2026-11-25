@@ -60,6 +60,25 @@ Future<void> tapText(WidgetTester t, String text) async {
 void main() {
   setUpAll(loadAppFonts);
 
+  testWidgets('setup uses compact play mode and settings sheet', (t) async {
+    final a = AppHarness();
+    await a.pump(t);
+
+    await t.tap(find.text('30-Second Sprint'));
+    await t.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('Classic'), findsOneWidget);
+    expect(find.text('Referee'), findsOneWidget);
+    expect(find.text('Classic: One phone.'), findsOneWidget);
+
+    await t.tap(find.byIcon(Icons.settings_rounded));
+    await t.pump(const Duration(milliseconds: 400));
+    expect(find.text('Rounds per team'), findsOneWidget);
+    expect(find.text('How to play'), findsOneWidget);
+    expect(find.text('Sound effects'), findsOneWidget);
+    expect(find.text('Haptic feedback'), findsOneWidget);
+  });
+
   testWidgets('referee pairing and game screens initialize from AppScope', (
     t,
   ) async {

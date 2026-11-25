@@ -111,6 +111,11 @@ class _RapidPlayState extends State<RapidPlay> {
                   Row(
                     children: [
                       Expanded(child: TeamBadge(s.activeTeam)),
+                      if (s.config.mode == PlayMode.referee) ...[
+                        const SizedBox(width: 6),
+                        RefereeLiveIndicator(status: scope.referee.status),
+                        const SizedBox(width: 6),
+                      ],
                       Pill(
                         text: '${t.count(Outcome.correct)} got',
                         icon: Icons.check_rounded,

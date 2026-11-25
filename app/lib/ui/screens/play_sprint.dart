@@ -16,7 +16,6 @@ class SprintPlayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AppScope.of(context).controller;
-    final refereeConnected = AppScope.of(context).referee.isHostConnected;
     return TurnClock(
       builder: (context, rem, total) {
         final s = c.session!;
@@ -41,6 +40,12 @@ class SprintPlayScreen extends StatelessWidget {
                           subtitle: 'Clue-giver is describing',
                         ),
                       ),
+                      if (s.config.mode == PlayMode.referee) ...[
+                        const SizedBox(width: 6),
+                        RefereeLiveIndicator(
+                          status: AppScope.of(context).referee.status,
+                        ),
+                      ],
                       RingTimer(
                         remainingMs: rem,
                         totalMs: total,
@@ -49,19 +54,6 @@ class SprintPlayScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (s.config.mode == PlayMode.referee) ...[
-                    const SizedBox(height: 8),
-                    Pill(
-                      text: refereeConnected
-                          ? 'Referee scoring'
-                          : 'Referee disconnected',
-                      icon: refereeConnected
-                          ? Icons.wifi_rounded
-                          : Icons.wifi_off_rounded,
-                      fg: refereeConnected ? Gn.correct : Gn.warning,
-                      height: 30,
-                    ),
-                  ],
                   const SizedBox(height: 14),
                   Expanded(
                     child: LayoutBuilder(
