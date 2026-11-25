@@ -52,3 +52,8 @@ Committed deck, audit and chained revision log read back from GitHub. Checks: `{
 - Oxygen: O2
 
 Potential alias-component overlap: Lake Malawi / Lake Nyasa / Nyasa. Native Shona and Ndebele speakers should verify alias equivalence, natural code-switching, morphology, pronunciation and translation leakage. During trials, allow natural explanations in agreed languages; disallow answer aliases, direct translations, obvious derivatives and listed restrictions; adjudicate ambiguous cases consistently rather than ban arbitrary substrings. No native-speaker sign-off was obtained.
+
+## Targeted final QA superseding earlier findings
+
+See final-qa-report.md for current results. {"cards":500,"uniqueIds":500,"uniqueTargets":500,"clues":2500,"paths":1500,"requiredFields":500,"structuralChecks":500,"lexicalFlags":0,"crossCardAliasCollisions":0,"documentedVisibleTranslationOverlaps":12,"traceability":true,"qaChanges":50,"logMatches":true,"region":{"zimbabwe-national":225,"global":195,"african":80},"difficulty":{"easy":176,"medium":235,"hard":89}}
+All 34 prior weak examples rewritten; 10 of 22 alias overlaps removed, 12 retained as explicitly justified translation reminders because runtime drops alias metadata. Previous results above are historical. No Dart/Flutter or Python working-tree test executed; GitHub DNS unavailable. Native and timed play validation outstanding.
