@@ -1,19 +1,18 @@
-# Validation report
+# Validation report — second pass
 
-Executed JavaScript checks against original and final blobs on 2026-11-25:
-
+Actual checks executed against candidate deck before commit. 
 ```json
 {
   "cards": 500,
   "ids": 500,
   "targets": 500,
-  "clues": 500,
-  "pathways": 500,
-  "details": 500,
-  "version": 500,
-  "lexicalFlags": 0,
-  "traceability": 500
+  "clueSets": 500,
+  "paths": 500,
+  "matchingDetails": 500,
+  "difficulty": 500,
+  "schemaVersion": 500,
+  "traceability": 500,
+  "lexicalFlags": 0
 }
 ```
-
-All 500 cards and 1,500 paths scanned. Whole-word and simple English suffix heuristic yielded 0 flags. This does NOT verify target components within compounds, rhymes, every derivative, Shona/Ndebele translation or practical solvability. Shared draft v1.1 schema is a different version from this dataset; no external schema validator or Dart build executed. The existing schema version, field layout, card counts and adapter contract were preserved. Reproducible script supplied, not run independently. Human playtesting and independent review outstanding.
+All 1,500 routes scanned for normalized phrases and simple English stems; 0 flags. All retained/revised IDs traceable. This does not guarantee correct compound/derivative handling, practical solvability, multilingual adjudication, semantic nonduplication, factual accuracy or full schema compliance. No external JSON Schema runner or Dart build executed; shared v1.1 schema is not designed for this v1.0.0 deck. The Python validator is included but not independently executed. Single-agent review only; no human playtesting. Candidate only.
