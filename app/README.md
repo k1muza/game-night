@@ -80,7 +80,7 @@ e2e/            Playwright tests + tiny static server
 
 **Timer.** The turn stores an absolute `deadlineMs`, never a counter. `remainingMs()` is computed from the clock; `tick()` settles expiry exactly once (it changes the phase). Every scoring action calls `tick()` first, so a tap that lands after the deadline is ignored even if no frame has run. Refresh and backgrounding can't add time; pause stores the remaining time explicitly. The clock is injectable, so tests advance a fake clock instead of waiting.
 
-**Persistence.** The whole session (teams, scores, round, active team, current turn and its deadline, draw queues, used IDs, history) is saved to localStorage after every change. Restore settles an expired deadline before anything renders.
+**Persistence.** The whole session (teams, scores, round, active team, current turn and its deadline, used IDs, history) is saved after every change. Each game's full ordered card deck is independently stored as a FIFO circular queue: reveal moves the front card to the bottom immediately. It survives sessions, rematches and restarts. Session-local used IDs prevent repeats during a game, while legacy seen-card history seeds the first queue with unseen cards first. Content reconciliation keeps unchanged ordering, removes deleted IDs and puts new cards first.
 
 **Content.** `tool/build_content.dart` reads the canonical JSONL, checks it against `manifest.json` (counts, schema versions, gameType, unique IDs, Sprint 2/2/1 pattern, four distinct Trivia options, five Forbidden clues…) and emits slim decks with only playable fields. Editorial notes, mime hints, sample clues, source hints, verification and quality data never reach the browser.
 
@@ -88,7 +88,8 @@ e2e/            Playwright tests + tiny static server
 - Sprint: the pre-balanced v2 cards are used as authored (2 easy, 2 medium, 1 hard term).
 - Charades / Forbidden Words: a mixed deck interleaves difficulty buckets by weight (Charades 50/38/12 % easy/medium/hard, Forbidden 40/45/15 %), so hard cards are spread out, not clustered.
 - Trivia: each round has a difficulty pattern every team receives — mixed default is easy-or-expert + 2 medium + 2 hard (easy warm-up on odd rounds, expert finale on even), with categories varied within a turn.
-- Within a session no card repeats. Cards not yet seen on this device are dealt first across sessions. When a deck runs out the app says so and offers an explicit Reshuffle — it never repeats silently.
+- A displayed card always cycles to the bottom, including passed, wrong and unanswered cards. A card cannot repeat within a session even if the persistent queue wraps; starting another session continues at the queue's current front.
+- A manual Shuffle Deck action is available in the in-game menu and asks for confirmation.
 
 **Offline.** Flutter no longer generates a caching service worker (its `flutter_service_worker.js` now unregisters itself), so `tool/build_web.dart` writes `sw.js`: cache-first precache of the shell, code, fonts, icons and the four decks (4.3 MB), versioned by content hash. The engine is built with `--no-web-resources-cdn` (no CDN at runtime); the page tells the worker which CanvasKit variant it loaded so only that one is cached, instead of precaching every variant (20 MB). Fonts are bundled TTFs, so Flutter never fetches fallback fonts.
 

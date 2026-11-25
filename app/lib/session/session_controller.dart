@@ -46,15 +46,59 @@ class SessionController extends ChangeNotifier {
   /// settled immediately; no extra time is granted.
   void restore() {
     _session = store.loadSession();
-    if (_session != null &&
-        (!_cardsExist(_session!) || !_contentMatches(_session!))) {
-      // Saved by an older app version whose deck has since changed: the game
-      // can't continue safely, so drop it rather than crash on every launch.
-      _session = null;
-      store.saveSession(null);
+    for (final game in GameKind.values) {
+      _reconcilePersistentDeck(game);
+    }
+    if (_session != null) {
+      if (!_cardsExist(_session!) || !_contentMatches(_session!)) {
+        _session = null;
+        store.saveSession(null);
+      } else {
+        _sanitizeSessionCards(_session!);
+      }
     }
     tick();
     notifyListeners();
+  }
+
+  void _reconcilePersistentDeck(GameKind game) {
+    final canonical = library.ids(game);
+    final seen = store.seen(game);
+    final existing = store.loadDeck(game);
+    final reconciled = existing.isEmpty
+        ? DeckPlanner.initialise(library, game, _random, seen)
+        : DeckPlanner.reconcile(existing, canonical, _random);
+    store.saveDeck(game, reconciled);
+  }
+
+  void _syncSessionQueue(Session s) {
+    s.queues
+      ..clear()
+      ..addAll({'main': store.loadDeck(s.game)});
+  }
+
+  void _sanitizeSessionCards(Session s) {
+    final known = library.ids(s.game).toSet();
+    s.used.removeWhere((id) => !known.contains(id));
+    s.queues
+      ..clear()
+      ..addAll({
+        'main': store
+            .loadDeck(s.game)
+            .where((id) => known.contains(id))
+            .toList(),
+      });
+    final t = s.turn;
+    if (t != null) {
+      if (t.cardId != null && !known.contains(t.cardId)) t.cardId = null;
+      t.events.removeWhere((event) => !known.contains(event.cardId));
+    }
+    s.history.removeWhere(
+      (record) => record.events.every((event) => !known.contains(event.cardId)),
+    );
+    for (final record in s.history) {
+      record.events.removeWhere((event) => !known.contains(event.cardId));
+    }
   }
 
   bool _contentMatches(Session s) {
@@ -101,17 +145,11 @@ class SessionController extends ChangeNotifier {
   void newSession(GameConfig config, List<Team> teams) {
     assert(teams.length >= 2 && teams.length <= 6);
     final seed = _random.nextInt(1 << 31);
-    final r = Random(seed);
+    _reconcilePersistentDeck(config.game);
     _session = Session(
       config: config,
       teams: teams,
-      queues: DeckPlanner.buildQueues(
-        library,
-        config.game,
-        config.difficulty,
-        r,
-        store.seen(config.game),
-      ),
+      queues: {'main': store.loadDeck(config.game)},
       seed: seed,
       createdAt: now(),
       contentFingerprints: _currentFingerprints(),
@@ -164,16 +202,59 @@ class SessionController extends ChangeNotifier {
   // -------------------------------------------------------------------- turns
 
   /// Cards still available to deal without repeating.
-  int get remainingCards =>
-      _session?.queues.values.fold<int>(0, (a, q) => a + q.length) ?? 0;
+  int get remainingCards => _session == null
+      ? 0
+      : store
+            .loadDeck(_session!.game)
+            .where((id) => !_session!.used.contains(id))
+            .length;
 
   bool get canStartTurn {
     final s = _session;
     if (s == null || s.phase != Phase.ready) return false;
-    // Trivia needs a full turn's questions so every team gets the same number;
-    // other games need at least one card.
-    return remainingCards >=
-        (s.game == GameKind.trivia ? s.config.questionsPerTurn : 1);
+    final q = store.loadDeck(s.game);
+    if (s.game == GameKind.trivia) {
+      final slots = DeckPlanner.triviaSlots(
+        s.config.questionsPerTurn,
+        s.round,
+        s.config.difficulty,
+      );
+      final selected = <String>{};
+      for (final slot in slots) {
+        final id = _firstEligibleTrivia(q, slot, selected);
+        if (id == null) return false;
+        selected.add(id);
+      }
+      return true;
+    }
+    return q.any(
+      (id) =>
+          !s.used.contains(id) &&
+          (s.config.difficulty == null ||
+              s.game == GameKind.sprint ||
+              library.difficultyOf(s.game, id) == s.config.difficulty),
+    );
+  }
+
+  String? _firstEligibleTrivia(
+    List<String> queue,
+    Difficulty slot,
+    Set<String> excluded,
+  ) {
+    final used = _session?.used ?? const <String>{};
+    final difficulties = _session?.config.difficulty == null
+        ? DeckPlanner.nearest(slot)
+        : [slot];
+    for (final difficulty in difficulties) {
+      for (final id in queue) {
+        if (!used.contains(id) &&
+            !excluded.contains(id) &&
+            library.trivia[id]!.difficulty == difficulty) {
+          return id;
+        }
+      }
+    }
+    return null;
   }
 
   /// Starts the clock. Only valid from [Phase.ready] — the timer never runs
@@ -312,7 +393,7 @@ class SessionController extends ChangeNotifier {
         t.deadlineMs != null &&
         t.marked.isEmpty &&
         t.skips < sprintSkipsPerTurn &&
-        s.queues['main']!.isNotEmpty;
+        store.loadDeck(s.game).any((id) => !s.used.contains(id));
   }
 
   /// Replaces the Sprint card with a fresh one. The clock keeps running; the
@@ -358,44 +439,34 @@ class SessionController extends ChangeNotifier {
     final t = s.turn!;
     if (t.events.isEmpty) return false;
     final last = t.events.removeLast();
-    if (t.cardId != null) {
-      s.queues['main']!.insert(0, t.cardId!);
-      s.used.remove(t.cardId);
-    }
     t.cardId = last.cardId;
     _commit();
     return true;
   }
 
-  /// Explicitly returns all dealt cards (except this turn's) to the deck.
+  /// Manually shuffles the persistent deck.
   void reshuffle() {
     final s = _session;
     if (s == null) return;
-    final keep = <String>{
-      if (s.turn?.cardId != null) s.turn!.cardId!,
-      ...?s.turn?.events.map((e) => e.cardId),
-    };
-    final r = Random(s.seed ^ now());
-    s.queues
-      ..clear()
-      ..addAll(
-        DeckPlanner.buildQueues(
-          library,
-          s.game,
-          s.config.difficulty,
-          r,
-          const {},
-          exclude: keep,
-        ),
+    final q = store.loadDeck(s.game);
+    if (q.isEmpty) q.addAll(library.ids(s.game));
+    q.shuffle(Random(s.seed ^ now()));
+    if (s.game == GameKind.charades || s.game == GameKind.forbidden) {
+      final buckets = <Difficulty, List<String>>{};
+      for (final id in q) {
+        buckets.putIfAbsent(library.difficultyOf(s.game, id), () => []).add(id);
+      }
+      final balanced = DeckPlanner.stratified(
+        buckets,
+        DeckPlanner.mixedWeights[s.game]!,
       );
-    s.used
-      ..clear()
-      ..addAll(keep);
+      store.saveDeck(s.game, balanced);
+    } else {
+      store.saveDeck(s.game, q);
+    }
+    _syncSessionQueue(s);
     final t = s.turn;
-    if (s.phase == Phase.playing &&
-        t != null &&
-        t.cardId == null &&
-        s.game != GameKind.trivia) {
+    if (s.phase == Phase.playing && t != null && t.cardId == null) {
       t.cardId = _draw();
     }
     _commit();
@@ -484,19 +555,30 @@ class SessionController extends ChangeNotifier {
 
   String? _drawTrivia(Difficulty slot, Set<String> avoidCategories) {
     final s = _session!;
-    for (final d in DeckPlanner.nearest(slot)) {
-      final q = s.queues[d.name];
-      if (q == null || q.isEmpty) continue;
-      // Prefer a category not yet used this turn (look a short way ahead).
-      var pick = 0;
-      for (var i = 0; i < min(q.length, 12); i++) {
-        if (!avoidCategories.contains(library.trivia[q[i]]!.category)) {
-          pick = i;
-          break;
-        }
-      }
-      final id = q.removeAt(pick);
-      _markUsed(id);
+    final q = store.loadDeck(s.game);
+    final difficulties = s.config.difficulty == null
+        ? DeckPlanner.nearest(slot)
+        : [slot];
+    for (final d in difficulties) {
+      var candidates = <int>[
+        for (var i = 0; i < q.length; i++)
+          if (!s.used.contains(q[i]) && library.trivia[q[i]]!.difficulty == d)
+            i,
+      ];
+      if (candidates.isEmpty) continue;
+      candidates.sort((a, b) {
+        final ac = avoidCategories.contains(library.trivia[q[a]]!.category);
+        final bc = avoidCategories.contains(library.trivia[q[b]]!.category);
+        return ac == bc ? a.compareTo(b) : (ac ? 1 : -1);
+      });
+      final index = candidates.first;
+      final id = q.removeAt(index);
+      q.add(id);
+      store.saveDeck(s.game, q);
+      s.queues
+        ..clear()
+        ..addAll({'main': q});
+      s.used.add(id);
       return id;
     }
     return null;
@@ -505,19 +587,22 @@ class SessionController extends ChangeNotifier {
   // ------------------------------------------------------------------ helpers
 
   String? _draw() {
-    final q = _session!.queues['main']!;
-    if (q.isEmpty) return null;
-    final id = q.removeAt(0);
-    _markUsed(id);
-    return id;
-  }
-
-  void _markUsed(String id) {
     final s = _session!;
+    final q = store.loadDeck(s.game);
+    if (q.isEmpty) return null;
+    final index = q.indexWhere((id) {
+      if (s.used.contains(id)) return false;
+      if (s.config.difficulty == null) return true;
+      if (s.game == GameKind.sprint) return true;
+      return library.difficultyOf(s.game, id) == s.config.difficulty;
+    });
+    if (index < 0) return null;
+    final id = q.removeAt(index);
+    q.add(id);
+    store.saveDeck(s.game, q);
     s.used.add(id);
-    final seen = store.seen(s.game)..add(id);
-    // Once the whole deck has been seen on this device, start the cycle again.
-    store.saveSeen(s.game, seen.length >= library.count(s.game) ? {id} : seen);
+    _syncSessionQueue(s);
+    return id;
   }
 
   /// Settles the turn and posts its score exactly once.
@@ -536,14 +621,6 @@ class SessionController extends ChangeNotifier {
               term: i,
             ),
         ]);
-    }
-    if (s.game == GameKind.trivia &&
-        t.cardId != null &&
-        !t.revealed &&
-        reason != EndReason.questionsDone) {
-      // Turn ended mid-question: the unanswered question is returned to the deck.
-      s.queues[library.trivia[t.cardId]!.difficulty.name]!.insert(0, t.cardId!);
-      s.used.remove(t.cardId);
     }
     t.ended = reason;
     t.deadlineMs = null;

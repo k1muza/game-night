@@ -431,6 +431,22 @@ Future<void> showGameMenu(BuildContext context) {
                     showAboutDiagnostics(context);
                   },
                 ),
+                _MenuRow(
+                  icon: Icons.shuffle_rounded,
+                  label: 'Shuffle deck',
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    if (await confirm(
+                      context,
+                      title: 'Shuffle this deck?',
+                      body:
+                          'The persistent card queue will be randomly reordered. It will continue from the shuffled order.',
+                      yes: 'Shuffle',
+                    )) {
+                      scope.controller.reshuffle();
+                    }
+                  },
+                ),
                 if (scope.fx.fullscreenSupported)
                   _MenuRow(
                     icon: scope.fx.fullscreen.value

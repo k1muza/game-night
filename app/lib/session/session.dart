@@ -251,7 +251,7 @@ class Session {
   /// Remaining draw order. Trivia keys by difficulty name; other games use 'main'.
   final Map<String, List<String>> queues;
 
-  /// Card IDs dealt in this session (never dealt again unless explicitly reshuffled).
+  /// Card IDs displayed in this active session, preventing unintended repeats.
   final Set<String> used;
   Turn? turn;
   final List<TurnRecord> history;

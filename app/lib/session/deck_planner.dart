@@ -8,22 +8,65 @@ class DeckPlanner {
   /// Default mixed-deck difficulty weights. Keeps Charades and Forbidden Words
   /// approachable without concentrating hard or specialist cards.
   static const Map<GameKind, Map<Difficulty, double>> mixedWeights = {
-    GameKind.charades: {Difficulty.easy: 0.5, Difficulty.medium: 0.38, Difficulty.hard: 0.12},
-    GameKind.forbidden: {Difficulty.easy: 0.4, Difficulty.medium: 0.45, Difficulty.hard: 0.15},
+    GameKind.charades: {
+      Difficulty.easy: 0.5,
+      Difficulty.medium: 0.38,
+      Difficulty.hard: 0.12,
+    },
+    GameKind.forbidden: {
+      Difficulty.easy: 0.4,
+      Difficulty.medium: 0.45,
+      Difficulty.hard: 0.15,
+    },
   };
 
-  /// Shuffles [ids], putting cards not yet seen on this device first so that
-  /// consecutive game nights don't replay the same cards.
-  static List<String> freshShuffle(Iterable<String> ids, Random r, Set<String> seen) {
+  /// Initialises the persistent, physical-deck order for a game.
+  static List<String> initialise(
+    ContentLibrary lib,
+    GameKind game,
+    Random r,
+    Set<String> seen,
+  ) {
+    final ids = lib.ids(game);
     final unseen = ids.where((id) => !seen.contains(id)).toList()..shuffle(r);
-    final seenList = ids.where(seen.contains).toList()..shuffle(r);
-    return [...unseen, ...seenList];
+    final displayed = ids.where(seen.contains).toList()..shuffle(r);
+    if (game == GameKind.charades || game == GameKind.forbidden) {
+      List<String> balance(List<String> group) {
+        final buckets = <Difficulty, List<String>>{};
+        for (final id in group) {
+          buckets.putIfAbsent(lib.difficultyOf(game, id), () => []).add(id);
+        }
+        return stratified(buckets, mixedWeights[game]!);
+      }
+      return [...balance(unseen), ...balance(displayed)];
+    }
+    return [...unseen, ...displayed];
+  }
+
+  /// Preserves the order of existing cards and puts newly added cards first.
+  static List<String> reconcile(
+    List<String> existing,
+    Iterable<String> canonical,
+    Random r,
+  ) {
+    final known = canonical.toSet();
+    final retainedSet = existing.where(known.contains).toSet();
+    final newIds = canonical.where((id) => !retainedSet.contains(id)).toList()
+      ..shuffle(r);
+    final result = <String>[
+      ...newIds,
+      ...existing.where((id) => retainedSet.contains(id)),
+    ];
+    final unique = <String>{};
+    return result.where(unique.add).toList();
   }
 
   /// Interleaves difficulty buckets by weight (smooth weighted round-robin), so a
   /// mixed deck spreads hard cards evenly instead of clustering them.
   static List<String> stratified(
-      Map<Difficulty, List<String>> buckets, Map<Difficulty, double> weights) {
+    Map<Difficulty, List<String>> buckets,
+    Map<Difficulty, double> weights,
+  ) {
     final queues = {for (final e in buckets.entries) e.key: List.of(e.value)};
     final credit = {for (final k in queues.keys) k: 0.0};
     final out = <String>[];
@@ -42,34 +85,6 @@ class DeckPlanner {
       out.add(queues[pick]!.removeAt(0));
     }
     return out;
-  }
-
-  /// Builds the session's draw queues.
-  static Map<String, List<String>> buildQueues(
-    ContentLibrary lib,
-    GameKind game,
-    Difficulty? filter,
-    Random r,
-    Set<String> seen, {
-    Set<String> exclude = const {},
-  }) {
-    final ids = lib.ids(game).where((id) => !exclude.contains(id));
-    if (game == GameKind.sprint) {
-      return {'main': freshShuffle(ids, r, seen)};
-    }
-    final buckets = <Difficulty, List<String>>{};
-    for (final id in ids) {
-      final d = lib.difficultyOf(game, id);
-      if (filter != null && d != filter) continue;
-      buckets.putIfAbsent(d, () => []).add(id);
-    }
-    for (final k in buckets.keys) {
-      buckets[k] = freshShuffle(buckets[k]!, r, seen);
-    }
-    if (game == GameKind.trivia) {
-      return {for (final e in buckets.entries) e.key.name: e.value};
-    }
-    return {'main': stratified(buckets, mixedWeights[game]!)};
   }
 
   /// Difficulty slots for one Trivia turn. Every team in the same round gets the

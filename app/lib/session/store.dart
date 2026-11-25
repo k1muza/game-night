@@ -9,8 +9,11 @@ import 'session.dart';
 abstract class SessionStore {
   Session? loadSession();
   void saveSession(Session? s);
+  List<String> loadDeck(GameKind g);
+  void saveDeck(GameKind g, List<String> ids);
+
+  /// History written by older app versions, used once to seed the new deck.
   Set<String> seen(GameKind g);
-  void saveSeen(GameKind g, Set<String> ids);
   bool flag(String key);
   void setFlag(String key, bool value);
 }
@@ -19,7 +22,8 @@ class PrefsSessionStore implements SessionStore {
   PrefsSessionStore(this._p);
   final SharedPreferences _p;
 
-  static Future<PrefsSessionStore> open() async => PrefsSessionStore(await SharedPreferences.getInstance());
+  static Future<PrefsSessionStore> open() async =>
+      PrefsSessionStore(await SharedPreferences.getInstance());
 
   @override
   Session? loadSession() {
@@ -43,10 +47,15 @@ class PrefsSessionStore implements SessionStore {
   }
 
   @override
-  Set<String> seen(GameKind g) => {...?_p.getStringList('seen.${g.name}')};
+  List<String> loadDeck(GameKind g) =>
+      _p.getStringList('deck.${g.name}')?.toList() ?? const [];
 
   @override
-  void saveSeen(GameKind g, Set<String> ids) => _p.setStringList('seen.${g.name}', ids.toList());
+  void saveDeck(GameKind g, List<String> ids) =>
+      _p.setStringList('deck.${g.name}', ids);
+
+  @override
+  Set<String> seen(GameKind g) => {...?_p.getStringList('seen.${g.name}')};
 
   @override
   bool flag(String key) => _p.getBool('flag.$key') ?? false;
@@ -60,15 +69,20 @@ class MemorySessionStore implements SessionStore {
   String? raw;
   final Map<GameKind, Set<String>> seenIds = {};
   final Map<String, bool> flags = {};
+  final Map<GameKind, List<String>> decks = {};
 
   @override
-  Session? loadSession() => raw == null ? null : Session.fromJson(jsonDecode(raw!));
+  Session? loadSession() =>
+      raw == null ? null : Session.fromJson(jsonDecode(raw!));
   @override
-  void saveSession(Session? s) => raw = s == null ? null : jsonEncode(s.toJson());
+  void saveSession(Session? s) =>
+      raw = s == null ? null : jsonEncode(s.toJson());
+  @override
+  List<String> loadDeck(GameKind g) => [...?decks[g]];
+  @override
+  void saveDeck(GameKind g, List<String> ids) => decks[g] = [...ids];
   @override
   Set<String> seen(GameKind g) => {...?seenIds[g]};
-  @override
-  void saveSeen(GameKind g, Set<String> ids) => seenIds[g] = {...ids};
   @override
   bool flag(String key) => flags[key] ?? false;
   @override

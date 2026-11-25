@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game_night/model/cards.dart';
 import 'package:game_night/model/game_kind.dart';
@@ -189,7 +191,9 @@ void main() {
       final second = h.s.turn!.cardId;
       c.skipSprintCard();
       expect(h.s.turn!.cardId, second);
-      expect(h.s.queues['main'], isNot(contains(first)));
+      expect(h.store.loadDeck(GameKind.sprint), contains(first));
+      expect(h.store.loadDeck(GameKind.sprint).toSet().length,
+          h.store.loadDeck(GameKind.sprint).length);
       expect(h.s.used, contains(first));
     });
 
@@ -256,11 +260,14 @@ void main() {
       final first = h.s.turn!.cardId;
       c.mark(Outcome.violation);
       final second = h.s.turn!.cardId;
+      final queueBeforeUndo = h.store.loadDeck(GameKind.forbidden);
       expect(c.undoLast(), isTrue);
       expect(h.s.turn!.cardId, first);
       expect(h.s.turn!.events, isEmpty);
+      expect(h.store.loadDeck(GameKind.forbidden), queueBeforeUndo);
+      expect(queueBeforeUndo.toSet().length, queueBeforeUndo.length);
       c.mark(Outcome.correct);
-      expect(h.s.turn!.cardId, second, reason: 'the card behind is dealt again, not skipped');
+      expect(h.s.turn!.cardId, isNot(second), reason: 'undo does not rewind the persistent deck');
     });
   });
 
@@ -371,6 +378,77 @@ void main() {
   });
 
   group('content selection', () {
+    test('initialises one full, unique persistent deck per game', () {
+      final h = Harness();
+      for (final game in GameKind.values) {
+        h.start(game);
+        final queue = h.store.loadDeck(game);
+        expect(queue.length, h.controller.library.count(game));
+        expect(queue.toSet().length, queue.length);
+      }
+    });
+
+    test('legacy seen history seeds unseen cards before displayed cards', () {
+      final h = Harness();
+      for (final game in GameKind.values) {
+        final ids = h.controller.library.ids(game);
+        final seen = ids.take(30).toSet();
+        h.store.seenIds[game] = seen;
+        h.start(game);
+        final queue = h.store.loadDeck(game);
+        expect(queue.take(ids.length - seen.length).toSet().intersection(seen), isEmpty);
+        expect(queue.skip(ids.length - seen.length).toSet(), seen);
+      }
+    });
+
+    test('reconciliation preserves existing order and prioritises new IDs', () {
+      final reconciled = DeckPlanner.reconcile(
+        ['keep-b', 'removed', 'keep-a'],
+        ['new', 'keep-a', 'keep-b'],
+        Random(1),
+      );
+      expect(reconciled.take(1), ['new']);
+      expect(reconciled.skip(1), ['keep-b', 'keep-a']);
+    });
+
+    test('filtered draw chooses the first eligible card and cycles it', () {
+      final h = Harness();
+      final lib = h.controller.library;
+      final easy = lib.charades.values.firstWhere((c) => c.difficulty == Difficulty.easy).id;
+      final hard = lib.charades.values.firstWhere((c) => c.difficulty == Difficulty.hard).id;
+      final queue = [easy, hard, ...lib.ids(GameKind.charades).where((id) => id != easy && id != hard)];
+      h.store.saveDeck(GameKind.charades, queue);
+      h.start(GameKind.charades, difficulty: Difficulty.hard);
+      h.controller.startTurn();
+      expect(h.s.turn!.cardId, hard);
+      expect(h.store.loadDeck(GameKind.charades).first, easy);
+      expect(h.store.loadDeck(GameKind.charades).last, hard);
+    });
+
+    test('restart retains advanced queue order; next session continues it', () {
+      final h = Harness()..start(GameKind.forbidden);
+      final c = h.controller..startTurn();
+      c.mark(Outcome.pass);
+      final next = h.store.loadDeck(GameKind.forbidden).first;
+      h.reload();
+      h.start(GameKind.forbidden);
+      h.controller.startTurn();
+      expect(h.s.turn!.cardId, next);
+    });
+
+    test('manual shuffle preserves a complete unique deck and active card', () {
+      final h = Harness()..start(GameKind.forbidden);
+      final c = h.controller..startTurn();
+      final active = h.s.turn!.cardId;
+      c.reshuffle();
+      final queue = h.store.loadDeck(GameKind.forbidden);
+      expect(queue.length, 500);
+      expect(queue.toSet().length, 500);
+      expect(h.s.turn!.cardId, active);
+      c.mark(Outcome.pass);
+      expect(h.s.turn!.cardId, isNot(active));
+    });
+
     test('no card repeats within a session', () {
       final h = Harness()..start(GameKind.charades, rounds: 10);
       final c = h.controller;
@@ -394,50 +472,43 @@ void main() {
       expect(hard, inInclusiveRange(4, 10));
     });
 
-    test('exhaustion is reported, not silently repeated; reshuffle is explicit', () {
-      final h = Harness()..start(GameKind.charades, difficulty: Difficulty.hard);
+    test('persistent deck cycles while a session does not repeat displayed cards', () {
+      final h = Harness()..start(GameKind.charades);
       final c = h.controller..startTurn();
-      final total = c.library.charades.values.where((x) => x.difficulty == Difficulty.hard).length;
-      for (var i = 0; i < 40; i++) {
+      final dealt = <String>[];
+      for (var i = 0; i < 600; i++) {
+        dealt.add(h.s.turn!.cardId!);
         c.mark(Outcome.pass);
       }
+      expect(dealt.toSet().length, 600);
+      expect(h.s.turn!.cardId, isNull, reason: 'do not repeat within this session');
+      expect(h.store.loadDeck(GameKind.charades).toSet().length, 600);
+      final firstDraw = h.store.loadDeck(GameKind.charades).first;
       c.finishTurn();
-      c.nextTurn();
-      // The card on screen when a turn ends has been seen by that describer, so
-      // it is consumed rather than handed to the next team.
-      expect(h.s.queues['main']!.length, total - 41);
-      c.startTurn();
-      for (var i = 0; i < total - 41; i++) {
-        c.mark(Outcome.pass);
-      }
-      expect(h.s.turn!.cardId, isNull, reason: 'deck empty');
-      c.mark(Outcome.correct); // nothing to score
-      expect(h.s.turn!.events.length, total - 41);
-      c.reshuffle();
-      expect(h.s.turn!.cardId, isNotNull);
-      expect(h.s.turn!.events.map((e) => e.cardId), isNot(contains(h.s.turn!.cardId)));
+      h.start(GameKind.charades);
+      h.controller.startTurn();
+      expect(h.s.turn!.cardId, firstDraw);
     });
 
     test('Sprint cannot start once every card has been dealt', () {
       final h = Harness()..start(GameKind.sprint, rounds: 10, teams: 6);
-      h.s.queues['main']!.clear();
+      h.store.saveDeck(GameKind.sprint, []);
       expect(h.controller.canStartTurn, isFalse);
       expect(h.controller.startTurn(), isFalse);
       h.controller.reshuffle();
       expect(h.controller.canStartTurn, isTrue);
     });
 
-    test('a new session prefers cards not seen on this device', () {
+    test('a new session continues from the persistent deck', () {
       final h = Harness()..start(GameKind.forbidden);
       final c = h.controller..startTurn();
-      final seenNow = <String>{};
       for (var i = 0; i < 20; i++) {
-        seenNow.add(h.s.turn!.cardId!);
         c.mark(Outcome.pass);
       }
       h.start(GameKind.forbidden);
-      final next = h.s.queues['main']!.take(200).toSet();
-      expect(next.intersection(seenNow), isEmpty);
+      final next = h.s.queues['main']!.toSet();
+      expect(next, h.controller.library.ids(GameKind.forbidden).toSet());
+      expect(h.store.loadDeck(GameKind.forbidden).toSet(), next);
     });
 
     test('trivia slots: mostly medium/hard with easy or expert wildcard', () {
@@ -558,9 +629,8 @@ void main() {
 
     test('Trivia turn cannot start without a full set of questions', () {
       final h = Harness()..start(GameKind.trivia);
-      final q = h.s.queues;
-      final keep = q.values.expand((x) => x).take(4).toList();
-      q.updateAll((k, v) => v.where(keep.contains).toList());
+      final keep = h.store.loadDeck(GameKind.trivia).take(4).toList();
+      h.store.saveDeck(GameKind.trivia, keep);
       expect(h.controller.canStartTurn, isFalse);
     });
 
