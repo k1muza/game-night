@@ -324,4 +324,5 @@ abstract class LocalRefereeService extends ChangeNotifier {
   Future<void> stop();
   Future<void> takeOverClassic();
   void pauseForBackground();
+  Future<void> resumeFromBackground();
 }

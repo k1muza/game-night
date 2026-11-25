@@ -72,6 +72,9 @@ class _UnsupportedLocalRefereeService extends LocalRefereeService {
     controller.switchToClassic();
     if (controller.session?.turn?.paused == true) controller.resume();
   }
+
   @override
   void pauseForBackground() {}
+  @override
+  Future<void> resumeFromBackground() async {}
 }

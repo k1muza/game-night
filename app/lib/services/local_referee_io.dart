@@ -127,7 +127,7 @@ class IoLocalRefereeService extends LocalRefereeService {
     controller.setRefereeConnectionReady(false);
 
     final address = await _localAddress();
-    final server = await HttpServer.bind(InternetAddress(address), 0);
+    final server = await HttpServer.bind(InternetAddress.anyIPv4, 0);
     if (generation != _generation || _stopping) {
       await server.close(force: true);
       throw StateError('Pairing was cancelled before the server started.');
@@ -178,7 +178,7 @@ class IoLocalRefereeService extends LocalRefereeService {
     );
     final candidates = <(String, String)>[
       for (final interface in interfaces)
-        if (_isWifiInterface(interface.name))
+        if (!_isVpnInterface(interface.name))
           for (final address in interface.addresses)
             if (address.type == InternetAddressType.IPv4 &&
                 _isPrivate(address.address))
@@ -186,22 +186,34 @@ class IoLocalRefereeService extends LocalRefereeService {
     ];
     if (candidates.isEmpty) {
       throw const SocketException(
-        'Could not identify a private Wi-Fi address. Connect to Wi-Fi or a hotspot and disable any VPN.',
+        'Could not identify a private local-network address. Connect to Wi-Fi or a hotspot and disable any VPN.',
       );
     }
-    const preferred = ['wlan0', 'en0', 'ap0', 'swlan0'];
-    for (final name in preferred) {
-      final matches = candidates.where((candidate) => candidate.$1 == name);
-      if (matches.length == 1) return matches.first.$2;
-    }
     if (candidates.length == 1) return candidates.single.$2;
-    throw const SocketException(
-      'More than one Wi-Fi address is available. Disable VPN or secondary network interfaces and retry.',
+    for (final candidate in candidates) {
+      final address = candidate.$2;
+      if (address.startsWith('172.20.10.') ||
+          address.startsWith('192.168.43.') ||
+          address.startsWith('192.168.49.') ||
+          address.startsWith('192.168.137.')) {
+        return address;
+      }
+    }
+    final wifi = candidates.where(
+      (candidate) =>
+          _isWifiInterface(candidate.$1) && !_isVpnInterface(candidate.$1),
     );
+    if (wifi.length == 1) return wifi.single.$2;
+    return candidates.first.$2;
   }
 
   bool _isWifiInterface(String name) => RegExp(
-    r'^(wlan|wifi|ap|swlan|en)\d*$',
+    r'(wlan|wifi|swlan|en\d*|ap\d*|eth\d*|ethernet)',
+    caseSensitive: false,
+  ).hasMatch(name);
+
+  bool _isVpnInterface(String name) => RegExp(
+    r'(vpn|tun|tap|utun|ppp|ipsec|wireguard|zt|tailscale|llw\d*|p2p)',
     caseSensitive: false,
   ).hasMatch(name);
 
@@ -442,6 +454,19 @@ class IoLocalRefereeService extends LocalRefereeService {
       });
       return;
     }
+    if (message['type'] == 'background') {
+      final session = controller.session;
+      if (session?.phase == Phase.playing &&
+          session?.turn?.deadlineMs != null) {
+        controller.pause();
+      }
+      _setStatus(RefereeConnectionStatus.connected);
+      return;
+    }
+    if (message['type'] == 'resume') {
+      _sendSnapshot(socket);
+      return;
+    }
     if (message['type'] == 'snapshot_ack') {
       final version = message['stateVersion'];
       final session = controller.session;
@@ -670,10 +695,6 @@ class IoLocalRefereeService extends LocalRefereeService {
 
   Future<void> _connectTo(PairingDetails details) async {
     _validatePairing(details);
-    if (!_allowLoopbackForTesting && supported) {
-      await _requireWifiConnection();
-      await _localAddress();
-    }
     final sameSession = _samePairingSession(_pairing, details);
     await _closeCurrent(clearPairing: true, clearSessionState: !sameSession);
     _pairing = details;
@@ -725,20 +746,6 @@ class IoLocalRefereeService extends LocalRefereeService {
     }
   }
 
-  Future<void> _requireWifiConnection() async {
-    final results = await Connectivity().checkConnectivity();
-    if (!results.contains(ConnectivityResult.wifi)) {
-      throw const SocketException(
-        'Connect to the same Wi-Fi network or hotspot as the host. Internet access is not required.',
-      );
-    }
-    if (results.contains(ConnectivityResult.vpn)) {
-      throw const SocketException(
-        'Disable the VPN, then reconnect on the shared Wi-Fi or hotspot.',
-      );
-    }
-  }
-
   bool _samePairingSession(PairingDetails? old, PairingDetails next) {
     if (old == null || old.host != next.host || old.port != next.port) {
       return false;
@@ -762,10 +769,6 @@ class IoLocalRefereeService extends LocalRefereeService {
       return;
     }
     try {
-      if (!_allowLoopbackForTesting && supported) {
-        await _requireWifiConnection();
-        await _localAddress();
-      }
       final socket = await WebSocket.connect(
         Uri(
           scheme: 'ws',
@@ -973,6 +976,22 @@ class IoLocalRefereeService extends LocalRefereeService {
         if (sequence is int && sequence > _lastHeartbeatAckSequence) {
           _lastHeartbeatAckSequence = sequence;
           _lastHeartbeatAckMs = DateTime.now().millisecondsSinceEpoch;
+        }
+      case 'background':
+        final session = controller.session;
+        if (session?.phase == Phase.playing &&
+            session?.turn?.deadlineMs != null) {
+          controller.pause();
+        }
+        _setStatus(RefereeConnectionStatus.connected);
+      case 'resume':
+        if (identical(socket, _client) &&
+            _pairing?.sessionId == message['sessionId']) {
+          _send(socket, {
+            'protocolVersion': protocolVersion,
+            'sessionId': _pairing?.sessionId,
+            'type': 'request_snapshot',
+          });
         }
       case 'protocol_error':
         _protocolFailure(socket, 'Host rejected the connection protocol.');
@@ -1511,38 +1530,9 @@ class IoLocalRefereeService extends LocalRefereeService {
     if (!supported) return;
     _networkSubscription?.cancel();
     _networkSubscription = Connectivity().onConnectivityChanged.listen(
-      (results) {
+      (_) {
         if (generation != _generation || _stopping) return;
-        if (_isHost) {
-          if (!results.contains(ConnectivityResult.wifi)) {
-            final session = controller.session;
-            if (session?.phase == Phase.playing &&
-                session?.turn?.deadlineMs != null) {
-              controller.pause();
-            }
-            controller.setRefereeConnectionReady(false);
-            _setStatus(
-              RefereeConnectionStatus.disconnected,
-              error:
-                  'Host Wi-Fi was disconnected. Reconnect, then create a new pairing.',
-            );
-            final peer = _hostPeer;
-            if (peer != null) {
-              unawaited(
-                _closeSocket(
-                  peer,
-                  WebSocketStatus.goingAway,
-                  'Host Wi-Fi disconnected',
-                ),
-              );
-            }
-          }
-          return;
-        }
-        if (results.contains(ConnectivityResult.wifi) &&
-            _client == null &&
-            _pairing != null &&
-            _status == RefereeConnectionStatus.disconnected) {
+        if (!_isHost && _client == null && _pairing != null) {
           _reconnectAttempts = 0;
           _setStatus(RefereeConnectionStatus.reconnecting);
           _scheduleReconnect(generation);
@@ -1587,12 +1577,88 @@ class IoLocalRefereeService extends LocalRefereeService {
 
   @override
   void pauseForBackground() {
-    if (_isHost &&
-        _hostPeer != null &&
-        controller.session?.phase == Phase.playing &&
+    if (controller.session?.phase == Phase.playing &&
         controller.session?.turn?.deadlineMs != null) {
       controller.pause();
     }
+    final pairing = _pairing;
+    if (pairing?.sessionId != null) {
+      if (_isHost && _hostPeer != null) {
+        _send(_hostPeer!, {
+          'type': 'background',
+          'protocolVersion': protocolVersion,
+          'sessionId': pairing!.sessionId,
+        });
+      } else if (_client != null) {
+        _send(_client!, {
+          'type': 'background',
+          'protocolVersion': protocolVersion,
+          'sessionId': pairing!.sessionId,
+        });
+      }
+    }
+  }
+
+  @override
+  Future<void> resumeFromBackground() async {
+    final pairing = _pairing;
+    if (_stopping || pairing == null) return;
+    final generation = _generation;
+    _reconnectAttempts = 0;
+    _reconnect?.cancel();
+    _reconnect = null;
+
+    if (_isHost) {
+      final peer = _hostPeer;
+      if (peer == null ||
+          peer.readyState != WebSocket.open ||
+          (DateTime.now().millisecondsSinceEpoch - _lastHeartbeatMs >
+              _heartbeatTimeoutMs)) {
+        if (peer != null) {
+          await _closeSocket(
+            peer,
+            WebSocketStatus.goingAway,
+            'Connection health check failed',
+          );
+        }
+      } else {
+        _send(peer, {
+          'type': 'resume',
+          'protocolVersion': protocolVersion,
+          'sessionId': pairing.sessionId,
+        });
+        _sendSnapshot(peer);
+      }
+      return;
+    }
+
+    final socket = _client;
+    if (socket == null ||
+        socket.readyState != WebSocket.open ||
+        (DateTime.now().millisecondsSinceEpoch - _lastHeartbeatAckMs >
+            _heartbeatTimeoutMs)) {
+      if (socket != null) {
+        await _closeSocket(
+          socket,
+          WebSocketStatus.goingAway,
+          'Connection health check failed',
+        );
+      } else {
+        _setStatus(RefereeConnectionStatus.reconnecting);
+        _scheduleReconnect(generation);
+      }
+      return;
+    }
+    _send(socket, {
+      'type': 'resume',
+      'protocolVersion': protocolVersion,
+      'sessionId': pairing.sessionId,
+    });
+    _send(socket, {
+      'type': 'request_snapshot',
+      'protocolVersion': protocolVersion,
+      'sessionId': pairing.sessionId,
+    });
   }
 
   Future<void> _closeCurrent({
