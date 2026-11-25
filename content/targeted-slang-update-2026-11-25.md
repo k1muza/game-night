@@ -1,0 +1,3 @@
+# Targeted contemporary slang update — 2026-11-25
+
+User requested Aura farming in Sprint, Charades and Tabuu. Replaced Success Kid (81, older meme recognition concern), Sarah (62, weak mime convergence), and Read receipts (routine technical concept, editorial choice). All three retain medium difficulty; Sprint retains original category, region, card and term IDs, balance metrics and other four terms. Charades category changed to Internet Meme. Tabuu retains social media category. All replacements draft; human playtesting pending. Historical audit records are snapshots predating this update. Sprint consolidation may reconstruct earlier editorial state if run from pre-consolidation inputs; current production files are canonical. No Flutter tests executed.
