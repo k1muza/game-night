@@ -465,6 +465,8 @@ class _RefereeLiveIndicatorState extends State<RefereeLiveIndicator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _opacity;
+  bool _reduceMotion = false;
+  bool _didStart = false;
 
   @override
   void initState() {
@@ -477,24 +479,37 @@ class _RefereeLiveIndicatorState extends State<RefereeLiveIndicator>
       begin: 0.45,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-    _syncAnimation();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncAnimation();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduce = MediaQuery.of(context).disableAnimations;
+    if (_reduceMotion != reduce) {
+      _reduceMotion = reduce;
+      _syncAnimation();
+    } else if (!_didStart) {
+      _syncAnimation();
+    }
   }
 
   @override
   void didUpdateWidget(RefereeLiveIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _syncAnimation();
+    if (oldWidget.status != widget.status) _syncAnimation();
   }
 
   void _syncAnimation() {
-    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    if (widget.status == RefereeConnectionStatus.connected &&
-        !_controller.isAnimating &&
-        !reduce) {
-      _controller.repeat(reverse: true);
-    } else if (!reduce || widget.status != RefereeConnectionStatus.connected) {
+    if (widget.status != RefereeConnectionStatus.connected || _reduceMotion) {
       _controller.stop();
       _controller.value = 1;
+      _didStart = false;
+    } else if (!_didStart) {
+      _didStart = true;
+      _controller.repeat(reverse: true);
     }
   }
 

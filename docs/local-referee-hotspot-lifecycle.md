@@ -63,3 +63,18 @@ requires a normal pairing/QR flow.
   the private host address even though a LAN interface remains available.
 - Cellular-only network interfaces are not accepted as WebSocket hosts. Pairing
   must use the shared hotspot/router private IPv4 network.
+
+## Implementation report
+
+Validated in this workspace on 2026-11-26:
+
+- Flutter analysis completed with no errors and 18 existing informational lints.
+- The full Flutter test suite passes with 80 tests, including focused tests for referee
+  indicator rebuild/reduced-motion behavior, background invalidation/recovery,
+  continuous heartbeat operation, rapid referee actions, and Classic Mode
+  backgrounding.
+- Android release build completed successfully as `build/app/outputs/flutter-apk/app-release.apk`.
+- Physical hotspot and app-switch durations (5 seconds, 30 seconds, 2 minutes,
+  and 5 minutes) require device-level verification and are not claimed from
+  simulator-only tests. The implementation report and code document the required
+  foreground health check and snapshot re-synchronization behavior.

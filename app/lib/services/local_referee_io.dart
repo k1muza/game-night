@@ -50,6 +50,7 @@ class IoLocalRefereeService extends LocalRefereeService {
   WebSocket? _hostPeer;
   WebSocket? _client;
   Timer? _monitor;
+  Timer? _authorityTimer;
   Timer? _heartbeat;
   Timer? _clientHandshakeTimeout;
   Timer? _reconnect;
@@ -166,6 +167,11 @@ class IoLocalRefereeService extends LocalRefereeService {
         );
       }
     });
+    _authorityTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (generation == _generation && _hostPeer != null && _hostSynchronized) {
+        _sendSnapshot(_hostPeer!);
+      }
+    });
     return _pairing!;
   }
 
@@ -178,7 +184,8 @@ class IoLocalRefereeService extends LocalRefereeService {
     );
     final candidates = <(String, String)>[
       for (final interface in interfaces)
-        if (!_isVpnInterface(interface.name))
+        if (!_isVpnInterface(interface.name) &&
+            !_isCellularInterface(interface.name))
           for (final address in interface.addresses)
             if (address.type == InternetAddressType.IPv4 &&
                 _isPrivate(address.address))
@@ -214,6 +221,11 @@ class IoLocalRefereeService extends LocalRefereeService {
 
   bool _isVpnInterface(String name) => RegExp(
     r'(vpn|tun|tap|utun|ppp|ipsec|wireguard|zt|tailscale|llw\d*|p2p)',
+    caseSensitive: false,
+  ).hasMatch(name);
+
+  bool _isCellularInterface(String name) => RegExp(
+    r'(rmnet|r_mnet|ccmni|pdp_ip|clat|wwan|cell|mobile|radio)',
     caseSensitive: false,
   ).hasMatch(name);
 
@@ -460,7 +472,12 @@ class IoLocalRefereeService extends LocalRefereeService {
           session?.turn?.deadlineMs != null) {
         controller.pause();
       }
-      _setStatus(RefereeConnectionStatus.connected);
+      _hostSynchronized = false;
+      controller.setRefereeConnectionReady(false);
+      _setStatus(
+        RefereeConnectionStatus.synchronizing,
+        error: 'Referee is unavailable while the app is in the background.',
+      );
       return;
     }
     if (message['type'] == 'resume') {
@@ -478,6 +495,7 @@ class IoLocalRefereeService extends LocalRefereeService {
         return;
       }
       _hostSynchronized = true;
+      controller.setRefereeCorrectionPending(_correctionRequested);
       _setStatus(RefereeConnectionStatus.connected);
       controller.setRefereeConnectionReady(true);
       _send(socket, {
@@ -570,6 +588,7 @@ class IoLocalRefereeService extends LocalRefereeService {
         session.config.mode == PlayMode.referee &&
         session.phase == Phase.turnReview) {
       _correctionRequested = true;
+      controller.setRefereeCorrectionPending(true);
       notifyListeners();
       _sendSnapshot(_hostPeer!);
     } else if (session.config.mode == PlayMode.referee &&
@@ -1015,6 +1034,7 @@ class IoLocalRefereeService extends LocalRefereeService {
   }
 
   void _startClientHeartbeat(WebSocket socket, int generation) {
+    if (_heartbeat != null && identical(_client, socket)) return;
     _heartbeat?.cancel();
     _lastHeartbeatAckMs = DateTime.now().millisecondsSinceEpoch;
     _lastHeartbeatAckSequence = -1;
@@ -1064,6 +1084,7 @@ class IoLocalRefereeService extends LocalRefereeService {
     _clientSubscription = null;
     _clientHandshakeTimeout?.cancel();
     _heartbeat?.cancel();
+    _heartbeat = null;
     if (_stopping ||
         _pairing == null ||
         _status == RefereeConnectionStatus.authenticationFailed) {
@@ -1259,7 +1280,10 @@ class IoLocalRefereeService extends LocalRefereeService {
       });
       return;
     }
-    if (session.phase != Phase.turnReview) _correctionRequested = false;
+    if (session.phase != Phase.turnReview) {
+      _correctionRequested = false;
+      controller.setRefereeCorrectionPending(false);
+    }
     if (_hostPeer != null) _sendSnapshot(_hostPeer!);
   }
 
@@ -1395,6 +1419,12 @@ class IoLocalRefereeService extends LocalRefereeService {
         _clientDisconnected(socket, _generation);
       }
     } on WebSocketException {
+      if (identical(socket, _hostPeer)) {
+        _peerDisconnected(socket, _generation);
+      } else if (identical(socket, _client)) {
+        _clientDisconnected(socket, _generation);
+      }
+    } on StateError {
       if (identical(socket, _hostPeer)) {
         _peerDisconnected(socket, _generation);
       } else if (identical(socket, _client)) {
@@ -1577,7 +1607,14 @@ class IoLocalRefereeService extends LocalRefereeService {
 
   @override
   void pauseForBackground() {
-    if (controller.session?.phase == Phase.playing &&
+    final isRefereeSession =
+        controller.session?.config.mode == PlayMode.referee;
+    if (isRefereeSession) {
+      _heartbeat?.cancel();
+      _heartbeat = null;
+    }
+    if (isRefereeSession &&
+        controller.session?.phase == Phase.playing &&
         controller.session?.turn?.deadlineMs != null) {
       controller.pause();
     }
@@ -1595,6 +1632,9 @@ class IoLocalRefereeService extends LocalRefereeService {
           'protocolVersion': protocolVersion,
           'sessionId': pairing!.sessionId,
         });
+        unawaited(
+          _closeSocket(_client!, WebSocketStatus.goingAway, 'App backgrounded'),
+        );
       }
     }
   }
@@ -1669,6 +1709,8 @@ class IoLocalRefereeService extends LocalRefereeService {
     _generation++;
     controller.removeListener(_broadcastSnapshot);
     _monitor?.cancel();
+    _authorityTimer?.cancel();
+    _authorityTimer = null;
     _heartbeat?.cancel();
     _clientHandshakeTimeout?.cancel();
     _reconnect?.cancel();

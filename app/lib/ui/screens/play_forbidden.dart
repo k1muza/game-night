@@ -1,6 +1,7 @@
 // Forbidden Words, single-phone "over the shoulder" layout (design FW5,
 // FW10): the opposing referee reaches the BUZZ strip at the top; the
 // clue-giver's thumb has Pass / Got it at the bottom.
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -48,21 +49,39 @@ class _BuzzStrip extends StatefulWidget {
 
 class _BuzzStripState extends State<_BuzzStrip> {
   bool _down = false;
+  bool _busy = false;
+  Timer? _unlock;
+  @override
+  void dispose() {
+    _unlock?.cancel();
+    super.dispose();
+  }
+
+  void _buzz() {
+    if (_busy || widget.onBuzz == null) return;
+    _unlock?.cancel();
+    setState(() => _busy = true);
+    widget.onBuzz!();
+    _unlock = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) setState(() => _busy = false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    enabled: widget.onBuzz != null,
+    enabled: widget.onBuzz != null && !_busy,
     label: 'Buzz: forbidden word said, minus one point',
     excludeSemantics: true,
-    onTap: widget.onBuzz,
+    onTap: _buzz,
     child: GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTapDown: widget.onBuzz == null
+      onTapDown: widget.onBuzz == null || _busy
           ? null
           : (_) => setState(() => _down = true),
       onTapCancel: () => setState(() => _down = false),
       onTapUp: (_) => setState(() => _down = false),
-      onTap: widget.onBuzz,
+      onTap: _buzz,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 70),
         height: 58,

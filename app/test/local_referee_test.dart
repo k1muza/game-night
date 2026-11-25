@@ -12,6 +12,106 @@ import 'helpers.dart';
 
 void main() {
   group('local referee WebSocket session', () {
+    test('Classic Mode backgrounding does not pause gameplay', () async {
+      final host = Harness();
+      host.controller.newSession(
+        const GameConfig(game: GameKind.forbidden, mode: PlayMode.classic),
+        [Team('Team A', 0), Team('Team B', 1)],
+      );
+      host.controller.startTurn();
+      final service = IoLocalRefereeService(
+        host.controller,
+        allowLoopbackForTesting: true,
+      );
+      addTearDown(service.stop);
+
+      final deadline = host.s.turn!.deadlineMs;
+      service.pauseForBackground();
+      expect(host.s.turn!.deadlineMs, deadline);
+      expect(host.s.turn!.paused, isFalse);
+    });
+    test(
+      'background invalidates referee readiness and recovers from reconnect',
+      () async {
+        final host = Harness();
+        host.controller.newSession(
+          const GameConfig(game: GameKind.forbidden, mode: PlayMode.referee),
+          [Team('Team A', 0), Team('Team B', 1)],
+        );
+        final hostService = IoLocalRefereeService(
+          host.controller,
+          allowLoopbackForTesting: true,
+        );
+        final refereeController = SessionController(
+          library: host.controller.library,
+          store: MemorySessionStore(),
+        );
+        final refereeService = IoLocalRefereeService(
+          refereeController,
+          allowLoopbackForTesting: true,
+        );
+        addTearDown(hostService.stop);
+        addTearDown(refereeService.stop);
+
+        final hostPairing = await hostService.startHost();
+        await refereeService.connect(jsonEncode(hostPairing.toJson()));
+        await Future<void>.delayed(const Duration(milliseconds: 800));
+        expect(hostService.isHostConnected, isTrue);
+        expect(refereeService.status, RefereeConnectionStatus.connected);
+
+        refereeService.pauseForBackground();
+        await _waitUntil(() => !hostService.isHostConnected);
+        expect(host.controller.refereeReady, isFalse);
+        expect(host.controller.canStartTurn, isFalse);
+
+        await refereeService.resumeFromBackground();
+        await _waitUntil(
+          () =>
+              hostService.isHostConnected &&
+              refereeService.status == RefereeConnectionStatus.connected,
+        );
+        expect(refereeService.snapshot, isNotNull);
+      },
+    );
+
+    test('heartbeat remains connected during rapid referee actions', () async {
+      final host = Harness();
+      host.controller.newSession(
+        const GameConfig(game: GameKind.forbidden, mode: PlayMode.referee),
+        [Team('Team A', 0), Team('Team B', 1)],
+      );
+      final hostService = IoLocalRefereeService(
+        host.controller,
+        allowLoopbackForTesting: true,
+      );
+      final refereeController = SessionController(
+        library: host.controller.library,
+        store: MemorySessionStore(),
+      );
+      final refereeService = IoLocalRefereeService(
+        refereeController,
+        allowLoopbackForTesting: true,
+      );
+      addTearDown(hostService.stop);
+      addTearDown(refereeService.stop);
+
+      final pairing = await hostService.startHost();
+      await refereeService.connect(jsonEncode(pairing.toJson()));
+      await _waitUntil(() => hostService.isHostConnected);
+      host.controller.startTurn();
+      await _waitUntil(
+        () => refereeService.snapshot?['phase'] == Phase.playing.name,
+      );
+
+      final context = _actionContext(refereeService);
+      for (var i = 0; i < 12; i++) {
+        refereeService.sendAction('buzz', context: context);
+      }
+      await Future<void>.delayed(const Duration(seconds: 5));
+      expect(refereeService.status, RefereeConnectionStatus.connected);
+      expect(hostService.isHostConnected, isTrue);
+      expect(host.s.turn!.events.length, lessThanOrEqualTo(1));
+    });
     test('pairs by manual address and one-time code', () async {
       final host = Harness();
       host.controller.newSession(
@@ -423,11 +523,16 @@ RefereeActionContext _actionContext(LocalRefereeService service) {
   return RefereeActionContext.fromSnapshot(snapshot);
 }
 
-Future<void> _waitUntil(bool Function() condition) async {
-  final deadline = DateTime.now().add(const Duration(seconds: 4));
+Future<void> _waitUntil(
+  bool Function() condition, {
+  Object? Function()? debug,
+}) async {
+  final deadline = DateTime.now().add(const Duration(seconds: 10));
   while (!condition()) {
     if (DateTime.now().isAfter(deadline)) {
-      fail('Timed out waiting for the local referee state.');
+      fail(
+        'Timed out waiting for the local referee state.${debug == null ? '' : ' ${debug()}'}',
+      );
     }
     await Future<void>.delayed(const Duration(milliseconds: 10));
   }

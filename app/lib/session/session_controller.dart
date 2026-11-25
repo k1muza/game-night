@@ -36,6 +36,7 @@ class SessionController extends ChangeNotifier {
   Session? _session;
   Session? get session => _session;
   bool _refereeReady = false;
+  bool _refereeCorrectionPending = false;
 
   bool get refereeReady => _refereeReady;
 
@@ -48,6 +49,18 @@ class SessionController extends ChangeNotifier {
         _session?.phase != Phase.gameResults;
     if (_refereeReady == next) return;
     _refereeReady = next;
+    notifyListeners();
+  }
+
+  bool get refereeCorrectionPending => _refereeCorrectionPending;
+
+  void setRefereeCorrectionPending(bool pending) {
+    final next =
+        pending &&
+        _session?.config.mode == PlayMode.referee &&
+        _session?.phase == Phase.turnReview;
+    if (_refereeCorrectionPending == next) return;
+    _refereeCorrectionPending = next;
     notifyListeners();
   }
 
@@ -360,6 +373,7 @@ class SessionController extends ChangeNotifier {
     final s = _session;
     final t = s?.turn;
     if (s == null || t == null || s.phase != Phase.playing) return;
+    if (_refereeCorrectionPending) return;
     if (t.deadlineMs == null || now() < t.deadlineMs!) return;
     if (s.game == GameKind.trivia) {
       if (!t.revealed) _reveal(timeout: true);

@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:game_night/app.dart';
 import 'package:game_night/model/game_kind.dart';
 import 'package:game_night/services/fx.dart';
+import 'package:game_night/services/local_referee_types.dart';
 import 'package:game_night/session/session.dart';
 import 'package:game_night/ui/screens/local_referee.dart';
+import 'package:game_night/ui/widgets/common.dart';
 
 import 'helpers.dart';
 
@@ -59,6 +61,44 @@ Future<void> tapText(WidgetTester t, String text) async {
 
 void main() {
   setUpAll(loadAppFonts);
+
+  testWidgets('referee live indicator respects rebuilds and reduced motion', (
+    t,
+  ) async {
+    await t.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: RefereeLiveIndicator(status: RefereeConnectionStatus.connected),
+        ),
+      ),
+    );
+    await t.pump(const Duration(milliseconds: 100));
+    expect(find.byType(RefereeLiveIndicator), findsOneWidget);
+
+    await t.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: RefereeLiveIndicator(status: RefereeConnectionStatus.connected),
+        ),
+      ),
+    );
+    await t.pump(const Duration(milliseconds: 100));
+    expect(find.text('Referee'), findsOneWidget);
+
+    await t.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: true),
+          child: child!,
+        ),
+        home: const Scaffold(
+          body: RefereeLiveIndicator(status: RefereeConnectionStatus.connected),
+        ),
+      ),
+    );
+    await t.pump();
+    expect(find.text('Referee'), findsOneWidget);
+  });
 
   testWidgets('setup uses compact play mode and settings sheet', (t) async {
     final a = AppHarness();

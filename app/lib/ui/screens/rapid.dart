@@ -75,7 +75,13 @@ class _RapidPlayState extends State<RapidPlay> {
         final reduce = MediaQuery.of(context).disableAnimations;
         final tall = MediaQuery.of(context).size.height >= 720;
         final canHostScore =
-            s.config.mode != PlayMode.referee || scope.referee.isHostConnected;
+            s.phase == Phase.playing &&
+            t.cardId != null &&
+            !t.paused &&
+            t.deadlineMs != null &&
+            c.remainingMs() > 0 &&
+            (s.config.mode != PlayMode.referee ||
+                scope.referee.isHostConnected);
 
         return Stack(
           children: [

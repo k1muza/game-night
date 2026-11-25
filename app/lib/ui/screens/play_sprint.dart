@@ -73,7 +73,11 @@ class SprintPlayScreen extends StatelessWidget {
                                   term: card.terms[i],
                                   marked: t.marked.contains(i),
                                   disqualified: t.disqualified.contains(i),
-                                  enabled: s.config.mode == PlayMode.classic,
+                                  enabled:
+                                      s.config.mode == PlayMode.classic &&
+                                      !t.paused &&
+                                      t.deadlineMs != null &&
+                                      rem > 0,
                                   onTap: s.config.mode == PlayMode.referee
                                       ? null
                                       : () => c.toggleTerm(
