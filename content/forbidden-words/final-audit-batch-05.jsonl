@@ -1,0 +1,100 @@
+{"index":401,"cardId":"FW-REF-0401","target":"Video game controller","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":402,"cardId":"FW-REF-0402","target":"Ring light","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":403,"cardId":"FW-FIN-0403","target":"Suya","scores":[4,3,3,3,4,4,4],"pathwayGrades":[3,2,3],"note":"regional dish familiarity unmeasured"}
+{"index":404,"cardId":"FW-REF-0404","target":"Google Maps","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":405,"cardId":"FW-REF-0405","target":"Online shopping","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":406,"cardId":"FW-WORK-0001","target":"Assignment","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":407,"cardId":"FW-WORK-0002","target":"Lecture","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":408,"cardId":"FW-WORK-0003","target":"Exam","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":409,"cardId":"FW-WORK-0004","target":"Graduation","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":410,"cardId":"FW-WORK-0005","target":"Library","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":411,"cardId":"FW-WORK-0006","target":"Hostel","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":412,"cardId":"FW-WORK-0007","target":"Interview","scores":[5,5,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":413,"cardId":"FW-WORK-0008","target":"Salary","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":414,"cardId":"FW-WORK-0009","target":"Lunch break","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":415,"cardId":"FW-WORK-0010","target":"Meeting","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":416,"cardId":"FW-WORK-0011","target":"Internship","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":417,"cardId":"FW-WORK-0012","target":"Deadline","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":418,"cardId":"FW-WORK-0013","target":"Scholarship","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":419,"cardId":"FW-WORK-0014","target":"Group project","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":420,"cardId":"FW-WORK-0015","target":"Plagiarism","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,2,2],"note":"formal last two"}
+{"index":421,"cardId":"FW-REF-0421","target":"Boarding school","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":422,"cardId":"FW-REF-0422","target":"Report card","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":423,"cardId":"FW-WORK-0018","target":"Transcript","scores":[4,4,3,4,4,5,4],"pathwayGrades":[3,3,3],"note":"overlaps report card but level differs"}
+{"index":424,"cardId":"FW-WORK-0019","target":"Curriculum vitae","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"CV alias forbidden redundancy; review rule"}
+{"index":425,"cardId":"FW-WORK-0020","target":"Cover letter","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":426,"cardId":"FW-REF-0426","target":"School trip","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":427,"cardId":"FW-WORK-0022","target":"Performance appraisal","scores":[4,3,3,3,4,4,4],"pathwayGrades":[3,3,3],"note":"workplace recognition varies"}
+{"index":428,"cardId":"FW-WORK-0023","target":"Payslip","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":429,"cardId":"FW-WORK-0024","target":"Overtime","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":430,"cardId":"FW-REF-0430","target":"Surprise party","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":431,"cardId":"FW-REF-0431","target":"Bank loan","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":432,"cardId":"FW-REF-0432","target":"Black Friday","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,2],"note":"third US-specific"}
+{"index":433,"cardId":"FW-REF-0433","target":"Mobile money","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"distinguish generic service from EcoCash"}
+{"index":434,"cardId":"FW-REF-0434","target":"Wedding reception","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":435,"cardId":"FW-REF-0435","target":"Budget","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":436,"cardId":"FW-REL-0001","target":"Birthday party","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":437,"cardId":"FW-REL-0002","target":"Wedding","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":438,"cardId":"FW-REL-0003","target":"Friendship","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":439,"cardId":"FW-REL-0004","target":"Apology","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":440,"cardId":"FW-REL-0005","target":"Surprise","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":441,"cardId":"FW-REL-0006","target":"Gift","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":442,"cardId":"FW-REL-0007","target":"Family reunion","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":443,"cardId":"FW-REL-0008","target":"Hand shake","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":444,"cardId":"FW-REL-0009","target":"Hug","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":445,"cardId":"FW-REL-0010","target":"Promise","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":446,"cardId":"FW-REF-0446","target":"Double date","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":447,"cardId":"FW-REL-0012","target":"Engagement","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":448,"cardId":"FW-REL-0013","target":"Blind date","scores":[5,5,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":449,"cardId":"FW-REL-0014","target":"Peer pressure","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":450,"cardId":"FW-REL-0015","target":"Long-distance relationship","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":451,"cardId":"FW-REL-0016","target":"Misunderstanding","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":452,"cardId":"FW-REL-0017","target":"Sibling rivalry","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":453,"cardId":"FW-REL-0018","target":"Reconciliation","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":454,"cardId":"FW-REL-0019","target":"Roommate","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":455,"cardId":"FW-REL-0020","target":"Icebreaker","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":456,"cardId":"FW-REL-0021","target":"Compromise","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":457,"cardId":"FW-REL-0022","target":"Boundaries","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"abstract sense ambiguous"}
+{"index":458,"cardId":"FW-REL-0023","target":"Homesickness","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":459,"cardId":"FW-REL-0024","target":"Networking","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"professional exposure"}
+{"index":460,"cardId":"FW-REL-0025","target":"Secret Santa","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":461,"cardId":"FW-REL-0026","target":"Empathy","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"abstract concept; distinct from sympathy"}
+{"index":462,"cardId":"FW-REF-0462","target":"Awkward silence","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":463,"cardId":"FW-REF-0463","target":"Inside joke","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":464,"cardId":"FW-FIN-0464","target":"Embarrassment","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":465,"cardId":"FW-REF-0465","target":"Wrong number","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":466,"cardId":"FW-WORLD-0001","target":"Elephant","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,2],"note":"third generic"}
+{"index":467,"cardId":"FW-WORLD-0002","target":"Giraffe","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":468,"cardId":"FW-WORLD-0003","target":"Lion","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":469,"cardId":"FW-WORLD-0004","target":"Zebra","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,2,2],"note":"second and third generic"}
+{"index":470,"cardId":"FW-WORLD-0005","target":"Penguin","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":471,"cardId":"FW-WORLD-0006","target":"Rainbow","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":472,"cardId":"FW-WORLD-0007","target":"Volcano","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":473,"cardId":"FW-WORLD-0008","target":"Earthquake","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":474,"cardId":"FW-WORLD-0009","target":"Moon","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":475,"cardId":"FW-WORLD-0010","target":"Sun","scores":[4,5,3,4,4,5,4],"pathwayGrades":[2,2,3],"note":"formal scientific descriptions"}
+{"index":476,"cardId":"FW-WORLD-0011","target":"Paris","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":477,"cardId":"FW-WORLD-0012","target":"Egypt","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,1],"note":"flag route obscure"}
+{"index":478,"cardId":"FW-WORLD-0013","target":"Brazil","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":479,"cardId":"FW-WORLD-0014","target":"Mount Everest","scores":[4,4,3,4,4,5,4],"pathwayGrades":[1,3,3],"note":"climbers derivative of climb"}
+{"index":480,"cardId":"FW-WORLD-0015","target":"Sahara","scores":[4,5,4,4,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":481,"cardId":"FW-WORLD-0016","target":"Amazon River","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":482,"cardId":"FW-WORLD-0017","target":"Great Wall of China","scores":[4,4,3,4,4,5,4],"pathwayGrades":[1,3,3],"note":"fortification derivative of fort; China component"}
+{"index":483,"cardId":"FW-WORLD-0018","target":"Statue of Liberty","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":484,"cardId":"FW-WORLD-0019","target":"Eiffel Tower","scores":[5,5,4,4,4,5,4],"pathwayGrades":[3,2,3],"note":"first route vague; 1889 specialist"}
+{"index":485,"cardId":"FW-REF-0485","target":"Serengeti","scores":[4,4,3,3,4,4,4],"pathwayGrades":[3,2,3],"note":"regional recognition varies"}
+{"index":486,"cardId":"FW-WORLD-0021","target":"Photosynthesis","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,2],"note":"school science familiarity and technical wording"}
+{"index":487,"cardId":"FW-WORLD-0022","target":"Gravity","scores":[4,5,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":488,"cardId":"FW-WORLD-0023","target":"Magnet","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":489,"cardId":"FW-WORLD-0024","target":"Oxygen","scores":[4,5,3,4,4,5,4],"pathwayGrades":[2,1,3],"note":"O is a symbol shortcut not natural clue"}
+{"index":490,"cardId":"FW-WORLD-0025","target":"Water cycle","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":491,"cardId":"FW-WORLD-0026","target":"Ecosystem","scores":[4,3,3,3,4,4,4],"pathwayGrades":[2,2,2],"note":"specialist or formal"}
+{"index":492,"cardId":"FW-WORLD-0027","target":"Solar eclipse","scores":[5,5,5,5,4,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":493,"cardId":"FW-WORLD-0028","target":"Migration","scores":[4,4,4,4,4,5,4],"pathwayGrades":[3,3,3],"note":"multiple senses but distinguishable"}
+{"index":494,"cardId":"FW-WORLD-0029","target":"Fossil","scores":[4,4,4,3,4,5,4],"pathwayGrades":[3,3,3],"note":"hard partly knowledge"}
+{"index":495,"cardId":"FW-REF-0495","target":"Food delivery","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":496,"cardId":"FW-REF-0496","target":"Remote control","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":497,"cardId":"FW-WORLD-0032","target":"Equator","scores":[4,4,4,3,4,5,4],"pathwayGrades":[3,3,3],"note":"hard partly knowledge"}
+{"index":498,"cardId":"FW-REF-0498","target":"Flat tyre","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
+{"index":499,"cardId":"FW-WORLD-0034","target":"Biodiversity","scores":[4,3,3,3,3,4,4],"pathwayGrades":[2,2,2],"note":"technical abstract term"}
+{"index":500,"cardId":"FW-REF-0500","target":"Lost keys","scores":[5,5,5,5,5,5,4],"pathwayGrades":[3,3,3],"note":"No specific critical issue identified in single-agent review; timed and language testing pending"}
