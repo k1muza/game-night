@@ -30,8 +30,10 @@ void main() {
 
     test('custom team count and names are kept', () {
       final h = Harness();
-      h.controller.newSession(const GameConfig(game: GameKind.charades, rounds: 2),
-          [Team('Sadza Squad', 0), Team('Night Owls', 1), Team('Kombi Crew', 3)]);
+      h.controller.newSession(
+        const GameConfig(game: GameKind.charades, rounds: 2),
+        [Team('Sadza Squad', 0), Team('Night Owls', 1), Team('Kombi Crew', 3)],
+      );
       expect(h.s.teams.length, 3);
       expect(h.s.scores, [0, 0, 0]);
       expect(h.s.teams[2].name, 'Kombi Crew');
@@ -162,7 +164,9 @@ void main() {
       expect(h.s.scores[0], 1);
       final ev = h.s.history.single.events;
       expect(ev.length, 5);
-      expect(ev.where((e) => e.outcome == Outcome.correct).map((e) => e.term), [1]);
+      expect(ev.where((e) => e.outcome == Outcome.correct).map((e) => e.term), [
+        1,
+      ]);
     });
 
     test('all five ends the turn immediately with five points', () {
@@ -178,36 +182,88 @@ void main() {
       expect(h.s.scores[0], 5);
     });
 
-    test('skip card: once per turn, only before ticking, clock keeps running, card not reused', () {
-      final h = Harness()..start(GameKind.sprint);
-      final c = h.controller..startTurn();
-      final first = h.s.turn!.cardId;
-      h.clock.advance(const Duration(seconds: 5));
-      expect(c.canSkipSprintCard, isTrue);
-      c.skipSprintCard();
-      expect(h.s.turn!.cardId, isNot(first));
-      expect(c.remainingMs(), 25000, reason: 'no time refunded');
-      expect(c.canSkipSprintCard, isFalse, reason: 'one skip per turn');
-      final second = h.s.turn!.cardId;
-      c.skipSprintCard();
-      expect(h.s.turn!.cardId, second);
-      expect(h.store.loadDeck(GameKind.sprint), contains(first));
-      expect(h.store.loadDeck(GameKind.sprint).toSet().length,
-          h.store.loadDeck(GameKind.sprint).length);
-      expect(h.s.used, contains(first));
-    });
+    test(
+      'referee decisions are reversible and score only after review confirmation',
+      () {
+        final h = Harness();
+        final c = h.controller;
+        c.newSession(
+          const GameConfig(game: GameKind.sprint, mode: PlayMode.referee),
+          [Team('Team A', 0), Team('Team B', 1)],
+        );
+        c.startTurn();
+        final instance = h.s.turn!.cardInstanceId!;
+        expect(c.setSprintTerm(0, instance, correct: true), isTrue);
+        expect(
+          c.setSprintTerm(1, instance, correct: false, disqualified: true),
+          isTrue,
+        );
+        expect(c.setSprintTerm(4, 'old-instance', correct: true), isFalse);
+        h.clock.advance(const Duration(seconds: 30));
+        c.tick();
+        expect(h.s.phase, Phase.turnReview);
+        expect(h.s.scores, [
+          0,
+          0,
+        ], reason: 'score is held until host confirmation');
+        expect(h.s.history.single.points, 1);
+        expect(
+          h.s.history.single.events.map((event) => event.outcome).toList(),
+          [
+            Outcome.correct,
+            Outcome.disqualified,
+            Outcome.pass,
+            Outcome.pass,
+            Outcome.pass,
+          ],
+        );
+        expect(c.reviewSprintTerm(1, Outcome.correct), isTrue);
+        expect(h.s.history.single.points, 2);
+        expect(c.confirmReview(), isTrue);
+        expect(c.confirmReview(), isFalse);
+        expect(h.s.phase, Phase.turnResults);
+        expect(h.s.scores, [2, 0]);
+      },
+    );
 
-    test('skip card is not allowed after a term is ticked (no banking easy terms)', () {
-      final h = Harness()..start(GameKind.sprint);
-      final c = h.controller..startTurn();
-      c.toggleTerm(0);
-      expect(c.canSkipSprintCard, isFalse);
-      final card = h.s.turn!.cardId;
-      c.skipSprintCard();
-      expect(h.s.turn!.cardId, card);
-      c.finishTurn();
-      expect(h.s.scores[0], 1);
-    });
+    test(
+      'skip card: once per turn, only before ticking, clock keeps running, card not reused',
+      () {
+        final h = Harness()..start(GameKind.sprint);
+        final c = h.controller..startTurn();
+        final first = h.s.turn!.cardId;
+        h.clock.advance(const Duration(seconds: 5));
+        expect(c.canSkipSprintCard, isTrue);
+        c.skipSprintCard();
+        expect(h.s.turn!.cardId, isNot(first));
+        expect(c.remainingMs(), 25000, reason: 'no time refunded');
+        expect(c.canSkipSprintCard, isFalse, reason: 'one skip per turn');
+        final second = h.s.turn!.cardId;
+        c.skipSprintCard();
+        expect(h.s.turn!.cardId, second);
+        expect(h.store.loadDeck(GameKind.sprint), contains(first));
+        expect(
+          h.store.loadDeck(GameKind.sprint).toSet().length,
+          h.store.loadDeck(GameKind.sprint).length,
+        );
+        expect(h.s.used, contains(first));
+      },
+    );
+
+    test(
+      'skip card is not allowed after a term is ticked (no banking easy terms)',
+      () {
+        final h = Harness()..start(GameKind.sprint);
+        final c = h.controller..startTurn();
+        c.toggleTerm(0);
+        expect(c.canSkipSprintCard, isFalse);
+        final card = h.s.turn!.cardId;
+        c.skipSprintCard();
+        expect(h.s.turn!.cardId, card);
+        c.finishTurn();
+        expect(h.s.scores[0], 1);
+      },
+    );
 
     test('skip count survives a refresh', () {
       final h = Harness()..start(GameKind.sprint);
@@ -221,8 +277,15 @@ void main() {
       final h = Harness()..start(GameKind.sprint);
       h.controller.startTurn();
       final card = h.controller.library.sprint[h.s.turn!.cardId]!;
-      final d = card.terms.map((t) => t.difficulty).toList()..sort((a, b) => a.index - b.index);
-      expect(d, [Difficulty.easy, Difficulty.easy, Difficulty.medium, Difficulty.medium, Difficulty.hard]);
+      final d = card.terms.map((t) => t.difficulty).toList()
+        ..sort((a, b) => a.index - b.index);
+      expect(d, [
+        Difficulty.easy,
+        Difficulty.easy,
+        Difficulty.medium,
+        Difficulty.medium,
+        Difficulty.hard,
+      ]);
     });
   });
 
@@ -254,6 +317,28 @@ void main() {
       expect(h.s.scores, [-1, 0]);
     });
 
+    test(
+      'referee Tabuu result can be corrected before the host settles it',
+      () {
+        final h = Harness();
+        final c = h.controller;
+        c.newSession(
+          const GameConfig(game: GameKind.forbidden, mode: PlayMode.referee),
+          [Team('Team A', 0), Team('Team B', 1)],
+        );
+        c.startTurn();
+        c.mark(Outcome.violation);
+        c.finishTurn();
+        expect(h.s.phase, Phase.turnReview);
+        expect(h.s.scores, [0, 0]);
+        expect(h.s.history.single.points, -1);
+        expect(c.reviewTabuuEvent(0, Outcome.correct), isTrue);
+        expect(h.s.history.single.points, 1);
+        c.confirmReview();
+        expect(h.s.scores, [1, 0]);
+      },
+    );
+
     test('undo returns the previous card and removes its score', () {
       final h = Harness()..start(GameKind.forbidden);
       final c = h.controller..startTurn();
@@ -267,7 +352,11 @@ void main() {
       expect(h.store.loadDeck(GameKind.forbidden), queueBeforeUndo);
       expect(queueBeforeUndo.toSet().length, queueBeforeUndo.length);
       c.mark(Outcome.correct);
-      expect(h.s.turn!.cardId, isNot(second), reason: 'undo does not rewind the persistent deck');
+      expect(
+        h.s.turn!.cardId,
+        isNot(second),
+        reason: 'undo does not rewind the persistent deck',
+      );
     });
   });
 
@@ -307,30 +396,36 @@ void main() {
       expect(c.turnScore, 1);
     });
 
-    test('timeout locks options, records unanswered, reveals; next timer starts on next question', () {
-      final h = Harness()..start(GameKind.trivia);
-      final c = h.controller..startTurn();
-      h.clock.advance(const Duration(seconds: 20));
-      c.tick();
-      final t = h.s.turn!;
-      expect(t.revealed, isTrue);
-      expect(t.events.single.outcome, Outcome.timeout);
-      expect(c.remainingMs(), 0);
-      h.clock.advance(const Duration(minutes: 2)); // reading the explanation
-      c.tick();
-      expect(h.s.phase, Phase.playing);
-      c.nextQuestion();
-      expect(c.remainingMs(), 20000);
-    });
+    test(
+      'timeout locks options, records unanswered, reveals; next timer starts on next question',
+      () {
+        final h = Harness()..start(GameKind.trivia);
+        final c = h.controller..startTurn();
+        h.clock.advance(const Duration(seconds: 20));
+        c.tick();
+        final t = h.s.turn!;
+        expect(t.revealed, isTrue);
+        expect(t.events.single.outcome, Outcome.timeout);
+        expect(c.remainingMs(), 0);
+        h.clock.advance(const Duration(minutes: 2)); // reading the explanation
+        c.tick();
+        expect(h.s.phase, Phase.playing);
+        c.nextQuestion();
+        expect(c.remainingMs(), 20000);
+      },
+    );
 
-    test('only a locked answer counts: an unlocked pick at timeout is unanswered', () {
-      final h = Harness()..start(GameKind.trivia);
-      final c = h.controller..startTurn();
-      c.selectOption(h.s.turn!.optionOrder.indexOf(0));
-      h.clock.advance(const Duration(seconds: 25));
-      c.tick();
-      expect(h.s.turn!.events.single.outcome, Outcome.timeout);
-    });
+    test(
+      'only a locked answer counts: an unlocked pick at timeout is unanswered',
+      () {
+        final h = Harness()..start(GameKind.trivia);
+        final c = h.controller..startTurn();
+        c.selectOption(h.s.turn!.optionOrder.indexOf(0));
+        h.clock.advance(const Duration(seconds: 25));
+        c.tick();
+        expect(h.s.turn!.events.single.outcome, Outcome.timeout);
+      },
+    );
 
     test('five questions per turn, then turn results', () {
       final h = Harness()..start(GameKind.trivia);
@@ -356,7 +451,10 @@ void main() {
           c.lockAnswer();
           c.nextQuestion();
         }
-        byRoundTeam[key] = [for (final e in h.s.history.last.events) c.library.trivia[e.cardId]!.difficulty];
+        byRoundTeam[key] = [
+          for (final e in h.s.history.last.events)
+            c.library.trivia[e.cardId]!.difficulty,
+        ];
         c.nextTurn();
       }
       for (var r = 1; r <= 4; r++) {
@@ -364,14 +462,21 @@ void main() {
         expect(byRoundTeam[(r, 2)], byRoundTeam[(r, 0)]);
       }
       final all = byRoundTeam.values.expand((d) => d).toList();
-      final mh = all.where((d) => d == Difficulty.medium || d == Difficulty.hard).length;
-      expect(mh / all.length, greaterThanOrEqualTo(0.75), reason: 'predominantly medium and hard');
+      final mh = all
+          .where((d) => d == Difficulty.medium || d == Difficulty.hard)
+          .length;
+      expect(
+        mh / all.length,
+        greaterThanOrEqualTo(0.75),
+        reason: 'predominantly medium and hard',
+      );
       expect(all, contains(Difficulty.easy));
       expect(all, contains(Difficulty.expert));
     });
 
     test('difficulty filter restricts questions', () {
-      final h = Harness()..start(GameKind.trivia, difficulty: Difficulty.expert);
+      final h = Harness()
+        ..start(GameKind.trivia, difficulty: Difficulty.expert);
       final c = h.controller..startTurn();
       expect(c.library.trivia[h.s.turn!.cardId]!.difficulty, Difficulty.expert);
     });
@@ -400,7 +505,10 @@ void main() {
         h.store.seenIds[game] = seen;
         h.start(game);
         final queue = h.store.loadDeck(game);
-        expect(queue.take(ids.length - seen.length).toSet().intersection(seen), isEmpty);
+        expect(
+          queue.take(ids.length - seen.length).toSet().intersection(seen),
+          isEmpty,
+        );
         expect(queue.skip(ids.length - seen.length).toSet(), seen);
       }
     });
@@ -418,9 +526,17 @@ void main() {
     test('filtered draw chooses the first eligible card and cycles it', () {
       final h = Harness();
       final lib = h.controller.library;
-      final easy = lib.charades.values.firstWhere((c) => c.difficulty == Difficulty.easy).id;
-      final hard = lib.charades.values.firstWhere((c) => c.difficulty == Difficulty.hard).id;
-      final queue = [easy, hard, ...lib.ids(GameKind.charades).where((id) => id != easy && id != hard)];
+      final easy = lib.charades.values
+          .firstWhere((c) => c.difficulty == Difficulty.easy)
+          .id;
+      final hard = lib.charades.values
+          .firstWhere((c) => c.difficulty == Difficulty.hard)
+          .id;
+      final queue = [
+        easy,
+        hard,
+        ...lib.ids(GameKind.charades).where((id) => id != easy && id != hard),
+      ];
       h.store.saveDeck(GameKind.charades, queue);
       h.start(GameKind.charades, difficulty: Difficulty.hard);
       h.controller.startTurn();
@@ -471,28 +587,37 @@ void main() {
 
     test('mixed Charades deck avoids concentrating hard prompts', () {
       final h = Harness()..start(GameKind.charades);
-      final first60 = h.s.queues['main']!.take(60).map((id) => h.controller.library.charades[id]!.difficulty);
+      final first60 = h.s.queues['main']!
+          .take(60)
+          .map((id) => h.controller.library.charades[id]!.difficulty);
       final hard = first60.where((d) => d == Difficulty.hard).length;
       expect(hard, inInclusiveRange(4, 10));
     });
 
-    test('persistent deck cycles while a session does not repeat displayed cards', () {
-      final h = Harness()..start(GameKind.charades);
-      final c = h.controller..startTurn();
-      final dealt = <String>[];
-      for (var i = 0; i < 600; i++) {
-        dealt.add(h.s.turn!.cardId!);
-        c.mark(Outcome.pass);
-      }
-      expect(dealt.toSet().length, 600);
-      expect(h.s.turn!.cardId, isNull, reason: 'do not repeat within this session');
-      expect(h.store.loadDeck(GameKind.charades).toSet().length, 600);
-      final firstDraw = h.store.loadDeck(GameKind.charades).first;
-      c.finishTurn();
-      h.start(GameKind.charades);
-      h.controller.startTurn();
-      expect(h.s.turn!.cardId, firstDraw);
-    });
+    test(
+      'persistent deck cycles while a session does not repeat displayed cards',
+      () {
+        final h = Harness()..start(GameKind.charades);
+        final c = h.controller..startTurn();
+        final dealt = <String>[];
+        for (var i = 0; i < 600; i++) {
+          dealt.add(h.s.turn!.cardId!);
+          c.mark(Outcome.pass);
+        }
+        expect(dealt.toSet().length, 600);
+        expect(
+          h.s.turn!.cardId,
+          isNull,
+          reason: 'do not repeat within this session',
+        );
+        expect(h.store.loadDeck(GameKind.charades).toSet().length, 600);
+        final firstDraw = h.store.loadDeck(GameKind.charades).first;
+        c.finishTurn();
+        h.start(GameKind.charades);
+        h.controller.startTurn();
+        expect(h.s.turn!.cardId, firstDraw);
+      },
+    );
 
     test('Sprint cannot start once every card has been dealt', () {
       final h = Harness()..start(GameKind.sprint, rounds: 10, teams: 6);
@@ -516,10 +641,20 @@ void main() {
     });
 
     test('trivia slots: mostly medium/hard with easy or expert wildcard', () {
-      expect(DeckPlanner.triviaSlots(5, 1, null),
-          [Difficulty.easy, Difficulty.medium, Difficulty.medium, Difficulty.hard, Difficulty.hard]);
-      expect(DeckPlanner.triviaSlots(5, 2, null),
-          [Difficulty.medium, Difficulty.medium, Difficulty.hard, Difficulty.hard, Difficulty.expert]);
+      expect(DeckPlanner.triviaSlots(5, 1, null), [
+        Difficulty.easy,
+        Difficulty.medium,
+        Difficulty.medium,
+        Difficulty.hard,
+        Difficulty.hard,
+      ]);
+      expect(DeckPlanner.triviaSlots(5, 2, null), [
+        Difficulty.medium,
+        Difficulty.medium,
+        Difficulty.hard,
+        Difficulty.hard,
+        Difficulty.expert,
+      ]);
     });
   });
 
@@ -552,18 +687,21 @@ void main() {
       expect(r.session!.turn!.cardId, h.s.turn!.cardId);
     });
 
-    test('refresh after the deadline settles the turn without extra time or duplicate score', () {
-      final h = Harness()..start(GameKind.forbidden);
-      final c = h.controller..startTurn();
-      c.mark(Outcome.correct);
-      h.clock.advance(const Duration(minutes: 4));
-      final r = h.reload();
-      expect(r.session!.phase, Phase.turnResults);
-      expect(r.session!.scores, [1, 0]);
-      final r2 = h.reload(); // refresh again on the results screen
-      expect(r2.session!.scores, [1, 0]);
-      expect(r2.session!.history.length, 1);
-    });
+    test(
+      'refresh after the deadline settles the turn without extra time or duplicate score',
+      () {
+        final h = Harness()..start(GameKind.forbidden);
+        final c = h.controller..startTurn();
+        c.mark(Outcome.correct);
+        h.clock.advance(const Duration(minutes: 4));
+        final r = h.reload();
+        expect(r.session!.phase, Phase.turnResults);
+        expect(r.session!.scores, [1, 0]);
+        final r2 = h.reload(); // refresh again on the results screen
+        expect(r2.session!.scores, [1, 0]);
+        expect(r2.session!.history.length, 1);
+      },
+    );
 
     test('refresh during a Trivia question keeps answer order and timer', () {
       final h = Harness()..start(GameKind.trivia);
@@ -576,15 +714,18 @@ void main() {
       expect(r.remainingMs(), 15000);
     });
 
-    test('a saved game that references cards no longer in the deck is dropped, not crashed on', () {
-      final h = Harness()..start(GameKind.charades);
-      h.controller.startTurn();
-      h.s.queues['main']!.insert(0, 'CH-REMOVED-9999');
-      h.controller.pause(); // persist
-      final r = h.reload();
-      expect(r.session, isNull);
-      expect(h.store.raw, isNull);
-    });
+    test(
+      'a saved game that references cards no longer in the deck is dropped, not crashed on',
+      () {
+        final h = Harness()..start(GameKind.charades);
+        h.controller.startTurn();
+        h.s.queues['main']!.insert(0, 'CH-REMOVED-9999');
+        h.controller.pause(); // persist
+        final r = h.reload();
+        expect(r.session, isNull);
+        expect(h.store.raw, isNull);
+      },
+    );
 
     test('discard removes the saved session', () {
       final h = Harness()..start(GameKind.trivia);
@@ -595,7 +736,11 @@ void main() {
 
   group('results', () {
     test('winner is the highest cumulative score', () {
-      expect(standingsFor([3, 9, 5]).map((s) => (s.team, s.rank)), [(1, 1), (2, 2), (0, 3)]);
+      expect(standingsFor([3, 9, 5]).map((s) => (s.team, s.rank)), [
+        (1, 1),
+        (2, 2),
+        (0, 3),
+      ]);
     });
 
     test('ties share a rank and produce multiple winners', () {
@@ -614,22 +759,25 @@ void main() {
       expect(st.every((x) => x.rank == 1 && x.tied), isTrue);
     });
 
-    test('ending at a round boundary keeps turns equal; ending with no turns discards', () {
-      final h = Harness()..start(GameKind.charades, rounds: 3);
-      final c = h.controller;
-      for (var i = 0; i < 2; i++) {
-        c.startTurn();
-        c.finishTurn();
-        c.nextTurn();
-      }
-      c.endGame();
-      expect(h.s.endedEarly, isTrue);
-      expect(c.unequalTurns, isFalse);
+    test(
+      'ending at a round boundary keeps turns equal; ending with no turns discards',
+      () {
+        final h = Harness()..start(GameKind.charades, rounds: 3);
+        final c = h.controller;
+        for (var i = 0; i < 2; i++) {
+          c.startTurn();
+          c.finishTurn();
+          c.nextTurn();
+        }
+        c.endGame();
+        expect(h.s.endedEarly, isTrue);
+        expect(c.unequalTurns, isFalse);
 
-      final h2 = Harness()..start(GameKind.sprint);
-      h2.controller.endGame();
-      expect(h2.controller.session, isNull);
-    });
+        final h2 = Harness()..start(GameKind.sprint);
+        h2.controller.endGame();
+        expect(h2.controller.session, isNull);
+      },
+    );
 
     test('Trivia turn cannot start without a full set of questions', () {
       final h = Harness()..start(GameKind.trivia);

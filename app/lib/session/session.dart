@@ -4,7 +4,9 @@
 import '../model/cards.dart';
 import '../model/game_kind.dart';
 
-enum Phase { ready, playing, turnResults, gameResults }
+enum Phase { ready, playing, turnReview, turnResults, gameResults }
+
+enum PlayMode { classic, referee }
 
 enum Outcome {
   /// Guessed / answered correctly (+1).
@@ -15,6 +17,9 @@ enum Outcome {
 
   /// Forbidden-word violation — −1.
   violation,
+
+  /// Sprint term was disqualified by the referee; it earns no point.
+  disqualified,
 
   /// Trivia: locked a wrong answer — 0.
   wrong,
@@ -49,6 +54,7 @@ class GameConfig {
     int? seconds,
     this.questionsPerTurn = 5,
     this.difficulty,
+    this.mode = PlayMode.classic,
   }) : seconds = seconds ?? 0;
 
   final GameKind game;
@@ -60,6 +66,7 @@ class GameConfig {
 
   /// null = mixed (the default).
   final Difficulty? difficulty;
+  final PlayMode mode;
 
   int get effectiveSeconds => seconds > 0 ? seconds : game.defaultSeconds;
 
@@ -69,6 +76,7 @@ class GameConfig {
     's': effectiveSeconds,
     'q': questionsPerTurn,
     'd': difficulty?.name,
+    'm': mode.name,
   };
 
   factory GameConfig.fromJson(Map<String, dynamic> j) => GameConfig(
@@ -77,6 +85,7 @@ class GameConfig {
     seconds: j['s'],
     questionsPerTurn: j['q'],
     difficulty: j['d'] == null ? null : Difficulty.parse(j['d']),
+    mode: j['m'] == null ? PlayMode.classic : PlayMode.values.byName(j['m']),
   );
 }
 
@@ -114,6 +123,9 @@ class Turn {
     List<TurnEvent>? events,
     this.cardId,
     Set<int>? marked,
+    Set<int>? disqualified,
+    this.turnId,
+    this.cardInstanceId,
     List<Difficulty>? slots,
     this.qIndex = 0,
     List<int>? optionOrder,
@@ -123,6 +135,7 @@ class Turn {
     this.skips = 0,
   }) : events = events ?? [],
        marked = marked ?? {},
+       disqualified = disqualified ?? {},
        slots = slots ?? [],
        optionOrder = optionOrder ?? [];
 
@@ -136,6 +149,11 @@ class Turn {
 
   // Sprint
   final Set<int> marked;
+
+  /// Sprint terms rejected by the referee during the active turn.
+  final Set<int> disqualified;
+  String? turnId;
+  String? cardInstanceId;
 
   /// Sprint: cards skipped this turn (one allowed, before any term is ticked).
   int skips;
@@ -164,6 +182,9 @@ class Turn {
     'ev': events.map((e) => e.toJson()).toList(),
     'c': cardId,
     'm': marked.toList(),
+    'dq': disqualified.toList(),
+    'id': turnId,
+    'ci': cardInstanceId,
     'sk': skips,
     'sl': slots.map((d) => d.name).toList(),
     'qi': qIndex,
@@ -179,6 +200,9 @@ class Turn {
     events: [for (final e in j['ev'] as List) TurnEvent.fromJson(e)],
     cardId: j['c'],
     marked: {...(j['m'] as List).cast<int>()},
+    disqualified: {...((j['dq'] as List?) ?? const []).cast<int>()},
+    turnId: j['id'],
+    cardInstanceId: j['ci'],
     skips: j['sk'] ?? 0,
     slots: [for (final s in j['sl'] as List) Difficulty.parse(s)],
     qIndex: j['qi'],
@@ -234,12 +258,13 @@ class Session {
     this.endedEarly = false,
     int? updatedAt,
     this.contentFingerprints,
+    this.stateVersion = 0,
   }) : scores = scores ?? List.filled(teams.length, 0),
        used = used ?? {},
        history = history ?? [],
        updatedAt = updatedAt ?? createdAt;
 
-  final GameConfig config;
+  GameConfig config;
   final List<Team> teams;
   final List<int> scores;
 
@@ -260,6 +285,7 @@ class Session {
   int updatedAt;
   bool endedEarly;
   final Map<String, String>? contentFingerprints;
+  int stateVersion;
 
   GameKind get game => config.game;
   Team get activeTeam => teams[teamIndex];
@@ -283,6 +309,7 @@ class Session {
     'ca': createdAt,
     'ua': updatedAt,
     'ee': endedEarly,
+    'sv': stateVersion,
   };
 
   factory Session.fromJson(Map<String, dynamic> j) {
@@ -310,6 +337,7 @@ class Session {
           : (j['cf'] as Map).map(
               (key, value) => MapEntry(key.toString(), value.toString()),
             ),
+      stateVersion: j['sv'] ?? 0,
     );
   }
 }

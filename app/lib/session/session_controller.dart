@@ -46,6 +46,7 @@ class SessionController extends ChangeNotifier {
   /// settled immediately; no extra time is granted.
   void restore() {
     _session = store.loadSession();
+    var migratedRefereeIdentity = false;
     for (final game in GameKind.values) {
       _reconcilePersistentDeck(game);
     }
@@ -55,8 +56,20 @@ class SessionController extends ChangeNotifier {
         store.saveSession(null);
       } else {
         _sanitizeSessionCards(_session!);
+        final turn = _session!.turn;
+        if (turn != null) {
+          if (turn.turnId == null) {
+            turn.turnId = _newId();
+            migratedRefereeIdentity = true;
+          }
+          if (turn.cardId != null && turn.cardInstanceId == null) {
+            turn.cardInstanceId = _newId();
+            migratedRefereeIdentity = true;
+          }
+        }
       }
     }
+    if (migratedRefereeIdentity) _commit();
     tick();
     notifyListeners();
   }
@@ -172,6 +185,22 @@ class SessionController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Stops remote control while preserving all local session progress.
+  void switchToClassic() {
+    final s = _session;
+    if (s == null || s.config.mode == PlayMode.classic) return;
+    if (s.phase == Phase.turnReview) confirmReview();
+    s.config = GameConfig(
+      game: s.config.game,
+      rounds: s.config.rounds,
+      seconds: s.config.seconds,
+      questionsPerTurn: s.config.questionsPerTurn,
+      difficulty: s.config.difficulty,
+      mode: PlayMode.classic,
+    );
+    _commit();
+  }
+
   /// Teams have had unequal numbers of turns (the game stopped mid-round).
   bool get unequalTurns {
     final s = _session;
@@ -189,6 +218,7 @@ class SessionController extends ChangeNotifier {
     final s = _session;
     if (s == null || s.phase == Phase.gameResults) return;
     if (s.phase == Phase.playing) _endTurn(EndReason.finished);
+    if (s.phase == Phase.turnReview) confirmReview();
     if (s.history.isEmpty) {
       discard();
       return;
@@ -262,7 +292,7 @@ class SessionController extends ChangeNotifier {
   bool startTurn() {
     final s = _session;
     if (s == null || s.phase != Phase.ready || !canStartTurn) return false;
-    final t = Turn();
+    final t = Turn(turnId: _newId());
     s.turn = t;
     s.phase = Phase.playing;
     if (s.game == GameKind.trivia) {
@@ -276,6 +306,7 @@ class SessionController extends ChangeNotifier {
       _presentQuestion();
     } else {
       t.cardId = _draw();
+      t.cardInstanceId = _newId();
       t.deadlineMs = now() + s.config.effectiveSeconds * 1000;
     }
     _commit();
@@ -362,6 +393,84 @@ class SessionController extends ChangeNotifier {
     _commit();
   }
 
+  /// Confirms a referee-mode review and posts its score exactly once.
+  bool confirmReview() {
+    final s = _session;
+    if (s == null || s.phase != Phase.turnReview || s.history.isEmpty) {
+      return false;
+    }
+    final record = s.history.last;
+    s.scores[record.team] += record.points;
+    s.phase = Phase.turnResults;
+    _commit();
+    return true;
+  }
+
+  /// Corrects a Sprint term during the referee review window only.
+  bool reviewSprintTerm(int index, Outcome outcome) {
+    final s = _session;
+    if (s == null ||
+        s.phase != Phase.turnReview ||
+        s.game != GameKind.sprint ||
+        index < 0 ||
+        index >= 5 ||
+        (outcome != Outcome.correct &&
+            outcome != Outcome.disqualified &&
+            outcome != Outcome.pass)) {
+      return false;
+    }
+    final record = s.history.last;
+    final eventIndex = record.events.indexWhere((event) => event.term == index);
+    if (eventIndex < 0) return false;
+    final events = List<TurnEvent>.of(record.events);
+    events[eventIndex] = TurnEvent(
+      events[eventIndex].cardId,
+      outcome,
+      term: index,
+    );
+    s.history[s.history.length - 1] = TurnRecord(
+      team: record.team,
+      round: record.round,
+      points: events.fold(0, (total, event) => total + event.outcome.points),
+      events: events,
+    );
+    final turn = s.turn!;
+    turn.marked.remove(index);
+    turn.disqualified.remove(index);
+    if (outcome == Outcome.correct) turn.marked.add(index);
+    if (outcome == Outcome.disqualified) turn.disqualified.add(index);
+    _commit();
+    return true;
+  }
+
+  /// Corrects a Tabuu result before the host settles its referee review.
+  bool reviewTabuuEvent(int index, Outcome outcome) {
+    final s = _session;
+    if (s == null ||
+        s.phase != Phase.turnReview ||
+        s.game != GameKind.forbidden ||
+        index < 0 ||
+        index >= s.history.last.events.length ||
+        (outcome != Outcome.correct &&
+            outcome != Outcome.pass &&
+            outcome != Outcome.violation)) {
+      return false;
+    }
+    final record = s.history.last;
+    final events = List<TurnEvent>.of(record.events);
+    final previous = events[index];
+    events[index] = TurnEvent(previous.cardId, outcome);
+    s.history[s.history.length - 1] = TurnRecord(
+      team: record.team,
+      round: record.round,
+      points: events.fold(0, (total, event) => total + event.outcome.points),
+      events: events,
+    );
+    if (s.turn!.events.length > index) s.turn!.events[index] = events[index];
+    _commit();
+    return true;
+  }
+
   // ------------------------------------------------------------------- Sprint
 
   /// Marks or un-marks a term. Corrections are allowed while the clock runs.
@@ -371,11 +480,43 @@ class SessionController extends ChangeNotifier {
     final t = s!.turn!;
     if (t.cardId == null || index < 0 || index >= 5) return;
     if (!t.marked.remove(index)) t.marked.add(index);
-    if (t.marked.length == 5) {
+    t.disqualified.remove(index);
+    if (t.marked.length + t.disqualified.length == 5) {
       _endTurn(EndReason.allFound);
     } else {
       _commit();
     }
+  }
+
+  /// Applies an authorised referee decision to one Sprint term.
+  ///
+  /// Returns false without mutation when the turn, card or term is stale.
+  bool setSprintTerm(
+    int index,
+    String cardInstanceId, {
+    required bool correct,
+    bool disqualified = false,
+  }) {
+    final s = _session;
+    if (s?.game != GameKind.sprint || !_live) return false;
+    final t = s!.turn!;
+    if (t.cardId == null ||
+        t.cardInstanceId != cardInstanceId ||
+        index < 0 ||
+        index >= 5 ||
+        (correct && disqualified)) {
+      return false;
+    }
+    t.marked.remove(index);
+    t.disqualified.remove(index);
+    if (correct) t.marked.add(index);
+    if (disqualified) t.disqualified.add(index);
+    if (t.marked.length + t.disqualified.length == 5) {
+      _endTurn(EndReason.allFound);
+    } else {
+      _commit();
+    }
+    return true;
   }
 
   /// Sprint skips allowed per turn.
@@ -392,6 +533,7 @@ class SessionController extends ChangeNotifier {
         t != null &&
         t.deadlineMs != null &&
         t.marked.isEmpty &&
+        t.disqualified.isEmpty &&
         t.skips < sprintSkipsPerTurn &&
         store.loadDeck(s.game).any((id) => !s.used.contains(id));
   }
@@ -402,6 +544,7 @@ class SessionController extends ChangeNotifier {
     if (!_live || !canSkipSprintCard) return;
     final t = _session!.turn!;
     t.cardId = _draw();
+    t.cardInstanceId = _newId();
     t.skips++;
     _commit();
   }
@@ -425,6 +568,7 @@ class SessionController extends ChangeNotifier {
     if (!allowed || t.cardId == null) return;
     t.events.add(TurnEvent(t.cardId!, outcome));
     t.cardId = _draw();
+    t.cardInstanceId = _newId();
     _commit();
   }
 
@@ -440,6 +584,7 @@ class SessionController extends ChangeNotifier {
     if (t.events.isEmpty) return false;
     final last = t.events.removeLast();
     t.cardId = last.cardId;
+    t.cardInstanceId = _newId();
     _commit();
     return true;
   }
@@ -468,6 +613,7 @@ class SessionController extends ChangeNotifier {
     final t = s.turn;
     if (s.phase == Phase.playing && t != null && t.cardId == null) {
       t.cardId = _draw();
+      t.cardInstanceId = _newId();
     }
     _commit();
   }
@@ -528,6 +674,7 @@ class SessionController extends ChangeNotifier {
       return;
     }
     t.cardId = id;
+    t.cardInstanceId = _newId();
     t.optionOrder = [0, 1, 2, 3]..shuffle(_random);
     t.selected = null;
     t.revealed = false;
@@ -605,7 +752,7 @@ class SessionController extends ChangeNotifier {
     return id;
   }
 
-  /// Settles the turn and posts its score exactly once.
+  /// Ends the live turn; referee sessions hold the score until review is confirmed.
   void _endTurn(EndReason reason) {
     final s = _session!;
     final t = s.turn!;
@@ -617,7 +764,11 @@ class SessionController extends ChangeNotifier {
           for (var i = 0; i < 5; i++)
             TurnEvent(
               t.cardId!,
-              t.marked.contains(i) ? Outcome.correct : Outcome.pass,
+              t.marked.contains(i)
+                  ? Outcome.correct
+                  : (t.disqualified.contains(i)
+                        ? Outcome.disqualified
+                        : Outcome.pass),
               term: i,
             ),
         ]);
@@ -626,7 +777,6 @@ class SessionController extends ChangeNotifier {
     t.deadlineMs = null;
     t.pausedRemainingMs = null;
     final points = t.points;
-    s.scores[s.teamIndex] += points;
     s.history.add(
       TurnRecord(
         team: s.teamIndex,
@@ -635,13 +785,22 @@ class SessionController extends ChangeNotifier {
         events: List.of(t.events),
       ),
     );
-    s.phase = Phase.turnResults;
+    if (s.config.mode == PlayMode.referee &&
+        (s.game == GameKind.sprint || s.game == GameKind.forbidden)) {
+      s.phase = Phase.turnReview;
+    } else {
+      s.scores[s.teamIndex] += points;
+      s.phase = Phase.turnResults;
+    }
     _commit();
   }
 
   void _commit() {
     final s = _session;
-    if (s != null) s.updatedAt = now();
+    if (s != null) {
+      s.updatedAt = now();
+      s.stateVersion++;
+    }
     store.saveSession(s);
     notifyListeners();
   }
@@ -682,4 +841,9 @@ class SessionController extends ChangeNotifier {
     if (s == null || isFinalTurn) return null;
     return (s.teamIndex + 1) % s.teams.length;
   }
+
+  String _newId() => List.generate(
+    16,
+    (_) => _random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+  ).join();
 }
