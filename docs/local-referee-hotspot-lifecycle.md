@@ -69,11 +69,16 @@ requires a normal pairing/QR flow.
 Validated in this workspace on 2026-11-26:
 
 - Flutter analysis completed with no errors and 18 existing informational lints.
-- The full Flutter test suite passes with 80 tests, including focused tests for referee
-  indicator rebuild/reduced-motion behavior, background invalidation/recovery,
-  continuous heartbeat operation, rapid referee actions, and Classic Mode
-  backgrounding.
-- Android release build completed successfully as `build/app/outputs/flutter-apk/app-release.apk`.
+- The full Flutter test suite passes with 87 tests, including focused tests for:
+  - referee indicator rebuild/reduced-motion behavior;
+  - background invalidation/recovery and client reconnect suppression while backgrounded (waiting past the reconnect timer);
+  - rejecting stale `snapshot_ack` messages while the referee remains unavailable in the background;
+  - joining a second referee session after closing the first with clean heartbeat teardown;
+  - sustained multi-second referee gameplay updates alongside periodic heartbeats;
+  - remote referee `BUZZ` double-tap debounce, disabled controls on pause/expiry/sync/missing card while preserving turn-review controls, and graceful conflict exception handling;
+  - explicit host correction acknowledgement before `confirmReview()` score settlement and correction-state reset between sessions; and
+  - Classic Mode backgrounding.
+- Android release build completed successfully as `build/app/outputs/flutter-apk/app-release.apk` (66.3MB).
 - Physical hotspot and app-switch durations (5 seconds, 30 seconds, 2 minutes,
   and 5 minutes) require device-level verification and are not claimed from
   simulator-only tests. The implementation report and code document the required
