@@ -39,9 +39,9 @@ class Harness {
 
   Session get s => controller.session!;
 
-  void start(GameKind g, {int teams = 2, int rounds = 5, Difficulty? difficulty, int questions = 5}) {
+  void start(GameKind g, {int teams = 2, int rounds = 5, Difficulty? difficulty, int questions = 5, PlayMode mode = PlayMode.classic}) {
     controller.newSession(
-      GameConfig(game: g, rounds: rounds, difficulty: difficulty, questionsPerTurn: questions),
+      GameConfig(game: g, rounds: rounds, difficulty: difficulty, questionsPerTurn: questions, mode: mode),
       [for (var i = 0; i < teams; i++) Team('Team ${String.fromCharCode(65 + i)}', i)],
     );
   }

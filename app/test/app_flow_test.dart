@@ -100,6 +100,46 @@ void main() {
     expect(find.text('Referee'), findsOneWidget);
   });
 
+  testWidgets('Tabuu Classic hides BUZZ and keeps Pass and Got it controls', (
+    t,
+  ) async {
+    final a = AppHarness();
+    a.h.start(GameKind.forbidden);
+    expect(a.h.controller.startTurn(), isTrue);
+    await a.pump(t);
+
+    expect(find.text('BUZZ'), findsNothing);
+    expect(find.text('0 buzzed'), findsNothing);
+    expect(find.text('Pass'), findsOneWidget);
+    expect(find.text('Got it'), findsOneWidget);
+
+    await t.tap(find.text('Pass'));
+    await t.pump();
+    expect(a.h.s.turn!.events.last.outcome, Outcome.pass);
+    expect(a.h.s.turn!.points, 0);
+
+    await t.pump(const Duration(milliseconds: 800));
+    await t.tap(find.text('Got it'));
+    await t.pump();
+    expect(a.h.s.turn!.events.last.outcome, Outcome.correct);
+    expect(a.h.s.turn!.points, 1);
+  });
+
+  testWidgets('Tabuu Referee keeps the host buzzed counter without host BUZZ', (
+    t,
+  ) async {
+    final a = AppHarness();
+    a.h.start(GameKind.forbidden, mode: PlayMode.referee);
+    a.h.controller.setRefereeConnectionReady(true);
+    expect(a.h.controller.startTurn(), isTrue);
+    await a.pump(t);
+
+    expect(find.text('BUZZ'), findsNothing);
+    expect(find.bySemanticsLabel('0 buzzed'), findsOneWidget);
+    expect(find.text('Pass'), findsOneWidget);
+    expect(find.text('Got it'), findsOneWidget);
+  });
+
   testWidgets('setup uses compact play mode and settings sheet', (t) async {
     final a = AppHarness();
     await a.pump(t);

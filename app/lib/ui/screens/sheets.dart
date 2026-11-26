@@ -53,20 +53,20 @@ const Map<GameKind, List<(String, String)>> rules = {
   ],
   GameKind.forbidden: [
     (
-      'Describe the big word',
-      'Get your team to say the word at the top of the card.',
+      'Classic Mode',
+      'Describe the target without saying any forbidden words. If a forbidden word is spoken, pass the card. Correct guesses earn one point.',
     ),
     (
-      'Five words are off-limits',
-      'Plus the target itself, any part of it, rhymes and spelling.',
+      'Forbidden words',
+      'The target itself, any part of it, rhymes and spelling are also off-limits.',
     ),
     (
-      'The other team is listening',
-      'One opponent watches over your shoulder and taps BUZZ for a slip: −1.',
+      'Referee Mode',
+      'An independent referee monitors the clue-giver using a second device. If a forbidden word is spoken, the referee can issue a BUZZ penalty of −1 point.',
     ),
     (
       'Score',
-      '+1 per word guessed. Passes are free. Turn scores can go below zero.',
+      'Correct guesses earn +1 point. Passing a card in Classic Mode earns no point.',
     ),
   ],
 };

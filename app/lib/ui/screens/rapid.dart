@@ -15,7 +15,6 @@ class RapidPlay extends StatefulWidget {
     super.key,
     required this.cardBuilder,
     required this.labelOf,
-    this.top,
     this.buzzCount = false,
   });
 
@@ -23,8 +22,7 @@ class RapidPlay extends StatefulWidget {
   final Widget Function(BuildContext context, String cardId) cardBuilder;
   final String Function(String cardId) labelOf;
 
-  /// Optional strip above the timer (Forbidden Words' referee buzzer).
-  final Widget? top;
+  /// Show the Tabuu violation total in Referee Mode only.
   final bool buzzCount;
 
   @override
@@ -87,19 +85,10 @@ class _RapidPlayState extends State<RapidPlay> {
           children: [
             PageFrame(
               background: warn ? Gn.warmTable : Gn.table,
-              padding: EdgeInsets.fromLTRB(
-                20,
-                widget.top != null ? 8 : 12,
-                20,
-                16,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (widget.top != null) ...[
-                    widget.top!,
-                    const SizedBox(height: 12),
-                  ],
                   Row(
                     children: [
                       const PauseButton(),
@@ -128,13 +117,19 @@ class _RapidPlayState extends State<RapidPlay> {
                         fg: Gn.correct,
                         height: 28,
                       ),
-                      if (widget.buzzCount) ...[
+                      if (widget.buzzCount &&
+                          s.config.mode == PlayMode.referee) ...[
                         const SizedBox(width: 6),
-                        Pill(
-                          text: '${t.count(Outcome.violation)}',
-                          icon: Icons.warning_amber_rounded,
-                          fg: Gn.violation,
-                          height: 28,
+                        Semantics(
+                          label: '${t.count(Outcome.violation)} buzzed',
+                          child: ExcludeSemantics(
+                            child: Pill(
+                              text: '${t.count(Outcome.violation)}',
+                              icon: Icons.warning_amber_rounded,
+                              fg: Gn.violation,
+                              height: 28,
+                            ),
+                          ),
                         ),
                       ],
                       const SizedBox(width: 6),
