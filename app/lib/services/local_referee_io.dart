@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 
 import '../model/game_kind.dart';
 import '../session/session.dart';
@@ -64,6 +65,8 @@ class IoLocalRefereeService extends LocalRefereeService {
   bool _isHost = false;
   bool _hostSynchronized = false;
   bool _correctionRequested = false;
+  bool _inBackground = false;
+  bool _remotePeerInBackground = false;
   bool _stopping = false;
   bool _disposed = false;
   int _generation = 0;
@@ -103,6 +106,13 @@ class IoLocalRefereeService extends LocalRefereeService {
   @override
   String? get connectionError => _connectionError;
 
+  @visibleForTesting
+  bool get hasActiveHeartbeat => _heartbeat?.isActive ?? false;
+  @visibleForTesting
+  bool get isInBackground => _inBackground;
+  @visibleForTesting
+  bool get hasPendingReconnect => _reconnect?.isActive ?? false;
+
   @override
   Future<PairingDetails> startHost() async {
     final session = controller.session;
@@ -122,6 +132,8 @@ class IoLocalRefereeService extends LocalRefereeService {
     _hostSession = session;
     _correctionRequested = false;
     _hostSynchronized = false;
+    _inBackground = false;
+    _remotePeerInBackground = false;
     _connectionError = null;
     _processedActions.clear();
     _authFailures.clear();
@@ -168,7 +180,11 @@ class IoLocalRefereeService extends LocalRefereeService {
       }
     });
     _authorityTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (generation == _generation && _hostPeer != null && _hostSynchronized) {
+      if (generation == _generation &&
+          _hostPeer != null &&
+          _hostSynchronized &&
+          !_remotePeerInBackground &&
+          !_inBackground) {
         _sendSnapshot(_hostPeer!);
       }
     });
@@ -404,6 +420,7 @@ class IoLocalRefereeService extends LocalRefereeService {
     _hostPeer = socket;
     _hostKey = sessionKey;
     _hostSynchronized = false;
+    _remotePeerInBackground = false;
     _snapshotSentVersion = null;
     _lastHeartbeatMs = DateTime.now().millisecondsSinceEpoch;
     _setStatus(RefereeConnectionStatus.synchronizing);
@@ -472,7 +489,9 @@ class IoLocalRefereeService extends LocalRefereeService {
           session?.turn?.deadlineMs != null) {
         controller.pause();
       }
+      _remotePeerInBackground = true;
       _hostSynchronized = false;
+      _snapshotSentVersion = null;
       controller.setRefereeConnectionReady(false);
       _setStatus(
         RefereeConnectionStatus.synchronizing,
@@ -481,10 +500,12 @@ class IoLocalRefereeService extends LocalRefereeService {
       return;
     }
     if (message['type'] == 'resume') {
-      _sendSnapshot(socket);
+      _remotePeerInBackground = false;
+      if (!_inBackground) _sendSnapshot(socket);
       return;
     }
     if (message['type'] == 'snapshot_ack') {
+      if (_inBackground || _remotePeerInBackground) return;
       final version = message['stateVersion'];
       final session = controller.session;
       if (version is! int ||
@@ -671,6 +692,7 @@ class IoLocalRefereeService extends LocalRefereeService {
     _hostPeer = null;
     _hostKey = null;
     _hostSynchronized = false;
+    _remotePeerInBackground = false;
     _snapshotSentVersion = null;
     controller.setRefereeConnectionReady(false);
     if (!_stopping) {
@@ -718,6 +740,8 @@ class IoLocalRefereeService extends LocalRefereeService {
     await _closeCurrent(clearPairing: true, clearSessionState: !sameSession);
     _pairing = details;
     _isHost = false;
+    _inBackground = false;
+    _remotePeerInBackground = false;
     _stopping = false;
     _reconnectAttempts = 0;
     _connectionError = null;
@@ -781,6 +805,7 @@ class IoLocalRefereeService extends LocalRefereeService {
     final details = _pairing;
     if (generation != _generation ||
         _stopping ||
+        _inBackground ||
         _isHost ||
         details == null ||
         _client != null ||
@@ -1034,8 +1059,12 @@ class IoLocalRefereeService extends LocalRefereeService {
   }
 
   void _startClientHeartbeat(WebSocket socket, int generation) {
-    if (_heartbeat != null && identical(_client, socket)) return;
+    if (!identical(_client, socket) || generation != _generation || _stopping) {
+      return;
+    }
+    if (_heartbeat != null && _heartbeat!.isActive) return;
     _heartbeat?.cancel();
+    _heartbeat = null;
     _lastHeartbeatAckMs = DateTime.now().millisecondsSinceEpoch;
     _lastHeartbeatAckSequence = -1;
     _heartbeat = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -1090,6 +1119,13 @@ class IoLocalRefereeService extends LocalRefereeService {
         _status == RefereeConnectionStatus.authenticationFailed) {
       return;
     }
+    if (_inBackground) {
+      _setStatus(
+        RefereeConnectionStatus.disconnected,
+        error: 'Referee is unavailable while the app is in the background.',
+      );
+      return;
+    }
     _setStatus(RefereeConnectionStatus.reconnecting);
     _scheduleReconnect(generation);
   }
@@ -1097,6 +1133,10 @@ class IoLocalRefereeService extends LocalRefereeService {
   void _connectionAttemptFailed(int generation, String reason) {
     if (generation != _generation || _stopping) return;
     _connectionError = reason;
+    if (_inBackground) {
+      _setStatus(RefereeConnectionStatus.disconnected);
+      return;
+    }
     if (_reconnectAttempts >= _maxReconnectAttempts) {
       _setStatus(
         RefereeConnectionStatus.disconnected,
@@ -1112,6 +1152,7 @@ class IoLocalRefereeService extends LocalRefereeService {
   void _scheduleReconnect(int generation) {
     if (generation != _generation ||
         _stopping ||
+        _inBackground ||
         _pairing == null ||
         _reconnectAttempts >= _maxReconnectAttempts) {
       if (_reconnectAttempts >= _maxReconnectAttempts) {
@@ -1561,7 +1602,7 @@ class IoLocalRefereeService extends LocalRefereeService {
     _networkSubscription?.cancel();
     _networkSubscription = Connectivity().onConnectivityChanged.listen(
       (_) {
-        if (generation != _generation || _stopping) return;
+        if (generation != _generation || _stopping || _inBackground) return;
         if (!_isHost && _client == null && _pairing != null) {
           _reconnectAttempts = 0;
           _setStatus(RefereeConnectionStatus.reconnecting);
@@ -1606,10 +1647,22 @@ class IoLocalRefereeService extends LocalRefereeService {
   }
 
   @override
+  void acknowledgeCorrection() {
+    if (!_isHost) return;
+    _correctionRequested = false;
+    controller.resolveRefereeCorrection();
+    if (_hostPeer != null) _sendSnapshot(_hostPeer!);
+    if (!_disposed) notifyListeners();
+  }
+
+  @override
   void pauseForBackground() {
+    _inBackground = true;
+    _reconnect?.cancel();
+    _reconnect = null;
     final isRefereeSession =
         controller.session?.config.mode == PlayMode.referee;
-    if (isRefereeSession) {
+    if (isRefereeSession || !_isHost) {
       _heartbeat?.cancel();
       _heartbeat = null;
     }
@@ -1635,12 +1688,18 @@ class IoLocalRefereeService extends LocalRefereeService {
         unawaited(
           _closeSocket(_client!, WebSocketStatus.goingAway, 'App backgrounded'),
         );
+      } else if (!_isHost) {
+        _setStatus(
+          RefereeConnectionStatus.disconnected,
+          error: 'Referee is unavailable while the app is in the background.',
+        );
       }
     }
   }
 
   @override
   Future<void> resumeFromBackground() async {
+    _inBackground = false;
     final pairing = _pairing;
     if (_stopping || pairing == null) return;
     final generation = _generation;
@@ -1661,7 +1720,7 @@ class IoLocalRefereeService extends LocalRefereeService {
             'Connection health check failed',
           );
         }
-      } else {
+      } else if (!_remotePeerInBackground) {
         _send(peer, {
           'type': 'resume',
           'protocolVersion': protocolVersion,
@@ -1709,11 +1768,15 @@ class IoLocalRefereeService extends LocalRefereeService {
     _generation++;
     controller.removeListener(_broadcastSnapshot);
     _monitor?.cancel();
+    _monitor = null;
     _authorityTimer?.cancel();
     _authorityTimer = null;
     _heartbeat?.cancel();
+    _heartbeat = null;
     _clientHandshakeTimeout?.cancel();
+    _clientHandshakeTimeout = null;
     _reconnect?.cancel();
+    _reconnect = null;
     await _networkSubscription?.cancel();
     _networkSubscription = null;
 
@@ -1759,11 +1822,14 @@ class IoLocalRefereeService extends LocalRefereeService {
       _lastActionMessage = null;
       _lastActionAccepted = null;
       _correctionRequested = false;
+      controller.resolveRefereeCorrection();
     }
     _hostSession = null;
     _hostKey = null;
     _clientKey = null;
     _isHost = false;
+    _inBackground = false;
+    _remotePeerInBackground = false;
     _reconnectAttempts = 0;
     _connectionError = null;
     _status = RefereeConnectionStatus.idle;

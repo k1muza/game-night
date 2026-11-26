@@ -64,6 +64,14 @@ class SessionController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Explicitly resolves or acknowledges a pending referee correction request
+  /// so the host can confirm the turn result.
+  void resolveRefereeCorrection() {
+    if (!_refereeCorrectionPending) return;
+    _refereeCorrectionPending = false;
+    notifyListeners();
+  }
+
   /// Number of milliseconds input stays locked after a turn ends, so late taps
   /// from the clue-giver aren't mistaken for anything else.
   static const lateTapGuardMs = 900;
@@ -74,6 +82,7 @@ class SessionController extends ChangeNotifier {
   /// settled immediately; no extra time is granted.
   void restore() {
     _refereeReady = false;
+    _refereeCorrectionPending = false;
     _session = store.loadSession();
     var needsCommit = false;
     for (final game in GameKind.values) {
@@ -194,6 +203,7 @@ class SessionController extends ChangeNotifier {
   void newSession(GameConfig config, List<Team> teams) {
     assert(teams.length >= 2 && teams.length <= 6);
     _refereeReady = false;
+    _refereeCorrectionPending = false;
     final seed = _random.nextInt(1 << 31);
     _reconcilePersistentDeck(config.game);
     _session = Session(
@@ -218,6 +228,7 @@ class SessionController extends ChangeNotifier {
 
   void discard() {
     _refereeReady = false;
+    _refereeCorrectionPending = false;
     _session = null;
     store.saveSession(null);
     notifyListeners();
@@ -228,6 +239,7 @@ class SessionController extends ChangeNotifier {
     final s = _session;
     if (s == null || s.config.mode == PlayMode.classic) return;
     _refereeReady = false;
+    _refereeCorrectionPending = false;
     if (s.phase == Phase.turnReview) confirmReview();
     s.config = GameConfig(
       game: s.config.game,
@@ -256,6 +268,7 @@ class SessionController extends ChangeNotifier {
   void endGame() {
     final s = _session;
     if (s == null || s.phase == Phase.gameResults) return;
+    _refereeCorrectionPending = false;
     if (s.phase == Phase.playing) _endTurn(EndReason.finished);
     if (s.phase == Phase.turnReview) confirmReview();
     if (s.history.isEmpty) {
@@ -373,7 +386,6 @@ class SessionController extends ChangeNotifier {
     final s = _session;
     final t = s?.turn;
     if (s == null || t == null || s.phase != Phase.playing) return;
-    if (_refereeCorrectionPending) return;
     if (t.deadlineMs == null || now() < t.deadlineMs!) return;
     if (s.game == GameKind.trivia) {
       if (!t.revealed) _reveal(timeout: true);
@@ -441,6 +453,7 @@ class SessionController extends ChangeNotifier {
   void nextTurn() {
     final s = _session;
     if (s == null || s.phase != Phase.turnResults) return;
+    _refereeCorrectionPending = false;
     s.turn = null;
     s.teamIndex++;
     if (s.teamIndex >= s.teams.length) {
@@ -457,6 +470,7 @@ class SessionController extends ChangeNotifier {
     if (s == null ||
         s.phase != Phase.turnReview ||
         s.history.isEmpty ||
+        _refereeCorrectionPending ||
         (expectedTurnId != null && s.turn?.turnId != expectedTurnId)) {
       return false;
     }

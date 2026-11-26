@@ -74,6 +74,9 @@ class _UnsupportedLocalRefereeService extends LocalRefereeService {
   }
 
   @override
+  void acknowledgeCorrection() {}
+
+  @override
   void pauseForBackground() {}
   @override
   Future<void> resumeFromBackground() async {}
