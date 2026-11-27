@@ -45,7 +45,10 @@ const Map<GameKind, List<(String, String)>> rules = {
       'Pick, then lock in',
       'Tap an answer, then Lock in. Only a locked answer counts — beat the clock!',
     ),
-    ('Beat the clock', '20 seconds per question, five questions per turn.'),
+    (
+      'Beat the clock',
+      '30 seconds per question (adjustable from 20–40), five questions per turn.',
+    ),
     (
       'Score',
       '+1 per correct answer. No penalty for wrong ones. Every team gets the same difficulty mix.',

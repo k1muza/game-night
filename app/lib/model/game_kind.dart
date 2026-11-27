@@ -18,8 +18,8 @@ enum GameKind {
   trivia(
     title: 'Trivia Challenge',
     tagline: 'Four options. One answer. Argue fast.',
-    defaultSeconds: 20,
-    timerOptions: [15, 20, 30],
+    defaultSeconds: 30,
+    timerOptions: [20, 30, 40],
     difficulties: [Difficulty.easy, Difficulty.medium, Difficulty.hard, Difficulty.expert],
   ),
   forbidden(
