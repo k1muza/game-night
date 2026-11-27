@@ -183,5 +183,9 @@ class _PairingService extends LocalRefereeService {
   @override
   Future<void> takeOverClassic() async {}
   @override
+  void acknowledgeCorrection() {}
+  @override
   void pauseForBackground() {}
+  @override
+  Future<void> resumeFromBackground() async {}
 }

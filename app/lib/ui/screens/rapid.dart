@@ -15,7 +15,6 @@ class RapidPlay extends StatefulWidget {
     super.key,
     required this.cardBuilder,
     required this.labelOf,
-    this.top,
     this.buzzCount = false,
   });
 
@@ -23,8 +22,7 @@ class RapidPlay extends StatefulWidget {
   final Widget Function(BuildContext context, String cardId) cardBuilder;
   final String Function(String cardId) labelOf;
 
-  /// Optional strip above the timer (Forbidden Words' referee buzzer).
-  final Widget? top;
+  /// Show the Tabuu violation total in Referee Mode only.
   final bool buzzCount;
 
   @override
@@ -75,25 +73,22 @@ class _RapidPlayState extends State<RapidPlay> {
         final reduce = MediaQuery.of(context).disableAnimations;
         final tall = MediaQuery.of(context).size.height >= 720;
         final canHostScore =
-            s.config.mode != PlayMode.referee || scope.referee.isHostConnected;
+            s.phase == Phase.playing &&
+            t.cardId != null &&
+            !t.paused &&
+            t.deadlineMs != null &&
+            c.remainingMs() > 0 &&
+            (s.config.mode != PlayMode.referee ||
+                scope.referee.isHostConnected);
 
         return Stack(
           children: [
             PageFrame(
               background: warn ? Gn.warmTable : Gn.table,
-              padding: EdgeInsets.fromLTRB(
-                20,
-                widget.top != null ? 8 : 12,
-                20,
-                16,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (widget.top != null) ...[
-                    widget.top!,
-                    const SizedBox(height: 12),
-                  ],
                   Row(
                     children: [
                       const PauseButton(),
@@ -111,19 +106,30 @@ class _RapidPlayState extends State<RapidPlay> {
                   Row(
                     children: [
                       Expanded(child: TeamBadge(s.activeTeam)),
+                      if (s.config.mode == PlayMode.referee) ...[
+                        const SizedBox(width: 6),
+                        RefereeLiveIndicator(status: scope.referee.status),
+                        const SizedBox(width: 6),
+                      ],
                       Pill(
                         text: '${t.count(Outcome.correct)} got',
                         icon: Icons.check_rounded,
                         fg: Gn.correct,
                         height: 28,
                       ),
-                      if (widget.buzzCount) ...[
+                      if (widget.buzzCount &&
+                          s.config.mode == PlayMode.referee) ...[
                         const SizedBox(width: 6),
-                        Pill(
-                          text: '${t.count(Outcome.violation)}',
-                          icon: Icons.warning_amber_rounded,
-                          fg: Gn.violation,
-                          height: 28,
+                        Semantics(
+                          label: '${t.count(Outcome.violation)} buzzed',
+                          child: ExcludeSemantics(
+                            child: Pill(
+                              text: '${t.count(Outcome.violation)}',
+                              icon: Icons.warning_amber_rounded,
+                              fg: Gn.violation,
+                              height: 28,
+                            ),
+                          ),
                         ),
                       ],
                       const SizedBox(width: 6),

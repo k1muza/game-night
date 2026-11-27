@@ -131,6 +131,7 @@ class _GameNightAppState extends State<GameNightApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       widget.controller.tick();
+      unawaited(referee.resumeFromBackground());
       widget.fx.keepAwake(
         (widget.controller.session?.phase == Phase.playing &&
                 widget.controller.session?.turn?.paused != true) ||

@@ -584,6 +584,9 @@ class RefereeGameScreen extends StatefulWidget {
 class _RefereeGameScreenState extends State<RefereeGameScreen> {
   late final LocalRefereeService _service = AppScope.read(context).referee;
   Timer? _timer;
+  Timer? _buzzUnlock;
+  bool _buzzBusy = false;
+  String? _actionConflict;
   Map<String, dynamic>? _lastSnapshot;
   DateTime _snapshotAt = DateTime.now();
 
@@ -601,6 +604,7 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
   void dispose() {
     _service.removeListener(_changed);
     _timer?.cancel();
+    _buzzUnlock?.cancel();
     super.dispose();
   }
 
@@ -609,8 +613,42 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
     if (!identical(current, _lastSnapshot)) {
       _lastSnapshot = current;
       _snapshotAt = DateTime.now();
+      _actionConflict = null;
     }
     if (mounted) setState(() {});
+  }
+
+  void _sendAction(
+    String action, {
+    required Map<String, dynamic> state,
+    int? term,
+  }) {
+    try {
+      final actionContext = RefereeActionContext.fromSnapshot(state);
+      setState(() => _actionConflict = null);
+      _service.sendAction(action, context: actionContext, term: term);
+    } on StateError catch (error) {
+      if (mounted) setState(() => _actionConflict = error.message);
+    } on ArgumentError catch (error) {
+      if (mounted) {
+        setState(
+          () => _actionConflict =
+              '${error.message ?? 'That action is not available.'}',
+        );
+      }
+    } on FormatException catch (error) {
+      if (mounted) setState(() => _actionConflict = error.message);
+    }
+  }
+
+  void _handleBuzz(Map<String, dynamic> state) {
+    if (_buzzBusy) return;
+    _buzzUnlock?.cancel();
+    setState(() => _buzzBusy = true);
+    _sendAction('buzz', state: state);
+    _buzzUnlock = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) setState(() => _buzzBusy = false);
+    });
   }
 
   int _remaining(Map<String, dynamic> state) {
@@ -726,7 +764,7 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            Expanded(child: _activeCard(context, game, state)),
+            Expanded(child: _activeCard(context, game, state, remaining)),
             if (state['paused'] == true)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
@@ -736,15 +774,17 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
                   fg: Gn.warning,
                 ),
               ),
-            if (_service.lastActionMessage != null)
+            if (_actionConflict != null || _service.lastActionMessage != null)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  _service.lastActionMessage!,
+                  _actionConflict ?? _service.lastActionMessage!,
                   textAlign: TextAlign.center,
                   style: Gn.uiStyle(
                     13,
-                    color: _service.lastActionAccepted == false
+                    color:
+                        _actionConflict != null ||
+                            _service.lastActionAccepted == false
                         ? Gn.violation
                         : Gn.text2,
                     weight: FontWeight.w700,
@@ -791,12 +831,19 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
     BuildContext context,
     GameKind game,
     Map<String, dynamic> state,
+    int remaining,
   ) {
     final card = (state['card'] as Map?)?.cast<String, dynamic>();
     if (card == null) {
       return const Center(child: Text('Waiting for the active card…'));
     }
-    final actionContext = RefereeActionContext.fromSnapshot(state);
+    final controlsEnabled =
+        _service.status == RefereeConnectionStatus.connected &&
+        state['paused'] != true &&
+        remaining > 0 &&
+        state['turnId'] != null &&
+        state['cardId'] != null &&
+        state['cardInstanceId'] != null;
     if (game == GameKind.sprint) {
       final terms = (card['terms'] as List).cast<Map>();
       final marked = (state['marked'] as List).cast<int>().toSet();
@@ -823,9 +870,8 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
               index: i,
               marked: marked.contains(i),
               disqualified: disqualified.contains(i),
-              enabled: _service.status == RefereeConnectionStatus.connected,
-              onAction: (action) =>
-                  _service.sendAction(action, context: actionContext, term: i),
+              enabled: controlsEnabled,
+              onAction: (action) => _sendAction(action, state: state, term: i),
             ),
           );
         },
@@ -883,8 +929,8 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
           lip: Gn.violationDeep,
           height: 88,
           fontSize: 30,
-          onPressed: _service.status == RefereeConnectionStatus.connected
-              ? () => _service.sendAction('buzz', context: actionContext)
+          onPressed: controlsEnabled && !_buzzBusy
+              ? () => _handleBuzz(state)
               : null,
         ),
         const SizedBox(height: 8),
@@ -900,11 +946,13 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
   Widget _turnReview(GameKind game, Map<String, dynamic> state) {
     final review = (state['review'] as Map?)?.cast<String, dynamic>();
     if (review == null) return const Center(child: Text('Turn finished.'));
-    final actionContext = RefereeActionContext.fromSnapshot(state);
     final points = review['points'] as int;
     final awaitingConfirmation = state['phase'] == Phase.turnReview.name;
     final correctionRequested = state['correctionRequested'] == true;
     final card = (state['card'] as Map?)?.cast<String, dynamic>();
+    final reviewControlsEnabled =
+        _service.status == RefereeConnectionStatus.connected &&
+        awaitingConfirmation;
     return ListView(
       children: [
         const Icon(Icons.fact_check_outlined, size: 52, color: Gn.correct),
@@ -939,11 +987,8 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
             icon: Icons.flag_outlined,
             outline: true,
             foreground: Gn.text1,
-            onPressed: _service.status == RefereeConnectionStatus.connected
-                ? () => _service.sendAction(
-                    'request_correction',
-                    context: actionContext,
-                  )
+            onPressed: reviewControlsEnabled
+                ? () => _sendAction('request_correction', state: state)
                 : null,
           ),
         if (awaitingConfirmation && correctionRequested) ...[
@@ -960,14 +1005,14 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
                 index: i,
                 marked: (state['marked'] as List).contains(i),
                 disqualified: (state['disqualified'] as List).contains(i),
-                enabled: _service.status == RefereeConnectionStatus.connected,
-                onAction: (action) => _service.sendAction(
+                enabled: reviewControlsEnabled,
+                onAction: (action) => _sendAction(
                   switch (action) {
                     'mark_term_correct' => 'review_term_correct',
                     'disqualify_term' => 'review_term_disqualified',
                     _ => 'review_term_pending',
                   },
-                  context: actionContext,
+                  state: state,
                   term: i,
                 ),
               ),
@@ -977,13 +1022,18 @@ class _RefereeGameScreenState extends State<RefereeGameScreen> {
             for (var i = 0; i < (review['events'] as List).length; i++)
               _TabuuCorrectionSuggestion(
                 event: (review['events'] as List)[i].cast<String, dynamic>(),
-                enabled: _service.status == RefereeConnectionStatus.connected,
-                onAction: (action) => _service.sendAction(
-                  action,
-                  context: actionContext,
-                  term: i,
-                ),
+                enabled: reviewControlsEnabled,
+                onAction: (action) =>
+                    _sendAction(action, state: state, term: i),
               ),
+        ],
+        if (_actionConflict != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _actionConflict!,
+            textAlign: TextAlign.center,
+            style: Gn.uiStyle(13, color: Gn.violation, weight: FontWeight.w700),
+          ),
         ],
         const SizedBox(height: 12),
         Text(
@@ -1266,7 +1316,8 @@ class RefereeHostReviewScreen extends StatelessWidget {
                   : session.game.palette.accent,
             ),
           ),
-          if (scope.referee.correctionRequested)
+          if (scope.referee.correctionRequested ||
+              controller.refereeCorrectionPending) ...[
             const Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Pill(
@@ -1275,6 +1326,13 @@ class RefereeHostReviewScreen extends StatelessWidget {
                 fg: Gn.warning,
               ),
             ),
+            OutlinedButton.icon(
+              onPressed: scope.referee.acknowledgeCorrection,
+              icon: const Icon(Icons.task_alt_rounded),
+              label: const Text('Acknowledge correction'),
+            ),
+            const SizedBox(height: 8),
+          ],
           Expanded(
             child: ListView(
               children: [
@@ -1304,7 +1362,9 @@ class RefereeHostReviewScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Score is held until you confirm the review.',
+            controller.refereeCorrectionPending
+                ? 'Acknowledge the correction request to confirm the score.'
+                : 'Score is held until you confirm the review.',
             textAlign: TextAlign.center,
             style: Gn.uiStyle(13, color: Gn.text2, weight: FontWeight.w600),
           ),
@@ -1314,7 +1374,9 @@ class RefereeHostReviewScreen extends StatelessWidget {
             icon: Icons.check_rounded,
             color: session.game.palette.accent,
             lip: session.game.palette.deep,
-            onPressed: controller.confirmReview,
+            onPressed: controller.refereeCorrectionPending
+                ? null
+                : controller.confirmReview,
           ),
         ],
       ),

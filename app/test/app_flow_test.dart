@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:game_night/app.dart';
 import 'package:game_night/model/game_kind.dart';
 import 'package:game_night/services/fx.dart';
+import 'package:game_night/services/local_referee_types.dart';
 import 'package:game_night/session/session.dart';
 import 'package:game_night/ui/screens/local_referee.dart';
+import 'package:game_night/ui/widgets/common.dart';
 
 import 'helpers.dart';
 
@@ -59,6 +61,103 @@ Future<void> tapText(WidgetTester t, String text) async {
 
 void main() {
   setUpAll(loadAppFonts);
+
+  testWidgets('referee live indicator respects rebuilds and reduced motion', (
+    t,
+  ) async {
+    await t.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: RefereeLiveIndicator(status: RefereeConnectionStatus.connected),
+        ),
+      ),
+    );
+    await t.pump(const Duration(milliseconds: 100));
+    expect(find.byType(RefereeLiveIndicator), findsOneWidget);
+
+    await t.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: RefereeLiveIndicator(status: RefereeConnectionStatus.connected),
+        ),
+      ),
+    );
+    await t.pump(const Duration(milliseconds: 100));
+    expect(find.text('Referee'), findsOneWidget);
+
+    await t.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: true),
+          child: child!,
+        ),
+        home: const Scaffold(
+          body: RefereeLiveIndicator(status: RefereeConnectionStatus.connected),
+        ),
+      ),
+    );
+    await t.pump();
+    expect(find.text('Referee'), findsOneWidget);
+  });
+
+  testWidgets('Tabuu Classic hides BUZZ and keeps Pass and Got it controls', (
+    t,
+  ) async {
+    final a = AppHarness();
+    a.h.start(GameKind.forbidden);
+    expect(a.h.controller.startTurn(), isTrue);
+    await a.pump(t);
+
+    expect(find.text('BUZZ'), findsNothing);
+    expect(find.text('0 buzzed'), findsNothing);
+    expect(find.text('Pass'), findsOneWidget);
+    expect(find.text('Got it'), findsOneWidget);
+
+    await t.tap(find.text('Pass'));
+    await t.pump();
+    expect(a.h.s.turn!.events.last.outcome, Outcome.pass);
+    expect(a.h.s.turn!.points, 0);
+
+    await t.pump(const Duration(milliseconds: 800));
+    await t.tap(find.text('Got it'));
+    await t.pump();
+    expect(a.h.s.turn!.events.last.outcome, Outcome.correct);
+    expect(a.h.s.turn!.points, 1);
+  });
+
+  testWidgets('Tabuu Referee keeps the host buzzed counter without host BUZZ', (
+    t,
+  ) async {
+    final a = AppHarness();
+    a.h.start(GameKind.forbidden, mode: PlayMode.referee);
+    a.h.controller.setRefereeConnectionReady(true);
+    expect(a.h.controller.startTurn(), isTrue);
+    await a.pump(t);
+
+    expect(find.text('BUZZ'), findsNothing);
+    expect(find.bySemanticsLabel('0 buzzed'), findsOneWidget);
+    expect(find.text('Pass'), findsOneWidget);
+    expect(find.text('Got it'), findsOneWidget);
+  });
+
+  testWidgets('setup uses compact play mode and settings sheet', (t) async {
+    final a = AppHarness();
+    await a.pump(t);
+
+    await t.tap(find.text('30-Second Sprint'));
+    await t.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('Classic'), findsOneWidget);
+    expect(find.text('Referee'), findsOneWidget);
+    expect(find.text('Classic: One phone.'), findsOneWidget);
+
+    await t.tap(find.byIcon(Icons.settings_rounded));
+    await t.pump(const Duration(milliseconds: 400));
+    expect(find.text('Rounds per team'), findsOneWidget);
+    expect(find.text('How to play'), findsOneWidget);
+    expect(find.text('Sound effects'), findsOneWidget);
+    expect(find.text('Haptic feedback'), findsOneWidget);
+  });
 
   testWidgets('referee pairing and game screens initialize from AppScope', (
     t,

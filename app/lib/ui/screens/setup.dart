@@ -25,7 +25,6 @@ class _SetupScreenState extends State<SetupScreen> {
   late int _seconds = widget.game.defaultSeconds;
   int _questions = 5;
   Difficulty? _difficulty;
-  bool _advanced = false;
   PlayMode _mode = PlayMode.classic;
 
   @override
@@ -33,15 +32,6 @@ class _SetupScreenState extends State<SetupScreen> {
     super.initState();
     _addTeam();
     _addTeam();
-    // First visit to a game: show the rules once.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final store = AppScope.of(context).store;
-      final key = 'rules.${widget.game.name}';
-      if (!store.flag(key)) {
-        store.setFlag(key, true);
-        showHowToPlay(context, widget.game);
-      }
-    });
   }
 
   @override
@@ -126,6 +116,209 @@ class _SetupScreenState extends State<SetupScreen> {
     }
   }
 
+  Future<void> _showSettings(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Gn.table,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) {
+        final scope = AppScope.of(context);
+        final g = widget.game;
+        return SafeArea(
+          child: StatefulBuilder(
+            builder: (ctx, setSheet) => ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(ctx).size.height * 0.92,
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        IconSquare(
+                          icon: Icons.close_rounded,
+                          label: 'Close settings',
+                          onTap: () => Navigator.pop(ctx),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Game setup',
+                            style: Gn.displayStyle(22, spacing: 0),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    const Eyebrow('Rounds'),
+                    const SizedBox(height: 8),
+                    _Stepper(
+                      label: 'Rounds per team',
+                      value: _rounds,
+                      min: 1,
+                      max: 10,
+                      onChanged: (v) => setState(() {
+                        _rounds = v;
+                        setSheet(() {});
+                      }),
+                    ),
+                    if (g.perQuestionTimer) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Time per question',
+                        style: Gn.uiStyle(
+                          14,
+                          color: Gn.text2,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _Segmented(
+                        options: [for (final s in g.timerOptions) ('${s}s', s)],
+                        value: _seconds,
+                        onChanged: (v) => setState(() {
+                          _seconds = v;
+                          setSheet(() {});
+                        }),
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Turn length',
+                        style: Gn.uiStyle(
+                          14,
+                          color: Gn.text2,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _Segmented(
+                        options: [for (final s in g.timerOptions) ('${s}s', s)],
+                        value: _seconds,
+                        onChanged: (v) => setState(() {
+                          _seconds = v;
+                          setSheet(() {});
+                        }),
+                      ),
+                    ],
+                    if (g == GameKind.trivia) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Questions per turn',
+                        style: Gn.uiStyle(
+                          14,
+                          color: Gn.text2,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _Segmented(
+                        options: const [('3', 3), ('5', 5), ('7', 7)],
+                        value: _questions,
+                        onChanged: (v) => setState(() {
+                          _questions = v;
+                          setSheet(() {});
+                        }),
+                      ),
+                    ],
+                    if (g.difficulties.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Cards',
+                        style: Gn.uiStyle(
+                          14,
+                          color: Gn.text2,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _ChoiceChip(
+                            label: 'Mixed',
+                            selected: _difficulty == null,
+                            onTap: () => setState(() {
+                              _difficulty = null;
+                              setSheet(() {});
+                            }),
+                          ),
+                          for (final d in g.difficulties)
+                            _ChoiceChip(
+                              label: d.label,
+                              selected: _difficulty == d,
+                              onTap: () => setState(() {
+                                _difficulty = d;
+                                setSheet(() {});
+                              }),
+                            ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    const Eyebrow('Play mode'),
+                    const SizedBox(height: 8),
+                    Text(
+                      _mode == PlayMode.classic
+                          ? 'Classic: one phone, no pairing or network.'
+                          : 'Referee: two phones with independent scoring.',
+                      style: Gn.uiStyle(
+                        14,
+                        color: Gn.text2,
+                        weight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Eyebrow('Feedback'),
+                    const SizedBox(height: 8),
+                    _SettingsSwitch(
+                      icon: Icons.volume_up_rounded,
+                      label: 'Sound effects',
+                      value: !scope.fx.muted,
+                      onChanged: (v) {
+                        scope.fx.muted = !v;
+                        scope.store.setFlag('muted', scope.fx.muted);
+                        setSheet(() {});
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _SettingsSwitch(
+                      icon: Icons.vibration_rounded,
+                      label: 'Haptic feedback',
+                      value: scope.fx.hapticsEnabled,
+                      onChanged: (v) {
+                        scope.fx.hapticsEnabled = v;
+                        scope.store.setFlag('hapticsDisabled', !v);
+                        setSheet(() {});
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    GnButton(
+                      label: 'How to play',
+                      icon: Icons.help_outline_rounded,
+                      outline: true,
+                      foreground: Gn.text1,
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        showHowToPlay(context, g);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final g = widget.game;
@@ -159,20 +352,10 @@ class _SetupScreenState extends State<SetupScreen> {
                     ),
                   ),
                 ),
-                Semantics(
-                  button: true,
-                  label: 'How to play',
-                  excludeSemantics: true,
-                  onTap: () => showHowToPlay(context, g),
-                  child: GestureDetector(
-                    onTap: () => showHowToPlay(context, g),
-                    child: Pill(
-                      text: 'How to play',
-                      icon: Icons.help_outline_rounded,
-                      height: 40,
-                      fontSize: 14,
-                    ),
-                  ),
+                IconSquare(
+                  icon: Icons.settings_rounded,
+                  label: 'Game setup settings',
+                  onTap: () => _showSettings(context),
                 ),
               ],
             ),
@@ -184,57 +367,39 @@ class _SetupScreenState extends State<SetupScreen> {
               children: [
                 _Hero(game: g),
                 if (g == GameKind.sprint || g == GameKind.forbidden) ...[
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
                   const Eyebrow('Play mode'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Gn.surface1,
-                      borderRadius: BorderRadius.circular(Gn.rLg),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            _ChoiceChip(
-                              label: 'Classic · one phone',
-                              selected: _mode == PlayMode.classic,
-                              onTap: () =>
-                                  setState(() => _mode = PlayMode.classic),
+                  const SizedBox(height: 7),
+                  _Segmented<PlayMode>(
+                    options: const [
+                      ('Classic', PlayMode.classic),
+                      ('Referee', PlayMode.referee),
+                    ],
+                    value: _mode,
+                    onChanged: (v) {
+                      if (v == PlayMode.referee &&
+                          !AppScope.of(context).referee.supported) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Referee mode is only available in the Android and iOS app.',
                             ),
-                            _ChoiceChip(
-                              label: 'Referee · two phones',
-                              selected: _mode == PlayMode.referee,
-                              onTap: AppScope.of(context).referee.supported
-                                  ? () =>
-                                        setState(() => _mode = PlayMode.referee)
-                                  : () => ScaffoldMessenger.of(context)
-                                        .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Referee mode is only available in the Android and iOS app.',
-                                            ),
-                                          ),
-                                        ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _mode == PlayMode.classic
-                              ? 'Play normally on one phone. No pairing or network is used.'
-                              : 'Connect a second phone on the same Wi-Fi or hotspot. Internet is not needed.',
-                          style: Gn.uiStyle(
-                            13,
-                            color: Gn.text2,
-                            weight: FontWeight.w500,
                           ),
-                        ),
-                      ],
+                        );
+                        return;
+                      }
+                      setState(() => _mode = v);
+                    },
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    _mode == PlayMode.classic
+                        ? 'Classic: One phone.'
+                        : 'Referee: Two phones with independent scoring.',
+                    style: Gn.uiStyle(
+                      13,
+                      color: Gn.text3,
+                      weight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -267,154 +432,15 @@ class _SetupScreenState extends State<SetupScreen> {
                     label: 'Add a team',
                     onTap: () => setState(_addTeam),
                   ),
-                const SizedBox(height: 22),
-                const Eyebrow('Rounds'),
-                const SizedBox(height: 10),
-                _Stepper(
-                  label: 'Turns per team',
-                  value: _rounds,
-                  min: 1,
-                  max: 10,
-                  onChanged: (v) => setState(() => _rounds = v),
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 14),
                 Text(
-                  '$turns turns in total · about $minutes min',
+                  '$_rounds rounds · $turns turns · about $minutes min',
                   style: Gn.uiStyle(
                     13,
                     color: Gn.text3,
                     weight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 18),
-                Semantics(
-                  button: true,
-                  expanded: _advanced,
-                  label: 'More options',
-                  excludeSemantics: true,
-                  onTap: () => setState(() => _advanced = !_advanced),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _advanced = !_advanced),
-                    child: Container(
-                      height: 52,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Gn.surface1,
-                        borderRadius: BorderRadius.circular(Gn.rMd),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.tune_rounded,
-                            color: Gn.text2,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'More options',
-                            style: Gn.uiStyle(15, weight: FontWeight.w700),
-                          ),
-                          const Spacer(),
-                          Text(
-                            _optionsSummary(),
-                            style: Gn.uiStyle(13, color: Gn.text3),
-                          ),
-                          Icon(
-                            _advanced
-                                ? Icons.expand_less_rounded
-                                : Icons.expand_more_rounded,
-                            color: Gn.text2,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                if (_advanced) ...[
-                  const SizedBox(height: 14),
-                  Text(
-                    g.perQuestionTimer ? 'Time per question' : 'Turn length',
-                    style: Gn.uiStyle(
-                      14,
-                      color: Gn.text2,
-                      weight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _Segmented(
-                    options: [for (final s in g.timerOptions) ('${s}s', s)],
-                    value: _seconds,
-                    onChanged: (v) => setState(() => _seconds = v),
-                  ),
-                  if (g == GameKind.trivia) ...[
-                    const SizedBox(height: 14),
-                    Text(
-                      'Questions per turn',
-                      style: Gn.uiStyle(
-                        14,
-                        color: Gn.text2,
-                        weight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _Segmented(
-                      options: const [('3', 3), ('5', 5), ('7', 7)],
-                      value: _questions,
-                      onChanged: (v) => setState(() => _questions = v),
-                    ),
-                  ],
-                  if (g.difficulties.isNotEmpty) ...[
-                    const SizedBox(height: 14),
-                    Text(
-                      'Cards',
-                      style: Gn.uiStyle(
-                        14,
-                        color: Gn.text2,
-                        weight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _ChoiceChip(
-                          label: 'Mixed',
-                          selected: _difficulty == null,
-                          onTap: () => setState(() => _difficulty = null),
-                        ),
-                        for (final d in g.difficulties)
-                          _ChoiceChip(
-                            label: d.label,
-                            selected: _difficulty == d,
-                            onTap: () => setState(() => _difficulty = d),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      g == GameKind.trivia
-                          ? 'Mixed: mostly medium and hard, with an easy or expert question each turn. Every team gets the same mix.'
-                          : 'Mixed keeps most cards approachable, with a few harder ones.',
-                      style: Gn.uiStyle(
-                        13,
-                        color: Gn.text3,
-                        weight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                  if (g == GameKind.sprint) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      'Every Sprint card is pre-balanced: 2 easy, 2 medium and 1 hard term.',
-                      style: Gn.uiStyle(
-                        13,
-                        color: Gn.text3,
-                        weight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ],
                 const SizedBox(height: 20),
               ],
             ),
@@ -431,15 +457,6 @@ class _SetupScreenState extends State<SetupScreen> {
       ),
     );
   }
-
-  String _optionsSummary() {
-    final parts = <String>[
-      '${_seconds}s',
-      if (widget.game == GameKind.trivia) '$_questions Qs',
-      if (widget.game.difficulties.isNotEmpty) _difficulty?.label ?? 'Mixed',
-    ];
-    return '${parts.join(' · ')}  ';
-  }
 }
 
 class _Hero extends StatelessWidget {
@@ -449,7 +466,7 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) {
     final pal = game.palette;
     return Container(
-      height: 168,
+      height: 128,
       decoration: BoxDecoration(
         color: pal.accent,
         borderRadius: BorderRadius.circular(Gn.r2xl - 4),
@@ -460,11 +477,11 @@ class _Hero extends StatelessWidget {
         children: [
           GameMotif(game),
           Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GlyphTile(game, size: 46),
+                GlyphTile(game, size: 38),
                 const Spacer(),
                 Text(
                   game.title,
@@ -498,7 +515,7 @@ class _TeamRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final st = teamStyles[palette];
     return Container(
-      height: 60,
+      height: 52,
       padding: const EdgeInsets.only(left: 16, right: 6),
       decoration: BoxDecoration(
         color: Gn.surface1,
@@ -575,6 +592,40 @@ class _DashedButton extends StatelessWidget {
           ],
         ),
       ),
+    ),
+  );
+}
+
+class _SettingsSwitch extends StatelessWidget {
+  const _SettingsSwitch({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 52,
+    padding: const EdgeInsets.only(left: 14, right: 8),
+    decoration: BoxDecoration(
+      color: Gn.surface1,
+      borderRadius: BorderRadius.circular(Gn.rMd),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, size: 20, color: Gn.text2),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(label, style: Gn.uiStyle(15, weight: FontWeight.w700)),
+        ),
+        Switch.adaptive(value: value, onChanged: onChanged),
+      ],
     ),
   );
 }
