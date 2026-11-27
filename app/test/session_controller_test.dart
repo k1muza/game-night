@@ -24,7 +24,7 @@ void main() {
     test('game-specific default timers', () {
       expect(const GameConfig(game: GameKind.charades).effectiveSeconds, 60);
       expect(const GameConfig(game: GameKind.forbidden).effectiveSeconds, 60);
-      expect(const GameConfig(game: GameKind.trivia).effectiveSeconds, 20);
+      expect(const GameConfig(game: GameKind.trivia).effectiveSeconds, 30);
       expect(const GameConfig(game: GameKind.trivia).questionsPerTurn, 5);
     });
 
@@ -409,7 +409,7 @@ void main() {
       () {
         final h = Harness()..start(GameKind.trivia);
         final c = h.controller..startTurn();
-        h.clock.advance(const Duration(seconds: 20));
+        h.clock.advance(const Duration(seconds: 30));
         c.tick();
         final t = h.s.turn!;
         expect(t.revealed, isTrue);
@@ -419,7 +419,7 @@ void main() {
         c.tick();
         expect(h.s.phase, Phase.playing);
         c.nextQuestion();
-        expect(c.remainingMs(), 20000);
+        expect(c.remainingMs(), 30000);
       },
     );
 
@@ -429,7 +429,7 @@ void main() {
         final h = Harness()..start(GameKind.trivia);
         final c = h.controller..startTurn();
         c.selectOption(h.s.turn!.optionOrder.indexOf(0));
-        h.clock.advance(const Duration(seconds: 25));
+        h.clock.advance(const Duration(seconds: 35));
         c.tick();
         expect(h.s.turn!.events.single.outcome, Outcome.timeout);
       },
